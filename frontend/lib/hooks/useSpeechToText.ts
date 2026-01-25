@@ -13,6 +13,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+type PermissionState = 'prompt' | 'granted' | 'denied' | 'unknown';
+
 interface SpeechToTextState {
   isListening: boolean;
   transcript: string;
@@ -20,6 +22,7 @@ interface SpeechToTextState {
   error: string | null;
   isSupported: boolean;
   confidence: number;
+  permissionState: PermissionState;
 }
 
 interface SpeechToTextOptions {
@@ -105,18 +108,75 @@ export function useSpeechToText(options: SpeechToTextOptions = {}) {
     error: null,
     isSupported: false,
     confidence: 0,
+    permissionState: 'unknown',
   });
 
   const recognitionRef = useRef<SpeechRecognitionInterface | null>(null);
   const finalTranscriptRef = useRef<string>('');
 
-  // Check browser support
+  // Check microphone permission status
+  const checkPermission = useCallback(async () => {
+    try {
+      // Check if permissions API is available
+      if (navigator.permissions && navigator.permissions.query) {
+        const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        setState((prev) => ({ ...prev, permissionState: result.state as PermissionState }));
+
+        // Listen for permission changes
+        result.onchange = () => {
+          setState((prev) => ({ ...prev, permissionState: result.state as PermissionState }));
+        };
+
+        return result.state;
+      }
+      return 'unknown';
+    } catch {
+      // Permissions API not supported or microphone not queryable
+      return 'unknown';
+    }
+  }, []);
+
+  // Request microphone permission
+  const requestPermission = useCallback(async () => {
+    try {
+      setState((prev) => ({ ...prev, error: null }));
+
+      // Request microphone access through getUserMedia
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Stop the stream immediately - we just needed permission
+      stream.getTracks().forEach(track => track.stop());
+
+      setState((prev) => ({ ...prev, permissionState: 'granted', error: null }));
+      return true;
+    } catch (error) {
+      const err = error as Error;
+      let errorMessage = 'Could not access microphone.';
+
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        errorMessage = 'Microphone access was denied.';
+        setState((prev) => ({ ...prev, permissionState: 'denied' }));
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        errorMessage = 'No microphone found on this device.';
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        errorMessage = 'Microphone is being used by another application.';
+      }
+
+      setState((prev) => ({ ...prev, error: errorMessage }));
+      return false;
+    }
+  }, []);
+
+  // Check browser support and permission
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       setState((prev) => ({ ...prev, isSupported: true }));
+
+      // Check initial permission state
+      checkPermission();
 
       // Initialize recognition
       const recognition = new SpeechRecognition();
@@ -283,6 +343,8 @@ export function useSpeechToText(options: SpeechToTextOptions = {}) {
     clearTranscript,
     appendToTranscript,
     setTranscript,
+    requestPermission,
+    checkPermission,
   };
 }
 

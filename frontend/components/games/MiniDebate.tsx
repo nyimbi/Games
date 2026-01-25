@@ -143,15 +143,27 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     interimTranscript,
     isSupported: sttSupported,
     error: sttError,
+    permissionState,
     startListening,
     stopListening,
     clearTranscript,
     setTranscript,
+    requestPermission,
   } = useSpeechToText({
     continuous: true,
     interimResults: true,
     language: 'en-US',
   });
+
+  // Track if we're requesting permission
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+
+  // Handle microphone permission request
+  const handleRequestPermission = async () => {
+    setIsRequestingPermission(true);
+    await requestPermission();
+    setIsRequestingPermission(false);
+  };
 
   // Sync speech transcript to current speech
   useEffect(() => {
@@ -271,38 +283,48 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
   };
 
   const advancePhase = useCallback(() => {
-    const { phase, currentSpeaker, currentSpeech, speeches, position } = state;
+    const { phase, currentSpeaker, speeches, position } = state;
 
     let newSpeeches = { ...speeches };
     let newPhase: DebatePhase = phase;
     let newSpeaker = currentSpeaker;
     let newTime = 60;
 
-    if (phase === 'prep' || phase === 'feedback') {
-      const currentPhaseIndex = phase === 'prep' ? 0 : ['opening', 'rebuttal', 'closing'].indexOf(state.phase === 'feedback' ? getLastPhase() : phase);
+    if (phase === 'prep') {
+      // From prep, go to opening with pro speaking first
+      newPhase = 'opening';
+      newSpeaker = 'pro';
+      newTime = 90;
+    } else if (phase === 'feedback') {
+      // After feedback, advance based on who just spoke
+      const phases: DebatePhase[] = ['opening', 'rebuttal', 'closing'];
+      const lastPhase = getLastPhase();
+      const lastPhaseIndex = phases.indexOf(lastPhase as DebatePhase);
 
-      if (phase === 'prep') {
-        newPhase = 'opening';
-        newTime = 90;
+      if (currentSpeaker === 'pro') {
+        // Pro finished, con's turn in same phase
+        newSpeaker = 'con';
+        newTime = lastPhase === 'opening' ? 90 : 60;
       } else {
-        // After feedback, move to next phase
-        const phases: DebatePhase[] = ['opening', 'rebuttal', 'closing'];
-        const lastPhase = getLastPhase();
-        const lastPhaseIndex = phases.indexOf(lastPhase as DebatePhase);
-
-        if (currentSpeaker === 'pro') {
-          newSpeaker = 'con';
-          newTime = lastPhase === 'opening' ? 90 : 60;
+        // Con finished, move to next phase with pro
+        if (lastPhaseIndex < phases.length - 1) {
+          newPhase = phases[lastPhaseIndex + 1];
+          newSpeaker = 'pro';
+          newTime = newPhase === 'opening' ? 90 : 60;
         } else {
-          // Con finished, move to next phase
-          if (lastPhaseIndex < phases.length - 1) {
-            newPhase = phases[lastPhaseIndex + 1];
-            newSpeaker = 'pro';
-            newTime = newPhase === 'opening' ? 90 : 60;
-          } else {
-            newPhase = 'ended';
-          }
+          newPhase = 'ended';
         }
+      }
+    } else if (['opening', 'rebuttal', 'closing'].includes(phase)) {
+      // During a speech phase - opponent just finished, switch to player
+      if (currentSpeaker === 'pro') {
+        // Pro (opponent) finished, con (player) turn
+        newSpeaker = 'con';
+        newTime = phase === 'opening' ? 90 : 60;
+      } else {
+        // Con (opponent) finished, pro (player) turn
+        newSpeaker = 'pro';
+        newTime = phase === 'opening' ? 90 : 60;
       }
     }
 
@@ -374,8 +396,75 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
 
   const renderSpeechInput = () => (
     <div className="flex-1 flex flex-col">
-      {/* Speech-to-text status */}
-      {sttSupported && (
+      {/* Microphone Permission Request */}
+      {sttSupported && (permissionState === 'prompt' || permissionState === 'unknown') && !isListening && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-4 bg-gradient-to-r from-gold-50 to-cream-100 rounded-xl border-2 border-gold-200"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <Mic className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-ink-800 mb-1">Enable Voice Input?</h4>
+              <p className="text-sm text-ink-600 mb-3">
+                Speak your debate arguments instead of typing! Click the button below to allow microphone access.
+              </p>
+              <Button
+                variant="gold"
+                size="sm"
+                onClick={handleRequestPermission}
+                disabled={isRequestingPermission}
+              >
+                {isRequestingPermission ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Requesting...
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-4 h-4 mr-2" />
+                    Allow Microphone
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Permission Denied Message */}
+      {sttSupported && permissionState === 'denied' && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-4 bg-coral-50 rounded-xl border border-coral-200"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-coral-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-coral-800 mb-1">Microphone Access Blocked</h4>
+              <p className="text-sm text-coral-700 mb-2">
+                To use voice input, please enable microphone access in your browser settings:
+              </p>
+              <ol className="text-sm text-coral-700 list-decimal list-inside space-y-1 mb-3">
+                <li>Click the lock/info icon in your browser's address bar</li>
+                <li>Find "Microphone" in the permissions</li>
+                <li>Change it to "Allow"</li>
+                <li>Refresh this page</li>
+              </ol>
+              <p className="text-xs text-coral-600">
+                You can still type your arguments below.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Speech-to-text controls */}
+      {sttSupported && permissionState === 'granted' && (
         <div className="flex items-center gap-4 mb-4">
           <Button
             variant={isListening ? 'primary' : 'secondary'}
