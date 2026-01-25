@@ -27,72 +27,130 @@ const createQuestion = (
 });
 
 // ============================================================================
-// SCIENCE QUESTIONS (40 questions)
+// SCIENCE QUESTIONS (50+ questions) - WSC 2026 "Are We There Yet?" Theme Aligned
+// Topics: Transportation, Space Travel, Medical Progress, Climate Goals, Infrastructure
 // ============================================================================
 export const scienceQuestions: Question[] = [
-  // Easy (15)
+  // ==========================================================================
+  // TRANSPORTATION & MOVEMENT SCIENCE (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What type of train uses magnets to float above the tracks?', ['Steam train', 'Maglev train', 'Diesel train', 'Electric train'], 1, 'Maglev (magnetic levitation) trains can reach speeds over 600 km/h.'),
+  createQuestion('science', 'easy', 'What fuel do most rockets use to escape Earth\'s atmosphere?', ['Gasoline', 'Liquid hydrogen and oxygen', 'Coal', 'Solar power'], 1, 'Hydrogen and oxygen combine explosively to produce thrust.'),
+  createQuestion('science', 'easy', 'What is the fastest speed a human has ever traveled?', ['100 km/h', '1,000 km/h', '40,000 km/h', '100,000 km/h'], 2, 'Apollo 10 astronauts reached 39,897 km/h returning from the Moon.'),
+  createQuestion('science', 'easy', 'What powers an electric car?', ['Gasoline', 'Batteries', 'Coal', 'Steam'], 1, 'Electric vehicles use rechargeable lithium-ion batteries.'),
+  createQuestion('science', 'easy', 'How do airplanes stay in the air?', ['Magic', 'Lift created by air flowing over wings', 'Helium', 'Magnets'], 1, 'Wing shape causes air to move faster above, creating lift.'),
+  createQuestion('science', 'easy', 'What is GPS used for?', ['Taking photos', 'Finding your location using satellites', 'Making phone calls', 'Playing music'], 1, 'GPS uses 24+ satellites to pinpoint locations on Earth.'),
+  createQuestion('science', 'easy', 'How long does it take to fly from New York to London?', ['2 hours', '7 hours', '24 hours', '3 days'], 1, 'Commercial jets cross the Atlantic in about 7 hours.'),
+  createQuestion('science', 'easy', 'What was the first vehicle to land on Mars?', ['Viking 1 lander', 'Apollo 11', 'Space Shuttle', 'Sputnik'], 0, 'Viking 1 landed on Mars on July 20, 1976.'),
+
+  // Medium
+  createQuestion('science', 'medium', 'How fast do Japan\'s Shinkansen bullet trains travel?', ['100 km/h', '200 km/h', '320 km/h', '500 km/h'], 2, 'The Shinkansen has operated since 1964 with zero fatal accidents.'),
+  createQuestion('science', 'medium', 'What is "escape velocity" from Earth?', ['The speed needed to leave Earth\'s gravity', 'The speed of sound', 'The speed limit on highways', 'The fastest a plane can fly'], 0, 'You need about 11.2 km/s to escape Earth\'s gravitational pull.'),
+  createQuestion('science', 'medium', 'What technology allows ships to know exactly where they are at sea?', ['Compass only', 'Satellite navigation (GPS)', 'Star charts only', 'Radar only'], 1, 'Modern ships use GPS for precise positioning anywhere on Earth.'),
+  createQuestion('science', 'medium', 'How does a submarine dive and surface?', ['By changing its weight using ballast tanks', 'By using propellers', 'By changing shape', 'By using magnets'], 0, 'Submarines fill tanks with water to sink and air to rise.'),
+  createQuestion('science', 'medium', 'What is "regenerative braking" in electric vehicles?', ['Using hand brakes', 'Converting motion back into electricity', 'Using parachutes', 'Friction brakes only'], 1, 'When slowing down, motors become generators that recharge batteries.'),
+  createQuestion('science', 'medium', 'How long does it take to travel to Mars?', ['1 week', '3 months', '7-9 months', '5 years'], 2, 'Mars missions typically take 7-9 months depending on orbital positions.'),
+  createQuestion('science', 'medium', 'What is a "hyperloop"?', ['A roller coaster', 'A proposed high-speed transport in vacuum tubes', 'A type of airplane', 'An underwater tunnel'], 1, 'Hyperloop concepts propose speeds over 1,000 km/h in low-pressure tubes.'),
+  createQuestion('science', 'medium', 'What fuel might power future long-distance space travel?', ['Gasoline', 'Nuclear fusion or ion propulsion', 'Coal', 'Wind'], 1, 'Ion engines provide small but continuous thrust for deep space missions.'),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is the "Oberth effect" in spaceflight?', ['Drag from atmosphere', 'More efficient fuel burn when moving faster', 'Gravity assist', 'Solar wind'], 1, 'Rockets gain more energy from fuel when already moving fast near a planet.'),
+  createQuestion('science', 'hard', 'What is a Hohmann transfer orbit?', ['A type of satellite', 'The most fuel-efficient path between two orbits', 'A space station design', 'A rocket engine'], 1, 'It\'s the elliptical path spacecraft use to travel between planets efficiently.'),
+  createQuestion('science', 'hard', 'What is "time dilation" during high-speed travel?', ['Jet lag', 'Time passes slower for objects moving near light speed', 'Daylight saving', 'Time zones'], 1, 'Einstein\'s relativity shows GPS satellites must correct for this effect.'),
+  createQuestion('science', 'hard', 'What is the main challenge for tunneling through the Alps for high-speed rail?', ['Finding workers', 'Extreme pressure, heat, and unpredictable rock', 'Too many trees', 'Weather'], 1, 'The Gotthard Base Tunnel took 17 years and is 57 km long.'),
+
+  // ==========================================================================
+  // SPACE EXPLORATION PROGRESS (WSC 2026 Theme: "Are We There Yet?")
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'Has any human walked on Mars?', ['Yes, in 2020', 'No, not yet', 'Yes, in 1980', 'Yes, last year'], 1, 'Humans have only walked on the Moon; Mars remains a future goal.'),
+  createQuestion('science', 'easy', 'What year did humans first land on the Moon?', ['1959', '1969', '1979', '1989'], 1, 'Neil Armstrong and Buzz Aldrin landed on July 20, 1969.'),
+  createQuestion('science', 'easy', 'How far away is the Moon from Earth?', ['1,000 km', '38,000 km', '384,000 km', '3.8 million km'], 2, 'Light takes about 1.3 seconds to travel from Moon to Earth.'),
+  createQuestion('science', 'easy', 'What is the International Space Station?', ['A rocket', 'A laboratory orbiting Earth', 'A hotel on the Moon', 'A satellite dish'], 1, 'The ISS has been continuously occupied since November 2000.'),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is NASA\'s Artemis program trying to achieve?', ['Build the ISS', 'Return humans to the Moon and eventually reach Mars', 'Launch satellites', 'Study the Sun'], 1, 'Artemis aims to land the first woman and person of color on the Moon.'),
+  createQuestion('science', 'medium', 'What is the James Webb Space Telescope studying?', ['Weather on Earth', 'The early universe and distant galaxies', 'The Moon\'s surface', 'Asteroids only'], 1, 'Webb can see infrared light from the universe\'s earliest stars.'),
+  createQuestion('science', 'medium', 'How long did it take Voyager 1 to leave our solar system?', ['10 years', '25 years', '35 years', '50 years'], 2, 'Launched in 1977, Voyager 1 entered interstellar space in 2012.'),
+  createQuestion('science', 'medium', 'What private company has sent astronauts to space?', ['Tesla', 'SpaceX', 'Amazon', 'Microsoft'], 1, 'SpaceX\'s Crew Dragon has transported NASA astronauts to the ISS.'),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is the "Overview Effect" experienced by astronauts?', ['Motion sickness', 'A cognitive shift from seeing Earth from space', 'Muscle weakness', 'Memory loss'], 1, 'Astronauts report profound feelings of unity seeing Earth\'s fragility.'),
+  createQuestion('science', 'hard', 'What is the main radiation danger for Mars travelers?', ['UV rays', 'Cosmic rays and solar particle events', 'X-rays', 'Radio waves'], 1, 'Without Earth\'s magnetic field, astronauts face increased cancer risk.'),
+  createQuestion('science', 'hard', 'What is "in-situ resource utilization" for space exploration?', ['Bringing supplies from Earth', 'Using local materials on other planets', 'Remote sensing', 'Radio communication'], 1, 'Future Mars missions may produce oxygen and fuel from Martian resources.'),
+
+  // ==========================================================================
+  // MEDICAL & HEALTH PROGRESS (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What is a vaccine?', ['A medicine for pain', 'A substance that trains your immune system to fight diseases', 'A type of vitamin', 'A bandage'], 1, 'Vaccines contain weakened or inactivated versions of pathogens.'),
+  createQuestion('science', 'easy', 'Have scientists cured all cancers yet?', ['Yes, in 2010', 'No, but treatments keep improving', 'Yes, last year', 'There\'s no such thing as cancer'], 1, 'Cancer survival rates have dramatically improved but cures remain elusive.'),
+  createQuestion('science', 'easy', 'What organ can doctors transplant from one person to another?', ['None', 'Heart, kidney, liver, and many others', 'Only bones', 'Only skin'], 1, 'The first successful heart transplant was in 1967.'),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is mRNA technology used in some COVID-19 vaccines?', ['A surgical technique', 'Instructions for cells to make proteins that trigger immunity', 'A type of pill', 'A blood test'], 1, 'mRNA vaccines were developed in record time during the pandemic.'),
+  createQuestion('science', 'medium', 'What is prosthetics advancement allowing amputees to do?', ['Nothing new', 'Control artificial limbs with their thoughts', 'Only walk slowly', 'Only sit'], 1, 'Brain-computer interfaces can control advanced robotic limbs.'),
+  createQuestion('science', 'medium', 'How close are we to curing HIV/AIDS?', ['Already cured', 'Very close - some patients have been functionally cured', 'No progress', 'Decades away'], 1, 'A few patients have been cured through specialized stem cell treatments.'),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is "CRISPR" being tested to treat?', ['Broken bones', 'Genetic diseases like sickle cell anemia', 'Common colds', 'Sunburn'], 1, 'CRISPR gene editing shows promise for treating inherited blood disorders.'),
+  createQuestion('science', 'hard', 'What is xenotransplantation?', ['Exercise therapy', 'Transplanting organs from animals to humans', 'Laser surgery', 'Chemotherapy'], 1, 'In 2022, a patient received a genetically modified pig heart.'),
+
+  // ==========================================================================
+  // CLIMATE & ENVIRONMENTAL PROGRESS (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What is the goal of the Paris Agreement on climate?', ['Build more cars', 'Limit global warming to 1.5°C above pre-industrial levels', 'Increase factories', 'Ban all travel'], 1, 'Nearly 200 countries signed this agreement in 2015.'),
+  createQuestion('science', 'easy', 'Are electric cars completely pollution-free?', ['Yes, totally clean', 'No, but cleaner than gasoline cars overall', 'They pollute more', 'Same as gasoline'], 1, 'Production and electricity generation still have environmental impacts.'),
+  createQuestion('science', 'easy', 'What percentage of electricity comes from renewable sources worldwide?', ['5%', '10%', 'About 30%', '80%'], 2, 'Renewable energy is growing but fossil fuels still dominate.'),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is "carbon capture" technology?', ['A camera filter', 'Removing CO2 from the atmosphere or emissions', 'A type of fuel', 'A weather system'], 1, 'Direct air capture plants are being built but remain expensive.'),
+  createQuestion('science', 'medium', 'How much has global temperature risen since 1850?', ['0.1°C', 'About 1.1°C', '5°C', '10°C'], 1, 'The planet is warming faster than any time in the past 2,000 years.'),
+  createQuestion('science', 'medium', 'What is the Great Barrier Reef\'s current status?', ['Completely healthy', 'Severely damaged but recovery efforts continue', 'Already dead', 'Growing rapidly'], 1, 'Multiple mass bleaching events have occurred due to warming oceans.'),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is "geoengineering"?', ['Building dams', 'Deliberate large-scale intervention in Earth\'s climate system', 'Mining', 'Farming'], 1, 'Proposals include reflecting sunlight or removing atmospheric CO2.'),
+  createQuestion('science', 'hard', 'Are we on track to meet the Paris Agreement goals?', ['Yes, well ahead', 'No, current policies would lead to 2.5-3°C warming', 'Already achieved', 'Goals were cancelled'], 1, 'Significant gaps remain between pledges and actions needed.'),
+
+  // ==========================================================================
+  // CONNECTIVITY & COMMUNICATION PROGRESS (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What is fiber optic internet?', ['Radio waves', 'Light signals through glass cables for fast data', 'Copper wires', 'Satellite only'], 1, 'Fiber optics can transmit data at near light speed.'),
+  createQuestion('science', 'easy', 'What is 5G?', ['A vitamin', 'The fifth generation of mobile network technology', 'A video game', 'A type of car'], 1, '5G enables faster downloads and more connected devices.'),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is Starlink?', ['A constellation', 'A satellite internet system providing global broadband', 'A star map app', 'A rocket'], 1, 'SpaceX\'s Starlink has launched thousands of satellites for internet access.'),
+  createQuestion('science', 'medium', 'Why does Australia have internet connectivity challenges?', ['No computers', 'Vast distances, sparse population, and difficult terrain', 'Government ban', 'No electricity'], 1, 'Rural Australia relies on satellites due to the cost of ground infrastructure.'),
+  createQuestion('science', 'medium', 'What is "the digital divide"?', ['A math problem', 'The gap between those with and without internet access', 'A video game', 'A phone crack'], 1, 'About 2.7 billion people still lack internet access globally.'),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is quantum internet?', ['Very fast regular internet', 'Communication using quantum entanglement for unhackable data', 'Space internet', 'Wireless only'], 1, 'Quantum networks could revolutionize secure communication.'),
+  createQuestion('science', 'hard', 'What is latency in internet connections?', ['Download speed', 'The delay between sending and receiving data', 'Storage space', 'Signal strength'], 1, 'Low latency is crucial for real-time applications like gaming and surgery.'),
+
+  // ==========================================================================
+  // FOUNDATIONAL SCIENCE (Core knowledge)
+  // ==========================================================================
+  // Easy
   createQuestion('science', 'easy', 'What is the chemical symbol for water?', ['H2O', 'CO2', 'NaCl', 'O2'], 0, 'Water is made of two hydrogen atoms and one oxygen atom.'),
   createQuestion('science', 'easy', 'Which planet is known as the Red Planet?', ['Venus', 'Mars', 'Jupiter', 'Saturn'], 1, 'Mars appears red due to iron oxide (rust) on its surface.'),
   createQuestion('science', 'easy', 'What gas do plants absorb from the air?', ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Helium'], 1, 'Plants absorb CO2 for photosynthesis and release oxygen.'),
-  createQuestion('science', 'easy', 'How many legs does a spider have?', ['6', '8', '10', '4'], 1, 'Spiders are arachnids and have 8 legs.'),
-  createQuestion('science', 'easy', 'What is the largest organ in the human body?', ['Heart', 'Brain', 'Skin', 'Liver'], 2, 'Skin covers about 20 square feet in adults.'),
-  createQuestion('science', 'easy', 'What do we call animals that eat only plants?', ['Carnivores', 'Herbivores', 'Omnivores', 'Insectivores'], 1, 'Herbivores like cows and rabbits eat only plants.'),
   createQuestion('science', 'easy', 'Which force keeps us on the ground?', ['Magnetism', 'Friction', 'Gravity', 'Electricity'], 2, 'Gravity pulls objects toward Earth\'s center.'),
   createQuestion('science', 'easy', 'What is the boiling point of water in Celsius?', ['50°C', '100°C', '150°C', '200°C'], 1, 'Water boils at 100°C (212°F) at sea level.'),
-  createQuestion('science', 'easy', 'Which planet is closest to the Sun?', ['Venus', 'Earth', 'Mercury', 'Mars'], 2, 'Mercury orbits closest to the Sun.'),
-  createQuestion('science', 'easy', 'What do bees collect from flowers?', ['Water', 'Nectar', 'Seeds', 'Leaves'], 1, 'Bees collect nectar to make honey.'),
-  createQuestion('science', 'easy', 'How many bones are in the adult human body?', ['106', '206', '306', '406'], 1, 'Adults have 206 bones; babies have about 270.'),
-  createQuestion('science', 'easy', 'What is the center of an atom called?', ['Electron', 'Proton', 'Nucleus', 'Neutron'], 2, 'The nucleus contains protons and neutrons.'),
-  createQuestion('science', 'easy', 'Which ocean is the largest?', ['Atlantic', 'Indian', 'Arctic', 'Pacific'], 3, 'The Pacific Ocean covers about 63 million square miles.'),
-  createQuestion('science', 'easy', 'What type of animal is a dolphin?', ['Fish', 'Mammal', 'Reptile', 'Amphibian'], 1, 'Dolphins are mammals that breathe air and nurse their young.'),
-  createQuestion('science', 'easy', 'What is the hardest natural substance on Earth?', ['Gold', 'Iron', 'Diamond', 'Titanium'], 2, 'Diamond is made of carbon atoms in a crystal structure.'),
 
-  // Medium (15)
+  // Medium
   createQuestion('science', 'medium', 'What is the process by which plants make food?', ['Respiration', 'Photosynthesis', 'Fermentation', 'Digestion'], 1, 'Photosynthesis converts sunlight, water, and CO2 into glucose.'),
-  createQuestion('science', 'medium', 'Which blood cells help fight infection?', ['Red blood cells', 'White blood cells', 'Platelets', 'Plasma'], 1, 'White blood cells are part of the immune system.'),
-  createQuestion('science', 'medium', 'What is the unit of electrical resistance?', ['Volt', 'Ampere', 'Ohm', 'Watt'], 2, 'Resistance is measured in ohms, named after Georg Ohm.'),
-  createQuestion('science', 'medium', 'Which element has the chemical symbol "Fe"?', ['Fluorine', 'Francium', 'Iron', 'Fermium'], 2, 'Fe comes from the Latin word "ferrum" meaning iron.'),
-  createQuestion('science', 'medium', 'What type of rock is formed by cooling lava?', ['Sedimentary', 'Metamorphic', 'Igneous', 'Limestone'], 2, 'Igneous rocks form when molten rock cools and solidifies.'),
   createQuestion('science', 'medium', 'How many chromosomes do humans have?', ['23', '46', '48', '52'], 1, 'Humans have 23 pairs, or 46 total chromosomes.'),
-  createQuestion('science', 'medium', 'What is the smallest unit of life?', ['Atom', 'Molecule', 'Cell', 'Organ'], 2, 'Cells are the basic building blocks of all living things.'),
-  createQuestion('science', 'medium', 'Which layer of Earth\'s atmosphere do we live in?', ['Stratosphere', 'Mesosphere', 'Troposphere', 'Thermosphere'], 2, 'The troposphere extends from Earth\'s surface to about 12 km.'),
   createQuestion('science', 'medium', 'What causes the seasons on Earth?', ['Distance from Sun', 'Earth\'s tilted axis', 'Moon\'s gravity', 'Solar flares'], 1, 'Earth\'s 23.5° tilt causes different parts to receive varying sunlight.'),
-  createQuestion('science', 'medium', 'Which planet has the most moons?', ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], 1, 'Saturn has over 140 confirmed moons.'),
-  createQuestion('science', 'medium', 'What is the study of earthquakes called?', ['Meteorology', 'Seismology', 'Geology', 'Volcanology'], 1, 'Seismologists study seismic waves and earthquakes.'),
-  createQuestion('science', 'medium', 'Which vitamin is produced when skin is exposed to sunlight?', ['Vitamin A', 'Vitamin C', 'Vitamin D', 'Vitamin E'], 2, 'UV rays trigger vitamin D synthesis in the skin.'),
-  createQuestion('science', 'medium', 'What is the chemical formula for table salt?', ['NaCl', 'KCl', 'CaCO3', 'NaHCO3'], 0, 'Sodium chloride is one sodium and one chlorine atom.'),
   createQuestion('science', 'medium', 'How long does it take light to travel from the Sun to Earth?', ['8 seconds', '8 minutes', '8 hours', '8 days'], 1, 'Light travels about 93 million miles in 8 minutes 20 seconds.'),
-  createQuestion('science', 'medium', 'What is the main function of red blood cells?', ['Fight infection', 'Carry oxygen', 'Clot blood', 'Store nutrients'], 1, 'Hemoglobin in red blood cells binds to oxygen.'),
 
-  // Hard (10)
-  createQuestion('science', 'hard', 'What is the name of the process where an unstable nucleus releases energy?', ['Fusion', 'Fission', 'Radioactive decay', 'Oxidation'], 2, 'Radioactive decay releases alpha, beta, or gamma radiation.'),
-  createQuestion('science', 'hard', 'Which scientist developed the theory of general relativity?', ['Isaac Newton', 'Albert Einstein', 'Niels Bohr', 'Max Planck'], 1, 'Einstein published his theory of general relativity in 1915.'),
-  createQuestion('science', 'hard', 'What is the powerhouse of the cell?', ['Nucleus', 'Ribosome', 'Mitochondria', 'Golgi apparatus'], 2, 'Mitochondria produce ATP through cellular respiration.'),
+  // Hard
   createQuestion('science', 'hard', 'What is the speed of light in a vacuum?', ['300,000 km/s', '300,000 m/s', '30,000 km/s', '3,000,000 km/s'], 0, 'Light travels at approximately 299,792 km/s.'),
   createQuestion('science', 'hard', 'What is the Doppler effect?', ['Light bending around objects', 'Change in frequency due to motion', 'Heat transfer through radiation', 'Sound echoing'], 1, 'Moving sources cause frequency shifts - this is why sirens change pitch.'),
-  createQuestion('science', 'hard', 'What percentage of the atmosphere is nitrogen?', ['21%', '50%', '78%', '89%'], 2, 'About 78% nitrogen, 21% oxygen, and 1% other gases.'),
-  createQuestion('science', 'hard', 'What is the half-life of Carbon-14?', ['5,730 years', '10,000 years', '50,000 years', '1 million years'], 0, 'C-14 dating is used for objects up to ~50,000 years old.'),
-  createQuestion('science', 'hard', 'Which particle has a positive charge?', ['Electron', 'Neutron', 'Proton', 'Photon'], 2, 'Protons have positive charge, electrons have negative.'),
-  createQuestion('science', 'hard', 'What is the name of the boundary between Earth\'s crust and mantle?', ['Mohorovičić discontinuity', 'Gutenberg discontinuity', 'Conrad discontinuity', 'Lehmann discontinuity'], 0, 'The Moho is typically 5-70 km below the surface.'),
-  createQuestion('science', 'hard', 'What is the phenomenon where light bends when passing through different materials?', ['Reflection', 'Refraction', 'Diffraction', 'Interference'], 1, 'Refraction is why straws look bent in water.'),
-
-  // Additional Science Questions (WSC-aligned)
-  createQuestion('science', 'easy', 'What is the main gas that makes up the Sun?', ['Oxygen', 'Hydrogen', 'Helium', 'Carbon'], 1, 'The Sun is about 75% hydrogen and 25% helium.'),
-  createQuestion('science', 'easy', 'What type of energy does a battery store?', ['Solar', 'Chemical', 'Nuclear', 'Wind'], 1, 'Batteries convert chemical energy to electrical energy.'),
-  createQuestion('science', 'easy', 'What is the name for animals that are active at night?', ['Diurnal', 'Nocturnal', 'Aquatic', 'Terrestrial'], 1, 'Owls, bats, and raccoons are nocturnal animals.'),
-  createQuestion('science', 'easy', 'What causes a rainbow?', ['Pollution', 'Light refracting through water droplets', 'Paint', 'Reflection'], 1, 'Sunlight splits into colors as it passes through raindrops.'),
-  createQuestion('science', 'easy', 'What is the study of weather called?', ['Geology', 'Astronomy', 'Meteorology', 'Biology'], 2, 'Meteorologists use data to forecast weather patterns.'),
-  createQuestion('science', 'medium', 'What is the largest planet in our solar system?', ['Saturn', 'Jupiter', 'Neptune', 'Uranus'], 1, 'Jupiter is so large that all other planets could fit inside it.'),
-  createQuestion('science', 'medium', 'What is the function of chlorophyll in plants?', ['Store water', 'Absorb light for photosynthesis', 'Provide structure', 'Attract insects'], 1, 'Chlorophyll gives plants their green color and captures light energy.'),
-  createQuestion('science', 'medium', 'What is the ozone layer?', ['A weather pattern', 'A region of Earth\'s atmosphere that absorbs UV radiation', 'A type of cloud', 'Ocean current'], 1, 'The ozone layer protects life from harmful ultraviolet rays.'),
-  createQuestion('science', 'medium', 'What are tectonic plates?', ['Kitchen dishes', 'Large pieces of Earth\'s crust that move slowly', 'Types of minerals', 'Mountain ranges'], 1, 'Plate movements cause earthquakes and form mountains.'),
-  createQuestion('science', 'medium', 'What is a watershed?', ['A tool shed', 'An area of land where all water drains to a common outlet', 'A type of dam', 'A rain gauge'], 1, 'Watersheds are important for managing water resources.'),
-  createQuestion('science', 'medium', 'What is bioluminescence?', ['Solar power', 'Light produced by living organisms', 'Electric lights', 'Fireproofing'], 1, 'Fireflies and deep-sea creatures produce their own light.'),
-  createQuestion('science', 'hard', 'What is CRISPR-Cas9 used for?', ['Photography', 'Gene editing', 'Data storage', 'Weather prediction'], 1, 'CRISPR allows precise editing of DNA sequences.'),
+  createQuestion('science', 'hard', 'What is the powerhouse of the cell?', ['Nucleus', 'Ribosome', 'Mitochondria', 'Golgi apparatus'], 2, 'Mitochondria produce ATP through cellular respiration.'),
   createQuestion('science', 'hard', 'What is nuclear fusion?', ['Splitting atoms', 'Combining atomic nuclei to release energy', 'Chemical reaction', 'Radioactive decay'], 1, 'The Sun produces energy through nuclear fusion of hydrogen.'),
-  createQuestion('science', 'hard', 'What is the Heisenberg Uncertainty Principle?', ['Lab safety rule', 'You cannot simultaneously know both position and momentum precisely', 'Chemical formula', 'Gravity law'], 1, 'This principle is fundamental to quantum mechanics.'),
-  createQuestion('science', 'hard', 'What are stem cells?', ['Plant parts', 'Cells that can develop into different cell types', 'Blood cells', 'Bacteria'], 1, 'Stem cells have potential for treating many diseases.'),
-  createQuestion('science', 'hard', 'What is the event horizon of a black hole?', ['Landing zone', 'The boundary beyond which nothing can escape', 'Orbital path', 'Viewing distance'], 1, 'Beyond the event horizon, gravity is so strong that even light cannot escape.'),
 ];
 
 // ============================================================================
@@ -324,85 +382,182 @@ export const literatureQuestions: Question[] = [
 ];
 
 // ============================================================================
-// SPECIAL AREA QUESTIONS (40 questions) - Current Events / WSC Themes
+// SPECIAL AREA QUESTIONS (70+ questions) - WSC 2026 "Are We There Yet?" Theme
+// Topics: Megaprojects, Progress Metrics, Journeys, Social Issues, Global Goals
 // ============================================================================
 export const specialAreaQuestions: Question[] = [
-  // Easy (15)
-  createQuestion('special_area', 'easy', 'What is artificial intelligence (AI)?', ['A type of robot', 'Computer systems that can learn and make decisions', 'A video game', 'A social media platform'], 1, 'AI mimics human intelligence for tasks like learning and problem-solving.'),
-  createQuestion('special_area', 'easy', 'What is climate change?', ['A new season', 'Long-term changes in Earth\'s temperature and weather', 'A type of storm', 'Daily weather changes'], 1, 'Climate change affects weather patterns globally over decades.'),
-  createQuestion('special_area', 'easy', 'What is renewable energy?', ['Energy that runs out', 'Energy from sources that can be replenished', 'Nuclear energy', 'Fossil fuels'], 1, 'Solar, wind, and hydropower are renewable sources.'),
-  createQuestion('special_area', 'easy', 'What is the internet?', ['A type of computer', 'A global network connecting computers', 'A search engine', 'An email service'], 1, 'The internet connects billions of devices worldwide.'),
-  createQuestion('special_area', 'easy', 'What is recycling?', ['Throwing things away', 'Converting waste into reusable materials', 'Burning trash', 'Burying garbage'], 1, 'Recycling reduces waste and conserves resources.'),
-  createQuestion('special_area', 'easy', 'What is a pandemic?', ['A local disease', 'A disease outbreak across multiple countries or worldwide', 'A type of vaccine', 'A hospital'], 1, 'COVID-19 was declared a pandemic in 2020.'),
-  createQuestion('special_area', 'easy', 'What does "sustainability" mean?', ['Using things once', 'Meeting needs without harming future generations', 'Making things bigger', 'Moving faster'], 1, 'Sustainability balances economic, environmental, and social needs.'),
-  createQuestion('special_area', 'easy', 'What is social media?', ['Television', 'Websites and apps for sharing content and connecting', 'Newspapers', 'Radio'], 1, 'Platforms like Instagram, TikTok, and YouTube are social media.'),
-  createQuestion('special_area', 'easy', 'What is biodiversity?', ['One type of animal', 'The variety of life on Earth', 'A type of plant', 'A zoo'], 1, 'Biodiversity includes all species of plants, animals, and microorganisms.'),
-  createQuestion('special_area', 'easy', 'What is coding or programming?', ['Drawing', 'Writing instructions for computers', 'Playing games', 'Using social media'], 1, 'Programmers write code to create software and apps.'),
+  // ==========================================================================
+  // WSC 2026 THEME: "ARE WE THERE YET?" - Core Questions
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is the 2026 World Scholars Cup theme?', ['Reigniting the Future', 'Are We There Yet?', 'The Final Frontier', 'A World Reborn'], 1, 'The 2026 theme explores journeys, destinations, and measuring progress.'),
+  createQuestion('special_area', 'easy', 'What was the 2025 World Scholars Cup theme?', ['Are We There Yet?', 'Reigniting the Future', 'A World on the Margins', 'The Great Unknown'], 1, 'The 2025 theme explored revitalizing humanity\'s approach to challenges.'),
   createQuestion('special_area', 'easy', 'What is the World Scholars Cup?', ['A math competition', 'An academic tournament for students worldwide', 'A spelling bee', 'A sports event'], 1, 'WSC combines debate, collaborative writing, and quiz competitions.'),
-  createQuestion('special_area', 'easy', 'What does "globalization" mean?', ['Local business', 'Increasing connections between countries worldwide', 'A type of map', 'A single country'], 1, 'Globalization includes trade, culture, and communication across borders.'),
-  createQuestion('special_area', 'easy', 'What is an endangered species?', ['A common animal', 'An animal at risk of extinction', 'A farm animal', 'A pet'], 1, 'Pandas, tigers, and rhinos are endangered species.'),
-  createQuestion('special_area', 'easy', 'What is the United Nations?', ['A country', 'An international organization for peace and cooperation', 'A company', 'A charity'], 1, 'The UN has 193 member states working on global issues.'),
-  createQuestion('special_area', 'easy', 'What is a carbon footprint?', ['A type of shoe', 'The amount of carbon dioxide produced by activities', 'A hiking trail', 'A fossil'], 1, 'Reducing your carbon footprint helps fight climate change.'),
+  createQuestion('special_area', 'easy', 'What does "Are We There Yet?" ask us to consider?', ['Vacation destinations', 'Whether we\'ve reached our goals and what "there" means', 'Driving directions', 'Airport arrivals'], 1, 'The theme questions progress, destinations, and the value of the journey itself.'),
 
-  // Medium (15)
-  createQuestion('special_area', 'medium', 'What year was the first smartphone released?', ['1992', '2007', '2010', '2015'], 1, 'Apple released the first iPhone in 2007.'),
-  createQuestion('special_area', 'medium', 'What is the Great Barrier Reef threatened by?', ['Too many fish', 'Climate change and coral bleaching', 'Earthquakes', 'Overfishing only'], 1, 'Rising ocean temperatures cause coral bleaching.'),
-  createQuestion('special_area', 'medium', 'What is blockchain technology?', ['A type of video game', 'A decentralized digital ledger system', 'A social network', 'A search engine'], 1, 'Blockchain is used for cryptocurrencies and secure records.'),
-  createQuestion('special_area', 'medium', 'What country hosted the 2024 Summer Olympics?', ['USA', 'Japan', 'France', 'Australia'], 2, 'Paris, France hosted the 2024 Summer Olympics.'),
-  createQuestion('special_area', 'medium', 'What is the Paris Agreement about?', ['Trade between countries', 'Fighting climate change', 'Space exploration', 'Internet regulation'], 1, 'Countries agreed to limit global warming to 1.5°C above pre-industrial levels.'),
-  createQuestion('special_area', 'medium', 'What is machine learning?', ['Teaching humans to use machines', 'AI systems that improve from experience without explicit programming', 'Building robots', 'Computer repairs'], 1, 'Machine learning powers recommendations, voice assistants, and more.'),
-  createQuestion('special_area', 'medium', 'What are microplastics?', ['Large plastic containers', 'Tiny plastic particles less than 5mm', 'Recyclable plastics', 'Biodegradable plastics'], 1, 'Microplastics pollute oceans and enter the food chain.'),
-  createQuestion('special_area', 'medium', 'What is the gig economy?', ['Music industry', 'Short-term contract and freelance work', 'Government jobs', 'Factory work'], 1, 'Apps like Uber and Fiverr are part of the gig economy.'),
-  createQuestion('special_area', 'medium', 'What is CRISPR?', ['A type of chip', 'A gene-editing technology', 'A computer program', 'A social media app'], 1, 'CRISPR allows scientists to edit DNA precisely.'),
-  createQuestion('special_area', 'medium', 'What is the main cause of deforestation?', ['Volcanoes', 'Agriculture and logging', 'Tsunamis', 'Ice ages'], 1, 'Land is cleared for farming, ranching, and timber.'),
-  createQuestion('special_area', 'medium', 'What is digital citizenship?', ['Living online', 'Responsible and ethical use of technology', 'Having many followers', 'Being a gamer'], 1, 'Digital citizens respect others and protect privacy online.'),
-  createQuestion('special_area', 'medium', 'What is the space race 2.0 about?', ['Racing cars in space', 'Competition between companies and countries for space exploration', 'Video game', 'Running competitions'], 1, 'SpaceX, NASA, and other nations compete for Mars missions.'),
-  createQuestion('special_area', 'medium', 'What are Sustainable Development Goals (SDGs)?', ['Personal goals', '17 global goals adopted by the UN for 2030', 'Business targets', 'Sports achievements'], 1, 'SDGs address poverty, inequality, climate, and more.'),
-  createQuestion('special_area', 'medium', 'What is fake news?', ['Newspapers', 'Deliberately false information presented as news', 'Comedy shows', 'Satire magazines'], 1, 'Fake news spreads misinformation, often on social media.'),
-  createQuestion('special_area', 'medium', 'What is the metaverse?', ['A parallel universe', 'Immersive virtual reality spaces for interaction', 'A video game', 'A social network'], 1, 'The metaverse combines VR, AR, and the internet.'),
+  // Medium
+  createQuestion('special_area', 'medium', 'What is the philosophical question behind "Are We There Yet?"?', ['When is lunch?', 'Is the destination or the journey more important?', 'How fast can we go?', 'Where is the map?'], 1, 'The theme explores whether reaching goals matters more than the process.'),
+  createQuestion('special_area', 'medium', 'Why might some say "we\'ll never get there"?', ['Bad navigation', 'Progress creates new goals, so destinations keep moving', 'Broken vehicles', 'Wrong address'], 1, 'As societies advance, expectations and ambitions also grow.'),
 
-  // Hard (10)
-  createQuestion('special_area', 'hard', 'What is net-zero emissions?', ['Zero factories', 'Balancing carbon emitted with carbon removed', 'No cars', 'Zero electricity use'], 1, 'Net-zero means removing as much CO2 as we emit.'),
-  createQuestion('special_area', 'hard', 'What is the Anthropocene?', ['A geological era', 'The proposed current epoch defined by human impact on Earth', 'A type of rock', 'An ancient civilization'], 1, 'Scientists propose this term for human-dominated era.'),
-  createQuestion('special_area', 'hard', 'What is algorithmic bias?', ['Computer speed', 'Unfair outcomes in AI systems due to biased data or design', 'A type of coding', 'Internet speed'], 1, 'Biased algorithms can discriminate in hiring, lending, etc.'),
-  createQuestion('special_area', 'hard', 'What is the circular economy?', ['A round building', 'An economic system minimizing waste through reuse and recycling', 'Stock market', 'Currency exchange'], 1, 'It contrasts with the linear "take-make-dispose" model.'),
-  createQuestion('special_area', 'hard', 'What is quantum computing?', ['Fast regular computers', 'Computing using quantum mechanical phenomena', 'Cloud computing', 'Mobile computing'], 1, 'Quantum computers use qubits that can be 0 and 1 simultaneously.'),
-  createQuestion('special_area', 'hard', 'What is the "butterfly effect"?', ['Butterfly migration', 'Small changes causing large, unpredictable consequences', 'A dance', 'A painting technique'], 1, 'A butterfly flapping wings could theoretically cause a tornado.'),
-  createQuestion('special_area', 'hard', 'What is epistemic humility?', ['Being quiet', 'Recognizing the limits of one\'s knowledge', 'Academic degree', 'A type of meditation'], 1, 'It means acknowledging what we don\'t know.'),
-  createQuestion('special_area', 'hard', 'What is the Turing Test?', ['A math exam', 'A test of machine intelligence through human-like conversation', 'A programming language', 'A computer part'], 1, 'Alan Turing proposed it in 1950 to measure AI intelligence.'),
-  createQuestion('special_area', 'hard', 'What is cultural appropriation?', ['Learning about cultures', 'Adopting elements of a culture in a way that disrespects its origin', 'Sharing food', 'Traveling abroad'], 1, 'It\'s controversial when dominant groups adopt marginalized cultures\' elements.'),
-  createQuestion('special_area', 'hard', 'What is the trolley problem?', ['A transportation issue', 'An ethical thought experiment about sacrificing one to save many', 'A game', 'A math problem'], 1, 'It explores moral decisions about harm and inaction.'),
+  // ==========================================================================
+  // MEGAPROJECTS (WSC 2026 Theme: Infrastructure & Ambition)
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is NEOM?', ['A video game', 'A futuristic city being built in Saudi Arabia', 'A car brand', 'A social media app'], 1, 'NEOM includes "The Line" - a 170km city with no cars or streets.'),
+  createQuestion('special_area', 'easy', 'What was "The Big Dig" in Boston?', ['An archaeological project', 'A massive highway tunnel project', 'A mining operation', 'A beach cleanup'], 1, 'The Big Dig moved highways underground, taking 16 years (1991-2007).'),
+  createQuestion('special_area', 'easy', 'What is high-speed rail?', ['Regular trains', 'Trains that travel over 250 km/h on dedicated tracks', 'Subway systems', 'Freight trains'], 1, 'Japan, China, and Europe have extensive high-speed rail networks.'),
+  createQuestion('special_area', 'easy', 'What is the Channel Tunnel?', ['A TV channel', 'An underwater rail tunnel connecting England and France', 'A swimming pool', 'A radio station'], 1, 'The 50km "Chunnel" opened in 1994 after 6 years of construction.'),
 
-  // WSC 2025 Theme: "Reigniting the Future" Questions
-  createQuestion('special_area', 'easy', 'What is the 2025 World Scholars Cup theme?', ['Reconstructing the Past', 'Reigniting the Future', 'A World Renewed', 'The World Within'], 1, 'The 2025 WSC theme explores how humanity can revitalize its approach to future challenges.'),
-  createQuestion('special_area', 'easy', 'What is "futures thinking"?', ['Predicting lottery numbers', 'Systematic exploration of possible future scenarios', 'Time travel', 'Fortune telling'], 1, 'Futures thinking helps us prepare for and shape potential futures.'),
-  createQuestion('special_area', 'medium', 'What was the 2024 World Scholars Cup theme?', ['Reigniting the Future', 'Reimagining the Present', 'A World on the Margins', 'An Entangled World'], 1, 'The 2024 theme explored how we can rethink our current world.'),
-  createQuestion('special_area', 'medium', 'What is the 2026 World Scholars Cup theme?', ['Reigniting the Future', 'Are We There Yet?', 'The Final Frontier', 'Looking Back'], 1, 'The 2026 theme "Are We There Yet?" explores journeys and destinations.'),
-  createQuestion('special_area', 'medium', 'What is "geoengineering"?', ['Building bridges', 'Large-scale interventions to modify Earth\'s climate', 'Mining', 'Road construction'], 1, 'Geoengineering includes ideas like solar radiation management and carbon capture.'),
-  createQuestion('special_area', 'hard', 'What is "solarpunk"?', ['A music genre', 'An optimistic movement imagining sustainable, technology-positive futures', 'Solar panel design', 'A video game'], 1, 'Solarpunk envisions eco-friendly cities powered by renewable energy.'),
-  createQuestion('special_area', 'hard', 'What is "longtermism"?', ['Long-distance running', 'A philosophy prioritizing the long-term future of humanity', 'Retirement planning', 'Historical study'], 1, 'Longtermists consider how our actions affect future generations.'),
-  createQuestion('special_area', 'hard', 'What is "existential risk"?', ['Fear of heights', 'Threats that could permanently curtail humanity\'s potential', 'Job interviews', 'Stage fright'], 1, 'Examples include nuclear war, pandemics, and unaligned AI.'),
+  // Medium
+  createQuestion('special_area', 'medium', 'Why has California\'s high-speed rail project faced criticism?', ['Too fast', 'Massive cost overruns and delays', 'Too many passengers', 'Perfect weather'], 1, 'Originally budgeted at $33B in 2008, now estimated over $100B.'),
+  createQuestion('special_area', 'medium', 'What is "The Line" project in Saudi Arabia?', ['A queue system', 'A linear 170km city with zero cars and 100% renewable energy', 'A fashion show', 'A telephone service'], 1, 'The Line aims to house 9 million people in mirrored towers.'),
+  createQuestion('special_area', 'medium', 'What lesson did The Big Dig teach about megaprojects?', ['Always easy', 'Costs and timelines often exceed initial estimates dramatically', 'Always on time', 'Never worth it'], 1, 'Originally $2.8B, it ended up costing $14.6B.'),
+  createQuestion('special_area', 'medium', 'What is the Gotthard Base Tunnel?', ['A road tunnel', 'The world\'s longest rail tunnel through the Swiss Alps', 'A water pipe', 'A cable conduit'], 1, 'At 57km, it took 17 years to build and opened in 2016.'),
+  createQuestion('special_area', 'medium', 'Why do countries build megaprojects despite the risks?', ['Boredom', 'National pride, economic growth, and solving major problems', 'Punishment', 'Accident'], 1, 'Megaprojects can transform regions but carry significant risks.'),
 
-  // WSC Literature Selections
+  // Hard
+  createQuestion('special_area', 'hard', 'What is "megaproject optimism bias"?', ['Being happy', 'The tendency to underestimate costs and overestimate benefits', 'Successful planning', 'Realistic budgeting'], 1, 'Studies show 90% of megaprojects exceed budgets.'),
+  createQuestion('special_area', 'hard', 'What percentage of megaprojects finish on budget?', ['90%', '50%', 'Less than 10%', '100%'], 2, 'Research shows the vast majority face significant overruns.'),
+  createQuestion('special_area', 'hard', 'What is "sunk cost fallacy" in megaprojects?', ['Underwater construction', 'Continuing failed projects because of past investment', 'Ship building', 'Budget planning'], 1, 'Countries often continue failing projects to justify prior spending.'),
+
+  // ==========================================================================
+  // CONNECTIVITY & DIGITAL DIVIDE (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What percentage of the world\'s population has internet access?', ['10%', '30%', 'About 60%', '95%'], 2, 'About 2.7 billion people still lack internet access.'),
+  createQuestion('special_area', 'easy', 'What is the "digital divide"?', ['A math problem', 'The gap between those with and without technology access', 'A video game', 'A phone screen crack'], 1, 'Rural areas and developing nations face greater digital exclusion.'),
+  createQuestion('special_area', 'easy', 'Why does rural Australia struggle with internet?', ['Too much internet', 'Vast distances make infrastructure expensive', 'No demand', 'Government choice'], 1, 'Serving remote areas with fiber optic cables is extremely costly.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is Australia\'s National Broadband Network (NBN)?', ['A TV network', 'A government project to provide nationwide internet', 'A radio station', 'A phone company'], 1, 'The NBN has faced criticism for slower speeds than promised.'),
+  createQuestion('special_area', 'medium', 'How are satellites helping internet access in remote areas?', ['They aren\'t', 'Projects like Starlink provide broadband from space', 'Only in cities', 'Only for governments'], 1, 'SpaceX\'s Starlink has thousands of satellites providing global coverage.'),
+  createQuestion('special_area', 'medium', 'What is "last mile" connectivity?', ['Marathon running', 'The final connection between networks and homes', 'Last place finish', 'Mile markers'], 1, 'The "last mile" is often the most expensive part of internet infrastructure.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'Why did Australia\'s NBN switch from fiber to copper?', ['Better technology', 'Cost-cutting that critics say compromised quality', 'Faster speeds', 'Public demand'], 1, 'The policy change is debated as sacrificing long-term value for short-term savings.'),
+  createQuestion('special_area', 'hard', 'What is "digital colonialism"?', ['Online games', 'When tech companies from wealthy nations dominate others\' digital infrastructure', 'Computer viruses', 'Website design'], 1, 'Some argue that tech giants exert excessive control over developing nations.'),
+
+  // ==========================================================================
+  // LONELINESS & SOCIAL CONNECTION (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is the "loneliness epidemic"?', ['A disease', 'Rising rates of social isolation worldwide', 'Crowd phobia', 'Party planning'], 1, 'Many countries report increasing loneliness, especially after COVID-19.'),
+  createQuestion('special_area', 'easy', 'Can technology make people feel more lonely?', ['Never', 'Yes, social media can increase feelings of isolation', 'Technology only helps', 'No connection'], 1, 'Online connection doesn\'t always replace in-person relationships.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What country appointed a "Minister of Loneliness"?', ['USA', 'United Kingdom', 'Australia', 'Canada'], 1, 'The UK created this position in 2018 to address social isolation.'),
+  createQuestion('special_area', 'medium', 'How does loneliness affect physical health?', ['No effect', 'Similar health risks to smoking 15 cigarettes daily', 'Makes you stronger', 'Only mental effects'], 1, 'Chronic loneliness increases risks of heart disease and early death.'),
+  createQuestion('special_area', 'medium', 'What is "social prescribing"?', ['Doctor\'s handwriting', 'When doctors recommend community activities for health', 'Medicine labels', 'Online shopping'], 1, 'Some healthcare systems prescribe social connection as treatment.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is "hikikomori" in Japan?', ['A greeting', 'Severe social withdrawal, often for months or years', 'A food dish', 'A holiday'], 1, 'An estimated 1.5 million Japanese people live in extreme isolation.'),
+  createQuestion('special_area', 'hard', 'How might the loneliness epidemic relate to "Are We There Yet?"?', ['It doesn\'t', 'Technology connected us globally but we\'re questioning if we\'ve arrived at true connection', 'Only about travel', 'Just about roads'], 1, 'Progress in communication hasn\'t guaranteed emotional connection.'),
+
+  // ==========================================================================
+  // POPULATION & DEMOGRAPHIC CHANGE (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is happening to birth rates in many developed countries?', ['Increasing rapidly', 'Declining significantly', 'Staying exactly the same', 'Doubling'], 1, 'Many nations now have birth rates below replacement level.'),
+  createQuestion('special_area', 'easy', 'What is "population replacement level"?', ['Stadium capacity', 'About 2.1 children per woman to maintain population', 'Maximum capacity', 'Census counting'], 1, 'Many countries are below this level, leading to aging populations.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'Which country has one of the lowest birth rates in the world?', ['Nigeria', 'South Korea', 'India', 'Brazil'], 1, 'South Korea\'s fertility rate dropped to 0.78 in 2022.'),
+  createQuestion('special_area', 'medium', 'What challenges do aging populations create?', ['Too many toys', 'Strain on healthcare, pensions, and workforce', 'Overcrowding', 'Too much noise'], 1, 'Fewer workers must support more retirees in aging societies.'),
+  createQuestion('special_area', 'medium', 'Why are birth rates declining in many countries?', ['Government mandates', 'Education, career focus, economic concerns, and personal choice', 'Lack of hospitals', 'Climate only'], 1, 'Multiple factors influence family planning decisions.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is "pronatalism"?', ['Sports training', 'Policies encouraging people to have more children', 'Vegetarianism', 'Anti-technology movement'], 1, 'Some countries offer incentives like parental leave and child benefits.'),
+  createQuestion('special_area', 'hard', 'How does declining population relate to "Are We There Yet?"?', ['It doesn\'t', 'We achieved longevity but face questions about sustaining our species', 'Only about roads', 'Just geography'], 1, 'Medical progress extended lives, but now birth rates concern planners.'),
+
+  // ==========================================================================
+  // PROGRESS MEASUREMENT (WSC 2026 Theme: How Do We Know?)
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is GDP?', ['A video game', 'A measure of a country\'s economic output', 'A social media platform', 'A type of food'], 1, 'Gross Domestic Product measures economic activity.'),
+  createQuestion('special_area', 'easy', 'Does GDP measure happiness?', ['Yes, completely', 'No, it only measures economic activity', 'Always', 'Perfectly'], 1, 'GDP doesn\'t capture well-being, environment, or inequality.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "Gross National Happiness"?', ['A joke', 'Bhutan\'s alternative measure of progress beyond GDP', 'A party', 'A game show'], 1, 'Bhutan measures sustainable development, culture, and well-being.'),
+  createQuestion('special_area', 'medium', 'What are the UN Sustainable Development Goals?', ['Personal goals', '17 global targets for 2030 covering poverty, health, climate, etc.', 'Sports achievements', 'Business targets'], 1, 'SDGs provide benchmarks for measuring global progress.'),
+  createQuestion('special_area', 'medium', 'Are we on track to meet the 2030 SDGs?', ['Yes, ahead of schedule', 'No, most goals are significantly off track', 'Already achieved', 'Goals were cancelled'], 1, 'The UN reports that only 15% of SDG targets are on track.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is the "Easterlin Paradox"?', ['A magic trick', 'That income increases don\'t always increase happiness', 'A geography feature', 'An Easter tradition'], 1, 'Beyond basic needs, more money doesn\'t guarantee more happiness.'),
+  createQuestion('special_area', 'hard', 'What is "progress trap"?', ['A board game', 'When solutions to problems create new, harder problems', 'A maze', 'A hunting technique'], 1, 'Example: Cars solved transport but created pollution and sprawl.'),
+
+  // ==========================================================================
+  // CLIMATE & ENVIRONMENTAL PROGRESS
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is the Paris Agreement?', ['A fashion deal', 'A global agreement to limit climate change', 'A peace treaty', 'A trade deal'], 1, 'Nearly 200 countries agreed to limit warming to 1.5°C.'),
+  createQuestion('special_area', 'easy', 'What is "net-zero emissions"?', ['Zero factories', 'Removing as much CO2 as we emit', 'No cars', 'No electricity'], 1, 'Many countries have pledged net-zero targets for 2050.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'Are we on track to meet Paris Agreement goals?', ['Yes', 'No, current policies lead to 2.5-3°C warming', 'Already achieved', 'Cancelled'], 1, 'Significant gaps remain between pledges and necessary action.'),
+  createQuestion('special_area', 'medium', 'What percentage of global electricity comes from renewables?', ['5%', '15%', 'About 30%', '80%'], 2, 'Renewables are growing rapidly but fossil fuels still dominate.'),
+  createQuestion('special_area', 'medium', 'What is "greenwashing"?', ['Eco laundry', 'When companies falsely claim to be environmentally friendly', 'Plant washing', 'Green paint'], 1, 'Misleading environmental claims can deceive consumers.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is the "carbon budget"?', ['Company expenses', 'The total CO2 we can emit while limiting warming', 'Tree counting', 'Financial planning'], 1, 'Scientists estimate how much more CO2 we can emit for 1.5°C.'),
+  createQuestion('special_area', 'hard', 'Why is 1.5°C warming considered a critical threshold?', ['Random number', 'Beyond this, feedback loops may cause runaway warming', 'Comfortable temperature', 'Weather preference'], 1, 'Tipping points like ice sheet collapse become more likely beyond 1.5°C.'),
+
+  // ==========================================================================
+  // WSC LITERATURE: JOURNEYS & DESTINATIONS
+  // ==========================================================================
+  // Easy - The Little Prince
   createQuestion('special_area', 'easy', 'Who wrote "The Little Prince"?', ['Roald Dahl', 'Antoine de Saint-Exupéry', 'J.K. Rowling', 'C.S. Lewis'], 1, 'Saint-Exupéry was a French aviator who wrote this beloved tale in 1943.'),
-  createQuestion('special_area', 'easy', 'What does the Little Prince learn about his rose?', ['It\'s worthless', 'It\'s unique because of the time he invested in it', 'It\'s the largest rose', 'It can talk'], 1, '"You become responsible forever for what you have tamed."'),
-  createQuestion('special_area', 'medium', 'Who wrote "Ender\'s Game"?', ['Isaac Asimov', 'Orson Scott Card', 'Arthur C. Clarke', 'Ray Bradbury'], 1, 'Card published this science fiction novel about child soldiers in 1985.'),
-  createQuestion('special_area', 'medium', 'In "Ender\'s Game," what is Battle School?', ['A video game company', 'A space station training children for war against aliens', 'A martial arts dojo', 'A military academy on Earth'], 1, 'Children are trained from age 6 to command forces against the Formics.'),
-  createQuestion('special_area', 'medium', 'Who wrote "Things Fall Apart"?', ['Chimamanda Ngozi Adichie', 'Chinua Achebe', 'Wole Soyinka', 'Ben Okri'], 1, 'Achebe\'s 1958 novel depicts pre-colonial Nigeria and colonialism\'s impact.'),
-  createQuestion('special_area', 'medium', 'What is the main character\'s name in "Things Fall Apart"?', ['Achebe', 'Okonkwo', 'Obierika', 'Nwoye'], 1, 'Okonkwo is a respected Igbo warrior whose world is disrupted by colonialism.'),
-  createQuestion('special_area', 'hard', 'In "Nightfall" by Isaac Asimov, what happens when night falls?', ['People sleep', 'Civilization collapses due to psychological terror of darkness', 'The temperature drops', 'Nothing special'], 1, 'On a planet with six suns, darkness comes only every 2,049 years.'),
-  createQuestion('special_area', 'hard', 'What is the theme of Asimov\'s "The Last Question"?', ['Space travel', 'Entropy and the ultimate fate of the universe', 'Robot rights', 'Time travel'], 1, 'The story spans trillions of years asking if entropy can be reversed.'),
-  createQuestion('special_area', 'hard', 'In "Flowers for Algernon," who is Algernon?', ['The doctor', 'A laboratory mouse who undergoes intelligence enhancement', 'The narrator', 'A teacher'], 1, 'Charlie Gordon undergoes the same procedure that enhanced Algernon\'s intelligence.'),
+  createQuestion('special_area', 'easy', 'How does the Little Prince travel between planets?', ['Spaceship', 'Using birds (wild geese)', 'Walking', 'Train'], 1, 'The Little Prince uses migrating birds to travel through space.'),
+  createQuestion('special_area', 'easy', 'What does the Little Prince learn is most important?', ['Money', 'The connections and care we invest in others', 'Power', 'Speed'], 1, '"You become responsible forever for what you have tamed."'),
 
-  // More Current Events & Global Issues
-  createQuestion('special_area', 'easy', 'What is generative AI?', ['Electricity generators', 'AI that can create new content like text, images, and code', 'Game generators', 'Power plants'], 1, 'ChatGPT and DALL-E are examples of generative AI.'),
-  createQuestion('special_area', 'easy', 'What is a "deepfake"?', ['Deep sea diving', 'AI-generated fake video or audio of real people', 'A deep lake', 'A type of cake'], 1, 'Deepfakes raise concerns about misinformation and trust.'),
-  createQuestion('special_area', 'medium', 'What is "rewilding"?', ['Pet training', 'Restoring natural ecosystems by reintroducing species', 'Zoo management', 'Wildlife photography'], 1, 'Rewilding aims to restore natural processes and biodiversity.'),
-  createQuestion('special_area', 'medium', 'What is "fast fashion"?', ['Speed racing', 'Rapid production of cheap, trendy clothing', 'Athletic wear', 'Designer brands'], 1, 'Fast fashion contributes to pollution and labor exploitation.'),
-  createQuestion('special_area', 'medium', 'What is "data sovereignty"?', ['Computer storage', 'The idea that data is subject to the laws of the country where it\'s collected', 'Internet speed', 'Cloud computing'], 1, 'Countries increasingly assert control over data within their borders.'),
-  createQuestion('special_area', 'hard', 'What is the "great resignation"?', ['Government collapse', 'Mass voluntary job departures that began during COVID-19', 'Political movement', 'Military disbandment'], 1, 'Millions quit jobs seeking better work-life balance and purpose.'),
-  createQuestion('special_area', 'hard', 'What is "effective altruism"?', ['Charity donation', 'Using evidence and reason to determine the most effective ways to help others', 'Volunteer work', 'Social media activism'], 1, 'EA practitioners often focus on global health, poverty, and existential risks.'),
-  createQuestion('special_area', 'hard', 'What is "information asymmetry"?', ['Uneven bookshelves', 'When one party in a transaction has more information than another', 'Computer bugs', 'Network errors'], 1, 'It can lead to market failures and unfair advantages.'),
+  // Medium - Ender\'s Game
+  createQuestion('special_area', 'medium', 'Who wrote "Ender\'s Game"?', ['Isaac Asimov', 'Orson Scott Card', 'Arthur C. Clarke', 'Ray Bradbury'], 1, 'Card published this science fiction novel in 1985.'),
+  createQuestion('special_area', 'medium', 'What is Ender\'s journey in "Ender\'s Game"?', ['A vacation', 'From child to military commander through intense training', 'A school trip', 'A sports competition'], 1, 'Ender is manipulated into becoming a brilliant but traumatized leader.'),
+  createQuestion('special_area', 'medium', 'How does Ender\'s journey question "Are We There Yet?"?', ['It doesn\'t', 'The destination (winning) comes at devastating personal cost', 'It\'s about geography', 'Just about space'], 1, 'Victory raises questions about what was lost in achieving it.'),
+
+  // Medium - Nightfall
+  createQuestion('special_area', 'medium', 'In "Nightfall" by Asimov, what is the planet\'s journey?', ['A road trip', 'A civilization repeatedly destroyed when darkness falls', 'Space exploration', 'Time travel'], 1, 'Every 2,049 years, darkness causes societal collapse.'),
+  createQuestion('special_area', 'medium', 'What does "Nightfall" suggest about progress?', ['It\'s always forward', 'Civilizations can repeatedly lose and regain knowledge', 'It\'s guaranteed', 'It\'s impossible'], 1, 'Progress is not inevitable; societies can rise and fall repeatedly.'),
+
+  // Hard - Flowers for Algernon
+  createQuestion('special_area', 'hard', 'What is Charlie\'s journey in "Flowers for Algernon"?', ['A vacation', 'From low IQ to genius and back as the procedure fails', 'A marathon', 'Space travel'], 1, 'Charlie temporarily gains then loses enhanced intelligence.'),
+  createQuestion('special_area', 'hard', 'How does "Flowers for Algernon" connect to "Are We There Yet?"?', ['It doesn\'t', 'Charlie reaches intellectual heights but must return, questioning if the journey was worth it', 'Only geography', 'Just about directions'], 1, 'The story questions whether reaching a goal matters if it cannot last.'),
+
+  // Hard - The Last Question
+  createQuestion('special_area', 'hard', 'What journey does "The Last Question" by Asimov depict?', ['A road trip', 'Humanity\'s journey across trillions of years asking if entropy can be reversed', 'A vacation', 'A walk'], 1, 'The story spans from near-future to the heat death of the universe.'),
+  createQuestion('special_area', 'hard', 'What does "The Last Question" say about ultimate destinations?', ['Easy to reach', 'The final question may only be answerable at the end of everything', 'Already achieved', 'Impossible'], 1, 'The answer comes only when all journeys have ended.'),
+
+  // ==========================================================================
+  // TECHNOLOGY & AI PROGRESS
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is artificial intelligence (AI)?', ['A type of robot', 'Computer systems that can learn and make decisions', 'A video game', 'Social media'], 1, 'AI mimics human intelligence for tasks like learning and problem-solving.'),
+  createQuestion('special_area', 'easy', 'What is generative AI?', ['Power generators', 'AI that can create new content like text, images, and code', 'Game generators', 'Electricity'], 1, 'ChatGPT and DALL-E are examples of generative AI.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "Artificial General Intelligence" (AGI)?', ['Current AI', 'Hypothetical AI with human-level abilities across all tasks', 'A company', 'A video game'], 1, 'AGI doesn\'t exist yet; current AI excels at specific tasks only.'),
+  createQuestion('special_area', 'medium', 'Have we reached AGI yet?', ['Yes, in 2020', 'No, and experts disagree on when or if we will', 'Yes, last year', 'It was cancelled'], 1, 'Current AI systems are narrow, not general intelligence.'),
+  createQuestion('special_area', 'medium', 'What is "algorithmic bias"?', ['Computer speed', 'When AI systems produce unfair outcomes due to biased data', 'Coding style', 'Internet speed'], 1, 'Biased algorithms can discriminate in hiring, lending, and policing.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is the "AI alignment problem"?', ['Printer issues', 'Ensuring AI systems pursue goals aligned with human values', 'Computer layout', 'Screen positioning'], 1, 'A misaligned superintelligent AI could pose existential risks.'),
+  createQuestion('special_area', 'hard', 'What is "existential risk" from AI?', ['Fear of computers', 'The possibility that advanced AI could threaten humanity', 'Job interviews', 'Software bugs'], 1, 'Some researchers consider misaligned AI a major future risk.'),
+
+  // ==========================================================================
+  // GLOBAL ISSUES & CURRENT EVENTS
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is globalization?', ['A single country', 'Increasing connections between countries worldwide', 'A type of map', 'Local business'], 1, 'Globalization includes trade, culture, and communication across borders.'),
+  createQuestion('special_area', 'easy', 'What is a pandemic?', ['A local disease', 'A disease outbreak across multiple countries or worldwide', 'A vaccine', 'A hospital'], 1, 'COVID-19 was declared a pandemic in 2020.'),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "misinformation"?', ['Newspapers', 'False or inaccurate information spread unintentionally', 'Comedy', 'Satire'], 1, 'Misinformation differs from deliberate disinformation.'),
+  createQuestion('special_area', 'medium', 'What is "disinformation"?', ['Dictionaries', 'Deliberately false information spread to deceive', 'News', 'Education'], 1, 'Disinformation is intentionally created to mislead.'),
+  createQuestion('special_area', 'medium', 'What is "deepfake" technology?', ['Deep sea diving', 'AI-generated fake video or audio of real people', 'Deep lakes', 'Cake'], 1, 'Deepfakes raise concerns about truth and trust in media.'),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is the "post-truth" era?', ['After testing', 'When emotions and beliefs matter more than facts in public discourse', 'Honesty period', 'Lie detection'], 1, '"Post-truth" was Oxford Dictionary\'s 2016 word of the year.'),
+  createQuestion('special_area', 'hard', 'What is "epistemic humility"?', ['Being quiet', 'Recognizing the limits of one\'s knowledge', 'Academic degree', 'Meditation'], 1, 'In complex issues, acknowledging uncertainty is intellectually honest.'),
+  createQuestion('special_area', 'hard', 'What is the "attention economy"?', ['Watching TV', 'Competition for human attention as a scarce resource', 'Eye exams', 'Focus tests'], 1, 'Tech companies profit by capturing and holding our attention.'),
 ];
 
 // ============================================================================
