@@ -629,15 +629,15 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
           <div className="flex-1 flex flex-col p-6">
             <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col">
               {/* Topic Card */}
-              <Card className="mb-6 bg-ink-800 text-white">
+              <Card className="mb-6 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-800 text-white border-2 border-gold-500/30">
                 <CardContent className="p-6">
-                  <Badge variant="gold" className="mb-3">
+                  <Badge variant="gold" className="mb-4">
                     {state.position === 'pro' ? 'FOR' : 'AGAINST'}
                   </Badge>
-                  <h2 className="font-display text-2xl font-bold mb-3">
+                  <h2 className="font-display text-3xl md:text-4xl font-bold mb-4 text-gold-300 leading-tight drop-shadow-sm">
                     {state.topic.topic}
                   </h2>
-                  <p className="text-cream-200 text-sm">
+                  <p className="text-cream-200 text-base">
                     Your position: {state.position === 'pro' ? state.topic.proPosition : state.topic.conPosition}
                   </p>
                 </CardContent>
@@ -710,12 +710,12 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
           <div className="flex-1 flex flex-col p-6">
             <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col">
               {/* Topic Card */}
-              <Card className="mb-6 bg-ink-800 text-white">
+              <Card className="mb-6 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-800 text-white border-2 border-gold-500/30">
                 <CardContent className="p-6">
                   <Badge variant="gold" className="mb-3">
                     {state.position === 'pro' ? 'FOR' : 'AGAINST'}
                   </Badge>
-                  <h2 className="font-display text-xl font-bold">
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-gold-300 leading-tight drop-shadow-sm">
                     {state.topic.topic}
                   </h2>
                 </CardContent>
