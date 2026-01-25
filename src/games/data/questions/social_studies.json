@@ -1,0 +1,95 @@
+{
+  "subject": "social_studies",
+  "questions": [
+    {
+      "id": "ss-001",
+      "difficulty": "easy",
+      "text": "What is the capital of France?",
+      "options": ["London", "Berlin", "Paris", "Madrid"],
+      "correct_index": 2,
+      "explanation": "Paris has been the capital of France since the 10th century.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-002",
+      "difficulty": "easy",
+      "text": "Which ocean is the largest?",
+      "options": ["Atlantic", "Indian", "Arctic", "Pacific"],
+      "correct_index": 3,
+      "explanation": "The Pacific Ocean covers about 63 million square miles, more than all land areas combined.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-003",
+      "difficulty": "easy",
+      "text": "What year did World War II end?",
+      "options": ["1943", "1944", "1945", "1946"],
+      "correct_index": 2,
+      "explanation": "World War II ended in 1945 with the surrender of Germany in May and Japan in September.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-004",
+      "difficulty": "easy",
+      "text": "Who was the first President of the United States?",
+      "options": ["Thomas Jefferson", "George Washington", "John Adams", "Benjamin Franklin"],
+      "correct_index": 1,
+      "explanation": "George Washington served as the first U.S. President from 1789 to 1797.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-005",
+      "difficulty": "medium",
+      "text": "Which ancient civilization built the pyramids of Giza?",
+      "options": ["Romans", "Greeks", "Egyptians", "Persians"],
+      "correct_index": 2,
+      "explanation": "The ancient Egyptians built the Giza pyramids around 2560 BCE as tombs for pharaohs.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-006",
+      "difficulty": "medium",
+      "text": "What was the Renaissance?",
+      "options": ["A war in Europe", "A cultural rebirth", "A plague", "A trade route"],
+      "correct_index": 1,
+      "explanation": "The Renaissance was a cultural movement from the 14th-17th centuries emphasizing art, science, and humanism.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-007",
+      "difficulty": "medium",
+      "text": "Which country has the largest population?",
+      "options": ["India", "United States", "China", "Indonesia"],
+      "correct_index": 0,
+      "explanation": "India surpassed China in 2023 to become the world's most populous country with over 1.4 billion people.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-008",
+      "difficulty": "medium",
+      "text": "What is the longest river in the world?",
+      "options": ["Amazon", "Nile", "Mississippi", "Yangtze"],
+      "correct_index": 1,
+      "explanation": "The Nile River is approximately 6,650 km long, though some argue the Amazon may be longer.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-009",
+      "difficulty": "hard",
+      "text": "What treaty ended World War I?",
+      "options": ["Treaty of Paris", "Treaty of Versailles", "Treaty of Vienna", "Treaty of Ghent"],
+      "correct_index": 1,
+      "explanation": "The Treaty of Versailles, signed in 1919, officially ended WWI and imposed harsh terms on Germany.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "ss-010",
+      "difficulty": "hard",
+      "text": "Which philosopher wrote 'The Republic'?",
+      "options": ["Aristotle", "Socrates", "Plato", "Confucius"],
+      "correct_index": 2,
+      "explanation": "Plato wrote The Republic around 375 BCE, discussing justice and the ideal state.",
+      "time_limit_seconds": 30
+    }
+  ]
+}

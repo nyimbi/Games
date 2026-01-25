@@ -1,0 +1,95 @@
+{
+  "subject": "literature",
+  "questions": [
+    {
+      "id": "lit-001",
+      "difficulty": "easy",
+      "text": "Who wrote 'Romeo and Juliet'?",
+      "options": ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+      "correct_index": 1,
+      "explanation": "William Shakespeare wrote this famous tragedy around 1594-1596.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-002",
+      "difficulty": "easy",
+      "text": "What is the first book of the Harry Potter series?",
+      "options": ["Chamber of Secrets", "Prisoner of Azkaban", "Philosopher's Stone", "Goblet of Fire"],
+      "correct_index": 2,
+      "explanation": "Harry Potter and the Philosopher's Stone was published in 1997 by J.K. Rowling.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-003",
+      "difficulty": "easy",
+      "text": "Who is the author of 'The Cat in the Hat'?",
+      "options": ["Roald Dahl", "Dr. Seuss", "Shel Silverstein", "Eric Carle"],
+      "correct_index": 1,
+      "explanation": "Dr. Seuss (Theodor Geisel) wrote The Cat in the Hat in 1957.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-004",
+      "difficulty": "easy",
+      "text": "In what language was 'Don Quixote' originally written?",
+      "options": ["English", "French", "Spanish", "Italian"],
+      "correct_index": 2,
+      "explanation": "Don Quixote was written in Spanish by Miguel de Cervantes in 1605.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-005",
+      "difficulty": "medium",
+      "text": "Who wrote 'Pride and Prejudice'?",
+      "options": ["Emily Brontë", "Charlotte Brontë", "Jane Austen", "Virginia Woolf"],
+      "correct_index": 2,
+      "explanation": "Jane Austen published Pride and Prejudice in 1813.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-006",
+      "difficulty": "medium",
+      "text": "What is the name of the hobbit in 'The Hobbit'?",
+      "options": ["Frodo Baggins", "Samwise Gamgee", "Bilbo Baggins", "Pippin Took"],
+      "correct_index": 2,
+      "explanation": "Bilbo Baggins is the protagonist of J.R.R. Tolkien's The Hobbit (1937).",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-007",
+      "difficulty": "medium",
+      "text": "What literary device is 'The wind whispered through the trees'?",
+      "options": ["Metaphor", "Simile", "Personification", "Alliteration"],
+      "correct_index": 2,
+      "explanation": "Personification gives human qualities (whispering) to non-human things (wind).",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-008",
+      "difficulty": "medium",
+      "text": "Which dystopian novel features 'Big Brother'?",
+      "options": ["Brave New World", "1984", "Fahrenheit 451", "The Handmaid's Tale"],
+      "correct_index": 1,
+      "explanation": "George Orwell's 1984 features the totalitarian surveillance figure 'Big Brother'.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-009",
+      "difficulty": "hard",
+      "text": "What is the setting of Gabriel García Márquez's 'One Hundred Years of Solitude'?",
+      "options": ["Buenos Aires", "Macondo", "Cartagena", "Lima"],
+      "correct_index": 1,
+      "explanation": "Macondo is a fictional town in Colombia, central to the novel's magical realism.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "lit-010",
+      "difficulty": "hard",
+      "text": "Who wrote 'The Canterbury Tales'?",
+      "options": ["Geoffrey Chaucer", "John Milton", "Edmund Spenser", "William Langland"],
+      "correct_index": 0,
+      "explanation": "Geoffrey Chaucer wrote The Canterbury Tales in the late 14th century.",
+      "time_limit_seconds": 30
+    }
+  ]
+}

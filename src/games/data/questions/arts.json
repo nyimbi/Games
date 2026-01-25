@@ -1,0 +1,95 @@
+{
+  "subject": "arts",
+  "questions": [
+    {
+      "id": "art-001",
+      "difficulty": "easy",
+      "text": "Who painted the Mona Lisa?",
+      "options": ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Michelangelo"],
+      "correct_index": 1,
+      "explanation": "Leonardo da Vinci painted the Mona Lisa between 1503-1519.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-002",
+      "difficulty": "easy",
+      "text": "What are the three primary colors in art?",
+      "options": ["Red, Yellow, Blue", "Red, Green, Blue", "Cyan, Magenta, Yellow", "Orange, Purple, Green"],
+      "correct_index": 0,
+      "explanation": "In traditional art, red, yellow, and blue are primary colors that cannot be mixed from other colors.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-003",
+      "difficulty": "easy",
+      "text": "What instrument has 88 keys?",
+      "options": ["Guitar", "Violin", "Piano", "Flute"],
+      "correct_index": 2,
+      "explanation": "A standard piano has 88 keys: 52 white and 36 black.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-004",
+      "difficulty": "easy",
+      "text": "Who composed 'Für Elise'?",
+      "options": ["Mozart", "Bach", "Beethoven", "Chopin"],
+      "correct_index": 2,
+      "explanation": "Ludwig van Beethoven composed Für Elise around 1810.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-005",
+      "difficulty": "medium",
+      "text": "What art movement is Salvador Dalí associated with?",
+      "options": ["Impressionism", "Surrealism", "Cubism", "Pop Art"],
+      "correct_index": 1,
+      "explanation": "Dalí was a leading figure in Surrealism, known for his striking and bizarre imagery.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-006",
+      "difficulty": "medium",
+      "text": "Who painted 'Starry Night'?",
+      "options": ["Claude Monet", "Vincent van Gogh", "Paul Cézanne", "Edgar Degas"],
+      "correct_index": 1,
+      "explanation": "Van Gogh painted Starry Night in 1889 while in an asylum in Saint-Rémy-de-Provence.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-007",
+      "difficulty": "medium",
+      "text": "What is the largest string instrument in a standard orchestra?",
+      "options": ["Viola", "Cello", "Double Bass", "Harp"],
+      "correct_index": 2,
+      "explanation": "The double bass (also called contrabass) is the largest and lowest-pitched string instrument.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-008",
+      "difficulty": "medium",
+      "text": "In ballet, what is a 'pirouette'?",
+      "options": ["A jump", "A spin on one foot", "A bow", "A lift"],
+      "correct_index": 1,
+      "explanation": "A pirouette is a controlled turn on one foot, usually on pointe or demi-pointe.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-009",
+      "difficulty": "hard",
+      "text": "What technique uses small dots of color to form an image?",
+      "options": ["Impressionism", "Pointillism", "Fauvism", "Expressionism"],
+      "correct_index": 1,
+      "explanation": "Pointillism uses distinct dots of color that blend optically when viewed from a distance.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "art-010",
+      "difficulty": "hard",
+      "text": "Who designed the Guggenheim Museum in New York?",
+      "options": ["Le Corbusier", "I.M. Pei", "Frank Lloyd Wright", "Zaha Hadid"],
+      "correct_index": 2,
+      "explanation": "Frank Lloyd Wright designed the iconic spiral museum, completed in 1959.",
+      "time_limit_seconds": 30
+    }
+  ]
+}

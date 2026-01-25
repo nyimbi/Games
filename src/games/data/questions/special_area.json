@@ -1,0 +1,95 @@
+{
+  "subject": "special_area",
+  "questions": [
+    {
+      "id": "spec-001",
+      "difficulty": "easy",
+      "text": "What does 'AI' stand for in technology?",
+      "options": ["Automated Interface", "Artificial Intelligence", "Advanced Integration", "Applied Informatics"],
+      "correct_index": 1,
+      "explanation": "AI stands for Artificial Intelligence, the simulation of human intelligence by machines.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-002",
+      "difficulty": "easy",
+      "text": "What is the tallest building in the world (as of 2024)?",
+      "options": ["Shanghai Tower", "Burj Khalifa", "One World Trade Center", "Taipei 101"],
+      "correct_index": 1,
+      "explanation": "The Burj Khalifa in Dubai stands at 828 meters (2,717 feet) tall.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-003",
+      "difficulty": "easy",
+      "text": "What social media platform is known for short videos and was created by ByteDance?",
+      "options": ["Instagram", "Snapchat", "TikTok", "YouTube"],
+      "correct_index": 2,
+      "explanation": "TikTok, launched internationally in 2017, became a global phenomenon for short-form video content.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-004",
+      "difficulty": "easy",
+      "text": "Which company created the iPhone?",
+      "options": ["Google", "Samsung", "Apple", "Microsoft"],
+      "correct_index": 2,
+      "explanation": "Apple introduced the iPhone in 2007, revolutionizing the smartphone industry.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-005",
+      "difficulty": "medium",
+      "text": "What does 'NFT' stand for?",
+      "options": ["New File Type", "Non-Fungible Token", "Network File Transfer", "Next Format Technology"],
+      "correct_index": 1,
+      "explanation": "NFT stands for Non-Fungible Token, a unique digital asset verified using blockchain.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-006",
+      "difficulty": "medium",
+      "text": "What international agreement aims to limit global warming to 1.5°C?",
+      "options": ["Kyoto Protocol", "Montreal Protocol", "Paris Agreement", "Geneva Convention"],
+      "correct_index": 2,
+      "explanation": "The Paris Agreement (2015) is a legally binding treaty on climate change.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-007",
+      "difficulty": "medium",
+      "text": "Which rover landed on Mars in 2021?",
+      "options": ["Spirit", "Opportunity", "Curiosity", "Perseverance"],
+      "correct_index": 3,
+      "explanation": "NASA's Perseverance rover landed on Mars in February 2021 to search for signs of ancient life.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-008",
+      "difficulty": "medium",
+      "text": "What is the name of the AI chatbot released by OpenAI in 2022?",
+      "options": ["Alexa", "Siri", "ChatGPT", "Watson"],
+      "correct_index": 2,
+      "explanation": "ChatGPT was released by OpenAI in November 2022 and quickly became widely used.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-009",
+      "difficulty": "hard",
+      "text": "What is the term for when a species no longer exists anywhere on Earth?",
+      "options": ["Endangered", "Extinct", "Threatened", "Vulnerable"],
+      "correct_index": 1,
+      "explanation": "Extinction means a species has completely died out with no living members remaining.",
+      "time_limit_seconds": 30
+    },
+    {
+      "id": "spec-010",
+      "difficulty": "hard",
+      "text": "What cryptocurrency uses a 'proof of stake' consensus mechanism?",
+      "options": ["Bitcoin", "Litecoin", "Ethereum", "Dogecoin"],
+      "correct_index": 2,
+      "explanation": "Ethereum transitioned to proof of stake in 2022 with 'The Merge' to reduce energy consumption.",
+      "time_limit_seconds": 30
+    }
+  ]
+}
