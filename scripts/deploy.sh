@@ -94,16 +94,16 @@ deploy_frontend() {
         "${PROJECT_ROOT}/frontend/postcss.config.js" \
         "${SERVER_USER}@${SERVER_IP}:~/${REMOTE_BASE}/frontend/" 2>/dev/null || true
 
-    # Create .env if it doesn't exist
-    ssh ${SSH_OPTS} "${SERVER_USER}@${SERVER_IP}" bash -s << 'REMOTE_SCRIPT'
+    # Create/update .env with correct server IP
+    # Note: NEXT_PUBLIC_API_URL is client-side, so it needs the actual server IP, not localhost
+    ssh ${SSH_OPTS} "${SERVER_USER}@${SERVER_IP}" bash -s "${SERVER_IP}" << 'REMOTE_SCRIPT'
+SERVER_IP="$1"
 FRONTEND_DIR="${HOME}/src/games/frontend"
-if [ ! -f "${FRONTEND_DIR}/.env" ]; then
-    echo "Creating frontend .env..."
-    cat > "${FRONTEND_DIR}/.env" << 'EOF'
+echo "Creating/updating frontend .env..."
+cat > "${FRONTEND_DIR}/.env" << EOF
 NODE_ENV=production
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_API_URL=http://${SERVER_IP}:8000/api
 EOF
-fi
 REMOTE_SCRIPT
 
     log_success "Frontend deployed"
