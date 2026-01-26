@@ -1,9 +1,7 @@
 # games
 
-[![CI/CD Pipeline](https://github.com/yourusername/games/workflows/CI/badge.svg)](https://github.com/yourusername/games/actions)
-[![Airflow DAG Validation](https://github.com/yourusername/games/workflows/Airflow%20DAG%20Validation/badge.svg)](https://github.com/yourusername/games/actions)
-[![codecov](https://codecov.io/gh/yourusername/games/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/games)
-[![Documentation Status](https://readthedocs.org/projects/games/badge/?version=latest)](https://games.readthedocs.io/en/latest/?badge=latest)
+[![CI/CD Pipeline](https://github.com/nyimbiodero/games/workflows/CI/badge.svg)](https://github.com/nyimbiodero/games/actions)
+[![codecov](https://codecov.io/gh/nyimbiodero/games/branch/main/graph/badge.svg)](https://codecov.io/gh/nyimbiodero/games)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -12,10 +10,13 @@
 [![security: bandit](https://img.shields.io/badge/security-bandit-green.svg)](https://github.com/PyCQA/bandit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> A modern Python project built with cutting-edge tooling, comprehensive automation, and enterprise-grade best practices.
+> A comprehensive educational gaming platform designed for World Scholar's Cup (WSC) training, featuring 16 diverse academic games across 5 subjects with 475+ curated questions, built with modern Python tooling and best practices.
 
 ## ✨ Features
 
+- 🎮 **16 Educational Games** spanning multiple academic categories
+- 📚 **475+ Curated Questions** across 5 WSC subjects (Science, Literature, Arts, Social Studies, Special Area)
+- 🌍 **World Scholar's Cup Training** with questions and game modes designed for WSC preparation
 - 🚀 **Lightning-fast dependency management** with [UV](https://github.com/astral-sh/uv)
 - 🔍 **Comprehensive code quality** with [Ruff](https://github.com/astral-sh/ruff) (linting + formatting)
 - 🛡️ **Static type safety** with [MyPy](https://github.com/python/mypy)
@@ -24,10 +25,63 @@
 - 🔄 **Automated quality gates** with pre-commit hooks
 - 📚 **Professional documentation** with Sphinx
 - 🐳 **Production-ready containerization** with optimized Docker builds
-- 🌪️ **Workflow orchestration** with Apache Airflow 3.0+ integration
-- 🚀 **Enterprise CI/CD** with GitHub Actions
+- 🌐 **Real-time multiplayer** capabilities
 - 📊 **Performance monitoring** and benchmarking
 - 🎯 **100% type coverage** and comprehensive testing
+
+## 🎮 Game Categories
+
+### Scholars Bowl
+- **Buzzer Battle**: Race to buzz in first with the correct answer!
+- **Category Challenge**: Draw category cards and answer questions in turns.
+- **Team Trivia Night**: Answer together as a team for bonus points!
+- **Scavenger Bowl**: Find hidden answers in the virtual room!
+
+### Collaborative Writing
+- **Story Chain**: Build a story together, one paragraph at a time.
+- **Essay Sprint**: Write an essay together in real-time!
+- **Role-Based Writing**: Each player writes a different section.
+- **Argument Tennis**: Rally arguments back and forth on a topic.
+
+### Scholars Challenge
+- **Flashcard Frenzy**: Speed through flashcards to rack up points!
+- **Pattern Puzzles**: Spot the pattern and find the missing piece.
+- **Quickfire Quiz**: Rapid-fire questions - think fast!
+- **Elimination Olympics**: Practice strategic guessing like the real competition.
+
+### Team Debate
+- **Mini-Debate**: Quick structured debates on fun topics.
+- **Role-Play Debates**: Take on character roles and debate!
+- **Argument Builder**: Collaborate to build the perfect argument.
+- **Impromptu Challenge**: Think on your feet with surprise topics!
+
+## 📚 Question Database
+
+The platform includes 475+ carefully curated questions across 5 WSC subjects:
+
+- **Science** (95 questions): Chemistry, physics, biology, astronomy, and earth sciences
+- **Literature** (95 questions): Classic and contemporary literature, authors, and literary devices
+- **Arts** (95 questions): Visual arts, music, dance, and artistic movements
+- **Social Studies** (95 questions): History, geography, politics, and philosophy
+- **Special Area** (95 questions): Current events, technology, and interdisciplinary topics
+
+Questions are categorized by difficulty:
+- **Easy**: Fundamental concepts and basic knowledge
+- **Medium**: Intermediate understanding and application
+- **Hard**: Advanced analysis and synthesis skills
+
+## 🌍 World Scholar's Cup (WSC) Training
+
+This platform is specifically designed to support World Scholar's Cup training with:
+
+- **Subject Coverage**: All 5 WSC subjects with balanced question distribution
+- **Game Modes**: Mirroring WSC event formats (Scholars Bowl, Collaborative Writing, Scholars Challenge, Team Debate)
+- **Difficulty Progression**: Questions that match WSC complexity levels
+- **Team Practice**: Multiplayer modes for team-based preparation
+- **Solo Practice**: Individual skill development and assessment
+- **Real-time Feedback**: Immediate scoring and explanations for learning reinforcement
+
+The platform enables coaches and teams to practice all aspects of WSC competition in a gamified, engaging environment that builds both knowledge and competitive skills.
 
 ## 🚀 Quick Start
 
@@ -59,7 +113,7 @@ pip install --upgrade pip
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/games.git
+   git clone https://github.com/nyimbiodero/games.git
    cd games
    ```
 
@@ -67,7 +121,7 @@ pip install --upgrade pip
    ```bash
    make dev-setup
    ```
-   
+
    This single command will:
    - 📦 Install all dependencies with UV
    - 🔗 Set up pre-commit hooks
@@ -100,29 +154,15 @@ docker-compose up --build
 </details>
 
 <details>
-<summary>🌪️ Airflow Integration</summary>
+<summary>🎮 Play Tic-Tac-Toe</summary>
+
+The project includes a classic Tic-Tac-Toe game implemented in HTML/CSS/JS:
 
 ```bash
-# Set up Airflow environment
-make airflow-setup
-make airflow-init
-
-# Start Airflow services
-make airflow-start
-
-# Access Airflow UI at http://localhost:8080 (admin/admin)
-```
-</details>
-
-<details>
-<summary>📓 Jupyter Development</summary>
-
-```bash
-# Start Jupyter Lab
-make lab
-
-# Or traditional Jupyter Notebook
-make notebook
+# Open the game in your browser
+open tic-tac-toe.html  # On macOS
+# or
+xdg-open tic-tac-toe.html  # On Linux
 ```
 </details>
 
@@ -197,7 +237,7 @@ Run `make help` to see all available commands:
 make uv-add PACKAGE="fastapi>=0.104.0"
 make uv-add PACKAGE="pydantic[email]"
 
-# Development dependencies  
+# Development dependencies
 make uv-add-dev PACKAGE="pytest-mock"
 make uv-add-dev PACKAGE="httpx"
 
@@ -367,72 +407,6 @@ docker-compose up --build
 docker-compose -f docker-compose.yml -f docker-compose.services.yml up
 ```
 
-## 🌪️ Airflow Integration
-
-games includes comprehensive Apache Airflow 3.0+ integration:
-
-### Setting Up Airflow
-
-```bash
-# Initialize Airflow
-make airflow-setup
-make airflow-init
-
-# Start services
-make airflow-start
-
-# Access UI: http://localhost:8080 (admin/admin)
-```
-
-### DAG Development
-
-```python
-# Example DAG structure
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-
-default_args = {
-    'owner': 'games',
-    'depends_on_past': False,
-    'start_date': datetime(2024, 1, 1),
-    'email_on_failure': True,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
-
-with DAG(
-    'games_pipeline',
-    default_args=default_args,
-    description='games data pipeline',
-    schedule_interval='@daily',
-    catchup=False,
-    tags=['games', 'production'],
-) as dag:
-    # Your tasks here
-    pass
-```
-
-### DAG Validation
-
-Comprehensive DAG validation is automated:
-
-- ✅ **Syntax validation** with Python AST
-- ✅ **Import validation** with DagBag
-- ✅ **Structure validation** (dependencies, schedules)
-- ✅ **Security scanning** for DAG files
-- ✅ **Performance analysis** and complexity scoring
-- ✅ **Documentation coverage** validation
-
-```bash
-# Run DAG validation
-make airflow-test
-
-# Validate specific DAG
-airflow dags test games_pipeline 2024-01-01
-```
-
 ## 🚀 CI/CD
 
 ### GitHub Actions Workflows
@@ -448,46 +422,6 @@ games includes enterprise-grade CI/CD:
 - **Package building** and PyPI publishing
 - **Docker image building** with multi-arch support
 
-#### 🌪️ **Airflow DAG Validation** (`.github/workflows/airflow-dag-check.yml`)
-- **Airflow 3.0+ compatibility** testing
-- **PostgreSQL 16 integration** testing
-- **DAG syntax and structure** validation
-- **Security scanning** for workflow files
-- **Performance analysis** and optimization
-- **Integration testing** with Celery and Redis
-
-### Deployment Strategies
-
-<details>
-<summary>🚀 Automated Deployments</summary>
-
-```yaml
-# Tag-based releases
-git tag v1.0.0
-git push origin v1.0.0  # Triggers PyPI release
-
-# Manual deployment
-gh workflow run ci.yml -f deploy_environment=production
-
-# Environment-specific deployments
-gh workflow run ci.yml -f deploy_environment=staging
-```
-</details>
-
-<details>
-<summary>📦 Package Publishing</summary>
-
-```bash
-# TestPyPI (staging)
-make upload-test
-
-# PyPI (production)
-make upload
-
-# Automated via GitHub Actions on tag push
-```
-</details>
-
 ### Quality Gates
 
 Every commit and PR goes through:
@@ -500,35 +434,6 @@ Every commit and PR goes through:
 6. 📊 **Coverage analysis** (80% minimum)
 7. 📚 **Documentation** building
 8. 🐳 **Docker image** building
-9. 🌪️ **Airflow DAG** validation
-
-## 📊 Performance
-
-### Benchmarking
-
-games includes comprehensive performance monitoring:
-
-```bash
-# Run performance benchmarks
-make benchmark
-
-# Memory profiling
-make memory-profile
-
-# Line-by-line profiling
-make line-profile
-
-# Complexity analysis
-make complexity
-```
-
-### Performance Metrics
-
-- ⚡ **UV dependency resolution:** 10-100x faster than pip
-- 🚀 **Ruff linting:** 10-100x faster than flake8
-- 📦 **Docker builds:** Multi-stage optimization
-- 🔄 **CI/CD pipeline:** Parallel execution with caching
-- 📊 **Test execution:** Parallel testing with pytest-xdist
 
 ## 🔧 Configuration
 
@@ -573,9 +478,10 @@ DEBUG=False
 LOG_LEVEL=INFO
 DATABASE_URL=postgresql://...
 
-# Airflow
-AIRFLOW_HOME=./airflow
-AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+# API Keys
+PUSHER_APP_ID=your_pusher_app_id
+PUSHER_KEY=your_pusher_key
+PUSHER_SECRET=your_pusher_secret
 ```
 </details>
 
@@ -585,9 +491,18 @@ AIRFLOW__CORE__EXECUTOR=CeleryExecutor
 games/
 ├── 📁 src/games/          # Source code (src-layout)
 │   ├── __init__.py                   # Package initialization
-│   ├── main.py                       # Main application entry
+│   ├── __main__.py                   # Main entry point
 │   ├── api/                          # API modules
+│   ├── cli/                          # Command-line interface
+│   ├── core/                         # Core application logic
+│   ├── data/                         # Game data and questions
+│   │   └── questions/                # Subject-specific questions (5 subjects, 95 q each)
 │   ├── models/                       # Data models
+│   │   ├── game.py                   # Game definitions and models
+│   │   ├── progress.py               # Progress tracking
+│   │   ├── session.py                # Session management
+│   │   └── user.py                   # User models
+│   ├── services/                     # Business logic services
 │   └── utils/                        # Utility functions
 ├── 📁 tests/                         # Test suite
 │   ├── unit/                         # Unit tests
@@ -596,20 +511,13 @@ games/
 ├── 📁 docs/                          # Documentation
 │   ├── api/                          # API documentation
 │   └── user_guides/                  # User guides
-├── 📁 airflow/                       # Airflow workflows
-│   ├── dags/                         # DAG definitions
-│   ├── plugins/                      # Custom plugins
-│   └── tests/                        # DAG tests
-├── 📁 deployment/                    # Deployment configurations
-│   ├── docker/                       # Docker configurations
-│   ├── kubernetes/                   # K8s manifests
-│   └── terraform/                    # Infrastructure as code
 ├── 📁 .github/workflows/             # CI/CD pipelines
 ├── 📄 pyproject.toml                 # Project configuration
 ├── 📄 uv.lock                        # Dependency lock file
 ├── 📄 Dockerfile                     # Container definition
 ├── 📄 docker-compose.yml             # Local development
 ├── 📄 Makefile                       # Development automation
+├── 📄 tic-tac-toe.html               # Classic game implementation
 └── 📄 README.md                      # This file
 ```
 
@@ -642,40 +550,44 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```bash
-feat: add new feature
-fix: resolve bug
-docs: update documentation
+feat: add new game feature
+fix: resolve bug in game logic
+docs: update game documentation
 style: formatting changes
 refactor: code restructuring
-test: add tests
+test: add tests for game features
 chore: maintenance tasks
 ```
 
 ## 📈 Roadmap
 
 ### Current Version (v0.1.0)
-- ✅ Core functionality
+- ✅ 16 diverse educational games
+- ✅ 475+ WSC-aligned questions across 5 subjects
+- ✅ Real-time multiplayer capabilities
 - ✅ Comprehensive testing
 - ✅ Documentation
 - ✅ CI/CD pipeline
+- ✅ Classic Tic-Tac-Toe implementation
 
 ### Upcoming Features
-- 🚀 **Performance optimizations**
-- 📊 **Enhanced monitoring**
-- 🔌 **Plugin system**
-- 🌍 **Internationalization**
-- 📱 **Mobile API**
+- 🚀 **Additional game types** and categories
+- 📊 **Enhanced analytics and progress tracking**
+- 🔌 **Plugin system for custom games**
+- 🌍 **Internationalization and localization**
+- 📱 **Mobile-responsive UI enhancements**
+- 🎨 **Advanced graphics and animations**
 
-See our [Project Board](https://github.com/yourusername/games/projects) for detailed progress.
+See our [Project Board](https://github.com/nyimbiodero/games/projects) for detailed progress.
 
 ## 🆘 Support
 
 ### Getting Help
 
 - 📚 **Documentation:** [https://games.readthedocs.io](https://games.readthedocs.io)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/yourusername/games/discussions)
-- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/yourusername/games/issues)
-- 📧 **Email:** support@games.com
+- 💬 **Discussions:** [GitHub Discussions](https://github.com/nyimbiodero/games/discussions)
+- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/nyimbiodero/games/issues)
+- 📧 **Email:** nyimbi@gmail.com
 
 ### Troubleshooting
 
@@ -695,12 +607,11 @@ source ~/.bashrc
 sudo chown -R $USER:$USER ~/.local/share/uv
 ```
 
-**Airflow Issues:**
+**Dependency Issues:**
 ```bash
-# Reset Airflow environment
-make airflow-stop
-rm -rf airflow/logs airflow/airflow.db
-make airflow-init
+# Reset and reinstall dependencies
+make clean
+make dev-setup
 ```
 </details>
 
@@ -741,7 +652,8 @@ games is built with and inspired by amazing open-source projects:
 - ⚡ **[Ruff](https://github.com/astral-sh/ruff)** - Blazing-fast Python linter
 - 🛡️ **[MyPy](https://github.com/python/mypy)** - Static type checker
 - 🧪 **[pytest](https://github.com/pytest-dev/pytest)** - Testing framework
-- 🌪️ **[Apache Airflow](https://github.com/apache/airflow)** - Workflow orchestration
+- 🌐 **[FastAPI](https://github.com/tiangolo/fastapi)** - Modern web framework
+- 🗄️ **[SQLAlchemy](https://github.com/sqlalchemy/sqlalchemy)** - Database toolkit
 
 ### Development Tools
 - 🔄 **[Pre-commit](https://github.com/pre-commit/pre-commit)** - Git hooks
@@ -752,16 +664,15 @@ games is built with and inspired by amazing open-source projects:
 ### Special Thanks
 - The **Python community** for continuous innovation
 - **Astral** team for UV and Ruff
-- **Apache Software Foundation** for Airflow
 - All **contributors** and **maintainers**
 
 ---
 
 <div align="center">
 
-**Built with ❤️ and modern Python tooling**
+**Educational Gaming Platform built with ❤️ and modern Python tooling**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/games&type=Date)](https://star-history.com/#yourusername/games&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=nyimbiodero/games&type=Date)](https://star-history.com/#nyimbiodero/games&Date)
 
 [⬆ Back to top](#games)
 
