@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#334155"/>
+    </linearGradient>
+    <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="shineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="64" cy="64" r="60" fill="url(#bgGrad)"/>
+  <circle cx="64" cy="64" r="56" fill="none" stroke="#475569" stroke-width="2"/>
+
+  <!-- Graduation cap base (the mortarboard) -->
+  <polygon points="64,28 108,48 64,68 20,48" fill="url(#capGrad)" stroke="#d97706" stroke-width="2"/>
+
+  <!-- Cap top square -->
+  <rect x="44" y="22" width="40" height="8" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1"/>
+
+  <!-- Tassel button -->
+  <circle cx="64" cy="26" r="5" fill="#ef4444"/>
+  <circle cx="62" cy="24" r="1.5" fill="#ffffff" opacity="0.6"/>
+
+  <!-- Tassel string -->
+  <path d="M64,31 Q78,45 85,65" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+  <path d="M64,31 Q79,46 86,66" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Tassel end (fluffy) -->
+  <ellipse cx="87" cy="72" rx="6" ry="12" fill="#ef4444"/>
+  <ellipse cx="85" cy="70" rx="2" ry="4" fill="#fca5a5"/>
+  <path d="M82,80 L87,85 L92,80" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Googly eyes -->
+  <!-- Left eye -->
+  <ellipse cx="48" cy="52" rx="12" ry="10" fill="white" stroke="#1e293b" stroke-width="2"/>
+  <circle cx="51" cy="54" r="5" fill="#1e293b"/>
+  <circle cx="53" cy="52" r="2" fill="white"/>
+
+  <!-- Right eye -->
+  <ellipse cx="80" cy="52" rx="12" ry="10" fill="white" stroke="#1e293b" stroke-width="2"/>
+  <circle cx="83" cy="54" r="5" fill="#1e293b"/>
+  <circle cx="85" cy="52" r="2" fill="white"/>
+
+  <!-- Excited eyebrows -->
+  <path d="M36,42 Q44,36 56,42" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+  <path d="M72,42 Q80,36 92,42" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Big happy smile -->
+  <path d="M40,78 Q64,100 88,78" fill="none" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+  <path d="M44,82 Q64,98 84,82" fill="#ef4444"/>
+
+  <!-- Tongue sticking out (funny!) -->
+  <ellipse cx="64" cy="92" rx="8" ry="6" fill="#f87171"/>
+  <path d="M60,90 Q64,96 68,90" fill="#fca5a5"/>
+
+  <!-- Sparkles around (excitement!) -->
+  <g fill="#fbbf24">
+    <polygon points="18,24 20,30 26,30 21,34 23,40 18,36 13,40 15,34 10,30 16,30" transform="scale(0.6) translate(10,10)"/>
+    <polygon points="18,24 20,30 26,30 21,34 23,40 18,36 13,40 15,34 10,30 16,30" transform="scale(0.5) translate(200,20)"/>
+    <polygon points="18,24 20,30 26,30 21,34 23,40 18,36 13,40 15,34 10,30 16,30" transform="scale(0.4) translate(40,220)"/>
+  </g>
+
+  <!-- Shine on background -->
+  <ellipse cx="40" cy="40" rx="20" ry="15" fill="url(#shineGrad)" transform="rotate(-30,40,40)"/>
+</svg>

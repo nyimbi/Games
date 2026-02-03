@@ -12,8 +12,13 @@ export const metadata: Metadata = {
   keywords: ['World Scholars Cup', 'WSC', 'learning games', 'trivia', 'education'],
   authors: [{ name: 'WSC Scholar Games' }],
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
