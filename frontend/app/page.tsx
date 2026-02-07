@@ -65,7 +65,7 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, user, router]);
 
-  if (isLoading) {
+  if (isLoading || isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-100">
         <motion.div
@@ -143,6 +143,18 @@ export default function Home() {
               I'm a Scholar
             </Button>
           </motion.div>
+          <motion.p
+            variants={itemVariants}
+            className="mt-4 text-ink-500"
+          >
+            Already have a Scholar Code?{' '}
+            <button
+              onClick={() => router.push('/login?mode=recover')}
+              className="text-gold-600 font-medium hover:text-gold-700 underline underline-offset-2"
+            >
+              Sign in here
+            </button>
+          </motion.p>
         </motion.div>
       </section>
 

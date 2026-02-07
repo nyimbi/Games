@@ -5,7 +5,31 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
-import { BuzzerBattle, QuickfireQuiz, GameProvider } from '@/components/games';
+import {
+  BuzzerBattle,
+  QuickfireQuiz,
+  FlashcardFrenzy,
+  PatternPuzzles,
+  StoryChain,
+  EssaySprint,
+  MiniDebate,
+  ImpromptuChallenge,
+  ScholarRead,
+  ScholarsChallenge,
+  BattleMode,
+  ConnectionQuest,
+  ScholarSprint,
+  MemoryMosaic,
+  ArgumentArena,
+  TreasureHunt,
+  ScavengerBowl,
+  RoleWriting,
+  ArgumentTennis,
+  EliminationOlympics,
+  RolePlayDebates,
+  ArgumentBuilder,
+  GameProvider,
+} from '@/components/games';
 import { sessionsApi, type Session } from '@/lib/api/client';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -111,26 +135,80 @@ export default function PlaySessionPage() {
 
       case 'quickfire_quiz':
       case 'team_trivia_night':
+      case 'team_trivia':
       case 'category_challenge':
-        return (
-          <QuickfireQuiz
-            sessionId={sessionIdParam}
-            isHost={isHost}
-            onExit={handleExit}
-          />
-        );
+        return <QuickfireQuiz sessionId={sessionIdParam} isHost={isHost} onExit={handleExit} />;
 
-      // Add more game components as they're implemented
+      case 'flashcard_frenzy':
+        return <FlashcardFrenzy sessionId={sessionIdParam} questions={[]} subject="mixed" difficulty="medium" onExit={handleExit} />;
+
+      case 'pattern_puzzles':
+        return <PatternPuzzles sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'story_chain':
+        return <StoryChain sessionId={sessionIdParam} mode="solo" onExit={handleExit} />;
+
+      case 'essay_sprint':
+        return <EssaySprint sessionId={sessionIdParam} mode="solo" onExit={handleExit} />;
+
+      case 'mini_debate':
+        return <MiniDebate sessionId={sessionIdParam} mode="solo" onExit={handleExit} />;
+
+      case 'impromptu_challenge':
+        return <ImpromptuChallenge sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'scholar_read':
+        return <ScholarRead onExit={handleExit} />;
+
+      case 'scholars_challenge':
+        return <ScholarsChallenge onExit={handleExit} />;
+
+      case 'battle_mode':
+        return <BattleMode onExit={handleExit} />;
+
+      case 'connection_quest':
+        return <ConnectionQuest onExit={handleExit} />;
+
+      case 'scholar_sprint':
+        return <ScholarSprint onExit={handleExit} />;
+
+      case 'memory_mosaic':
+        return <MemoryMosaic onExit={handleExit} />;
+
+      case 'argument_arena':
+        return <ArgumentArena onExit={handleExit} />;
+
+      case 'treasure_hunt':
+        return <TreasureHunt onExit={handleExit} />;
+
+      case 'scavenger_bowl':
+        return <ScavengerBowl onExit={handleExit} />;
+
+      case 'role_writing':
+        return <RoleWriting onExit={handleExit} />;
+
+      case 'argument_tennis':
+        return <ArgumentTennis onExit={handleExit} />;
+
+      case 'elimination_olympics':
+        return <EliminationOlympics onExit={handleExit} />;
+
+      case 'role_play_debates':
+        return <RolePlayDebates onExit={handleExit} />;
+
+      case 'argument_builder':
+        return <ArgumentBuilder onExit={handleExit} />;
+
       default:
         return (
           <div className="min-h-screen flex items-center justify-center bg-cream-100 p-6">
             <Card className="max-w-md">
               <CardContent className="p-8 text-center">
                 <h2 className="font-display text-2xl font-bold text-ink-800 mb-4">
-                  Game Coming Soon
+                  Unknown Game
                 </h2>
                 <p className="text-ink-600 mb-6">
-                  The game "{currentGame}" is not yet implemented.
+                  The game &quot;{currentGame}&quot; could not be loaded.
                 </p>
                 <div className="flex gap-4">
                   {currentGameIndex < session.games.length - 1 && (

@@ -47,7 +47,11 @@ function JoinTeamContent() {
       }, 1500);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.data?.detail || 'Invalid team code');
+        if (err.status === 409) {
+          setError('This team is full (max 5 scholars + 1 coach)');
+        } else {
+          setError(err.data?.detail || 'Invalid team code');
+        }
       } else {
         setError('Failed to join team. Please try again.');
       }

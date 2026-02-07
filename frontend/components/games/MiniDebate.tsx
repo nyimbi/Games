@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   MessageSquare, Clock, ThumbsUp, ThumbsDown, Mic, MicOff, Square,
-  Lightbulb, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Volume2
+  Lightbulb, Loader2, Star, TrendingUp, AlertCircle, Sparkles, Volume2,
+  ChevronDown, ChevronUp, CheckCircle2,
 } from 'lucide-react';
 import { Button, Card, CardContent, Badge, Progress, Textarea } from '@/components/ui';
 import { GameLayout } from './GameLayout';
 import { useSpeechToText } from '@/lib/hooks/useSpeechToText';
+import { getEffectiveLevel, getStudentProfile } from '@/lib/games/studentLevel';
 
 interface MiniDebateProps {
   sessionId?: string;
@@ -101,9 +103,113 @@ const DEBATE_TOPICS: DebateTopic[] = [
     conPosition: 'GDP provides a clear, comparable measure that guides sound economic policy.',
     background: 'Bhutan uses "Gross National Happiness." Some economists advocate for alternatives.',
   },
+  {
+    id: 'topic-9',
+    topic: 'Should we measure success by how fast we arrive, or how well we travel?',
+    proPosition: 'The quality of the journey builds character, resilience, and deeper understanding than speed ever could.',
+    conPosition: 'In a competitive world, speed matters. Getting there first means more resources, more opportunities, and more impact.',
+    background: 'The WSC 2026 theme "Are We There Yet?" asks whether outcomes or processes matter more in measuring progress.',
+  },
+  {
+    id: 'topic-10',
+    topic: 'Is it ethical to genetically modify humans to survive space travel?',
+    proPosition: 'If humanity is to become interplanetary, we must adapt our biology to hostile environments. Evolution is too slow.',
+    conPosition: 'Genetic modification risks creating inequality, unforeseen consequences, and crosses fundamental ethical lines.',
+    background: 'NASA research shows long-term space travel causes bone loss, radiation damage, and psychological effects that current biology cannot withstand.',
+  },
+  {
+    id: 'topic-11',
+    topic: 'Should countries be required to accept climate refugees?',
+    proPosition: 'Climate change is caused by industrialized nations; those who created the crisis have a moral duty to shelter its victims.',
+    conPosition: 'Nations have sovereignty over immigration policy, and forced acceptance could create economic and social instability.',
+    background: 'By 2050, an estimated 200 million people may be displaced by rising seas, droughts, and extreme weather events.',
+  },
+  {
+    id: 'topic-12',
+    topic: 'Is social media connecting us or making us lonelier?',
+    proPosition: 'Social media connects people across continents, enables movements, and provides community for the isolated.',
+    conPosition: 'Studies show increased social media use correlates with depression, anxiety, and a decline in meaningful relationships.',
+    background: 'The UK appointed a Minister of Loneliness in 2018. Average screen time has tripled since 2010.',
+  },
+  {
+    id: 'topic-13',
+    topic: 'Should we invest in underwater cities before Mars colonies?',
+    proPosition: 'Earth\'s oceans are closer, resource-rich, and we know far more about surviving underwater than on Mars.',
+    conPosition: 'Mars colonization ensures humanity\'s survival beyond Earth and drives technological leaps that ocean habitats cannot.',
+    background: 'We have explored less than 5% of the ocean floor. A Mars mission would take 7-9 months one way.',
+  },
+  {
+    id: 'topic-14',
+    topic: 'Are standardized tests a fair measure of a student\'s potential?',
+    proPosition: 'Standardized tests provide an objective, comparable benchmark that transcends school quality and teacher variation.',
+    conPosition: 'Tests favor rote memorization over creativity, penalize different learning styles, and reflect socioeconomic status more than ability.',
+    background: 'Countries like Finland have minimal standardized testing yet consistently rank among top education systems worldwide.',
+  },
+  {
+    id: 'topic-15',
+    topic: 'Should AI be given legal personhood?',
+    proPosition: 'As AI becomes more autonomous, legal frameworks must evolve to assign responsibility and rights to AI entities.',
+    conPosition: 'AI lacks consciousness and moral agency. Granting personhood would dilute human rights and create legal chaos.',
+    background: 'Saudi Arabia granted citizenship to robot Sophia in 2017. The EU has debated "electronic personhood" for AI systems.',
+  },
+  {
+    id: 'topic-16',
+    topic: 'Is preserving every endangered language worth the effort?',
+    proPosition: 'Each language encodes unique knowledge, worldviews, and cultural heritage that enriches all of humanity.',
+    conPosition: 'Resources are limited. Focusing on widely-spoken languages improves communication and economic opportunity for more people.',
+    background: 'A language dies approximately every two weeks. Of 7,000 languages, nearly half are endangered.',
+  },
+  {
+    id: 'topic-17',
+    topic: 'Should there be a global minimum wage?',
+    proPosition: 'A global minimum wage would reduce exploitation, narrow inequality, and ensure basic dignity for all workers.',
+    conPosition: 'Cost of living varies enormously. A global wage ignores local economic realities and could destroy jobs in poorer nations.',
+    background: 'The wealthiest 1% own more than the bottom 50%. Wages vary from $1/day to $200/day across countries.',
+  },
+  {
+    id: 'topic-18',
+    topic: 'Has globalization done more harm than good?',
+    proPosition: 'Globalization has lifted billions from poverty, spread technology, and connected cultures in unprecedented ways.',
+    conPosition: 'Globalization has widened inequality, destroyed local industries, homogenized cultures, and accelerated environmental damage.',
+    background: 'Global trade has grown 40x since 1950. Meanwhile, cultural diversity and local manufacturing have declined sharply.',
+  },
 ];
 
-type DebatePhase = 'waiting' | 'prep' | 'opening' | 'rebuttal' | 'closing' | 'evaluating' | 'feedback' | 'ended';
+type DebateFormat = 'standard' | 'wsc';
+
+type DebatePhase =
+  | 'waiting'
+  | 'prep'
+  | 'opening'
+  | 'rebuttal'
+  | 'closing'
+  | 'evaluating'
+  | 'feedback'
+  | 'ended'
+  // WSC-specific phases
+  | 'constructive'
+  | 'cross_exam'
+  | 'wsc_rebuttal'
+  | 'summary';
+
+const WSC_SCORING_RUBRIC = {
+  content: { label: 'Content', weight: 40, description: 'Quality of arguments and evidence' },
+  strategy: { label: 'Strategy', weight: 30, description: 'Structure and tactical approach' },
+  style: { label: 'Style', weight: 30, description: 'Delivery, language, and persuasion' },
+};
+
+const WSC_PHASES: { phase: DebatePhase; name: string; minutes: number }[] = [
+  { phase: 'constructive', name: 'Constructive Speech', minutes: 4 },
+  { phase: 'cross_exam', name: 'Cross-Examination', minutes: 2 },
+  { phase: 'wsc_rebuttal', name: 'Rebuttal', minutes: 4 },
+  { phase: 'summary', name: 'Summary', minutes: 2 },
+];
+
+const STANDARD_PHASES: { phase: DebatePhase; name: string; minutes: number }[] = [
+  { phase: 'opening', name: 'Opening Statement', minutes: 1.5 },
+  { phase: 'rebuttal', name: 'Rebuttal', minutes: 1 },
+  { phase: 'closing', name: 'Closing Statement', minutes: 1 },
+];
 
 /**
  * MiniDebate - AI-Powered Debate Practice with Speech-to-Text
@@ -115,6 +221,8 @@ type DebatePhase = 'waiting' | 'prep' | 'opening' | 'rebuttal' | 'closing' | 'ev
  * - WSC 2026 theme-aligned topics
  */
 export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }: MiniDebateProps) {
+  const [debateFormat, setDebateFormat] = useState<DebateFormat>('standard');
+
   const [state, setState] = useState({
     phase: 'waiting' as DebatePhase,
     topic: DEBATE_TOPICS[0],
@@ -136,6 +244,8 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     totalScore: 0,
   });
 
+  const currentFormatPhases = debateFormat === 'wsc' ? WSC_PHASES : STANDARD_PHASES;
+
   // Speech-to-text hook
   const {
     isListening,
@@ -155,6 +265,57 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     language: 'en-US',
   });
 
+  // AI Debate Hints
+  const [hints, setHints] = useState<{
+    talkingPoints: Array<{ point: string; evidence?: string; tip?: string }>;
+    counterarguments: string[];
+    vocabularyTips: string[];
+  } | null>(null);
+  const [isLoadingHints, setIsLoadingHints] = useState(false);
+  const [hintsError, setHintsError] = useState<string | null>(null);
+  const [coveredPoints, setCoveredPoints] = useState<Set<number>>(new Set());
+  const [showHints, setShowHints] = useState(true);
+
+  const fetchHints = useCallback(async () => {
+    if (isLoadingHints || hints) return;
+    setIsLoadingHints(true);
+    setHintsError(null);
+
+    try {
+      const profile = getStudentProfile();
+      const level = getEffectiveLevel();
+
+      const res = await fetch('/api/debate-hints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: state.topic.topic,
+          position: state.position,
+          phase: state.phase,
+          studentLevel: { grade: profile.gradeLevel, level },
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to get hints');
+
+      const data = await res.json();
+      setHints(data);
+    } catch {
+      setHintsError('Could not load hints. Try again.');
+    } finally {
+      setIsLoadingHints(false);
+    }
+  }, [isLoadingHints, hints, state.topic, state.position, state.phase]);
+
+  const toggleCoveredPoint = (index: number) => {
+    setCoveredPoints((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
   // Track if we're requesting permission
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
@@ -172,14 +333,17 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     }
   }, [transcript]);
 
+  const activePhases = ['prep', 'opening', 'rebuttal', 'closing', 'constructive', 'cross_exam', 'wsc_rebuttal', 'summary'];
+  const nonTimerPhases = ['waiting', 'evaluating', 'feedback', 'ended'];
+
   // Timer
   useEffect(() => {
-    if (['prep', 'opening', 'rebuttal', 'closing'].includes(state.phase) && state.timeRemaining > 0) {
+    if (activePhases.includes(state.phase) && state.timeRemaining > 0) {
       const timer = setTimeout(() => {
         setState((prev) => ({ ...prev, timeRemaining: prev.timeRemaining - 1 }));
       }, 1000);
       return () => clearTimeout(timer);
-    } else if (state.timeRemaining === 0 && state.phase !== 'waiting' && state.phase !== 'evaluating' && state.phase !== 'feedback' && state.phase !== 'ended') {
+    } else if (state.timeRemaining === 0 && !nonTimerPhases.includes(state.phase)) {
       handleTimeUp();
     }
   }, [state.phase, state.timeRemaining]);
@@ -189,6 +353,10 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     const randomPosition = Math.random() > 0.5 ? 'pro' : 'con';
 
     clearTranscript();
+    setHints(null);
+    setHintsError(null);
+    setCoveredPoints(new Set());
+    setShowHints(true);
     setState((prev) => ({
       ...prev,
       topic: randomTopic,
@@ -290,41 +458,42 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     let newSpeaker = currentSpeaker;
     let newTime = 60;
 
+    const formatPhases = currentFormatPhases.map((p) => p.phase);
+    const getPhaseTime = (p: DebatePhase) => {
+      const found = currentFormatPhases.find((fp) => fp.phase === p);
+      return found ? found.minutes * 60 : 60;
+    };
+
     if (phase === 'prep') {
-      // From prep, go to opening with pro speaking first
-      newPhase = 'opening';
+      // From prep, go to first phase with pro speaking first
+      newPhase = formatPhases[0];
       newSpeaker = 'pro';
-      newTime = 90;
+      newTime = getPhaseTime(formatPhases[0]);
     } else if (phase === 'feedback') {
       // After feedback, advance based on who just spoke
-      const phases: DebatePhase[] = ['opening', 'rebuttal', 'closing'];
       const lastPhase = getLastPhase();
-      const lastPhaseIndex = phases.indexOf(lastPhase as DebatePhase);
+      const lastPhaseIndex = formatPhases.indexOf(lastPhase as DebatePhase);
 
       if (currentSpeaker === 'pro') {
-        // Pro finished, con's turn in same phase
         newSpeaker = 'con';
-        newTime = lastPhase === 'opening' ? 90 : 60;
+        newTime = getPhaseTime(lastPhase as DebatePhase);
       } else {
-        // Con finished, move to next phase with pro
-        if (lastPhaseIndex < phases.length - 1) {
-          newPhase = phases[lastPhaseIndex + 1];
+        if (lastPhaseIndex < formatPhases.length - 1) {
+          newPhase = formatPhases[lastPhaseIndex + 1];
           newSpeaker = 'pro';
-          newTime = newPhase === 'opening' ? 90 : 60;
+          newTime = getPhaseTime(formatPhases[lastPhaseIndex + 1]);
         } else {
           newPhase = 'ended';
         }
       }
-    } else if (['opening', 'rebuttal', 'closing'].includes(phase)) {
+    } else if (formatPhases.includes(phase)) {
       // During a speech phase - opponent just finished, switch to player
       if (currentSpeaker === 'pro') {
-        // Pro (opponent) finished, con (player) turn
         newSpeaker = 'con';
-        newTime = phase === 'opening' ? 90 : 60;
+        newTime = getPhaseTime(phase);
       } else {
-        // Con (opponent) finished, pro (player) turn
         newSpeaker = 'pro';
-        newTime = phase === 'opening' ? 90 : 60;
+        newTime = getPhaseTime(phase);
       }
     }
 
@@ -338,15 +507,19 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
       currentSpeech: '',
       currentEvaluation: null,
     }));
-  }, [state, clearTranscript]);
+  }, [state, clearTranscript, currentFormatPhases]);
 
   const getLastPhase = (): string => {
     // Determine what phase we were in before evaluation/feedback
+    const formatPhases = currentFormatPhases.map((p) => p.phase);
     const { speeches, position } = state;
-    if (speeches[`${position}Closing`]) return 'closing';
-    if (speeches[`${position}Rebuttal`]) return 'rebuttal';
-    if (speeches[`${position}Opening`]) return 'opening';
-    return 'opening';
+    // Check from end of phases backward
+    for (let i = formatPhases.length - 1; i >= 0; i--) {
+      const phaseName = formatPhases[i];
+      const key = `${position}${phaseName.charAt(0).toUpperCase() + phaseName.slice(1)}`;
+      if (speeches[key as keyof typeof speeches]) return phaseName;
+    }
+    return formatPhases[0];
   };
 
   const handleSubmitSpeech = () => {
@@ -392,6 +565,10 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
     evaluating: 'AI Evaluating...',
     feedback: 'Feedback',
     ended: 'Complete',
+    constructive: 'Constructive Speech',
+    cross_exam: 'Cross-Examination',
+    wsc_rebuttal: 'Rebuttal',
+    summary: 'Summary',
   };
 
   const renderSpeechInput = () => (
@@ -583,17 +760,33 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
               <h3 className="font-semibold text-ink-800 mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-gold-600" />
                 Score Breakdown
+                {debateFormat === 'wsc' && (
+                  <Badge variant="outline" className="ml-2 text-xs">WSC Criteria</Badge>
+                )}
               </h3>
               <div className="space-y-4">
-                {Object.entries(evaluation.scores).map(([key, score]) => (
-                  <div key={key}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-ink-600 capitalize">{key}</span>
-                      <span className={`font-semibold ${scoreColor(score)}`}>{score}/100</span>
+                {Object.entries(evaluation.scores).map(([key, score]) => {
+                  const wscLabel = debateFormat === 'wsc'
+                    ? key === 'clarity' || key === 'relevance' ? 'Content (40%)'
+                    : key === 'logic' || key === 'evidence' ? 'Strategy (30%)'
+                    : 'Style (30%)'
+                    : undefined;
+
+                  return (
+                    <div key={key}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-ink-600 capitalize">{key}</span>
+                          {wscLabel && (
+                            <span className="text-xs text-ink-400">{wscLabel}</span>
+                          )}
+                        </div>
+                        <span className={`font-semibold ${scoreColor(score)}`}>{score}/100</span>
+                      </div>
+                      <Progress value={score} max={100} variant={progressColor(score) as 'sage' | 'gold' | 'coral'} />
                     </div>
-                    <Progress value={score} max={100} variant={progressColor(score) as 'sage' | 'gold' | 'coral'} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -682,7 +875,7 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center max-w-md"
+              className="text-center max-w-lg"
             >
               <div className="w-20 h-20 bg-ink-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <MessageSquare className="w-10 h-10 text-ink-600" />
@@ -690,9 +883,59 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
               <h2 className="font-display text-2xl font-bold text-ink-800 mb-2">
                 Mini Debate
               </h2>
-              <p className="text-ink-600 mb-4">
+              <p className="text-ink-600 mb-6">
                 Practice your argumentation skills with AI-powered feedback!
               </p>
+
+              {/* Format Selector */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <button
+                  onClick={() => setDebateFormat('standard')}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    debateFormat === 'standard'
+                      ? 'border-gold-500 bg-gold-50 ring-2 ring-gold-200'
+                      : 'border-ink-200 bg-white hover:border-ink-300'
+                  }`}
+                >
+                  <h4 className="font-semibold text-ink-800 text-sm mb-1">Standard</h4>
+                  <p className="text-xs text-ink-500">Opening, Rebuttal, Closing</p>
+                  <p className="text-xs text-ink-400 mt-1">~3.5 min per side</p>
+                </button>
+                <button
+                  onClick={() => setDebateFormat('wsc')}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    debateFormat === 'wsc'
+                      ? 'border-gold-500 bg-gold-50 ring-2 ring-gold-200'
+                      : 'border-ink-200 bg-white hover:border-ink-300'
+                  }`}
+                >
+                  <h4 className="font-semibold text-ink-800 text-sm mb-1">WSC Format</h4>
+                  <p className="text-xs text-ink-500">Constructive, Cross-Exam, Rebuttal, Summary</p>
+                  <p className="text-xs text-ink-400 mt-1">~12 min per side</p>
+                </button>
+              </div>
+
+              {/* WSC Scoring Rubric */}
+              {debateFormat === 'wsc' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mb-6 p-4 bg-ink-50 rounded-xl text-left"
+                >
+                  <h4 className="font-semibold text-ink-700 text-sm mb-3">WSC Scoring Rubric</h4>
+                  <div className="space-y-2">
+                    {Object.values(WSC_SCORING_RUBRIC).map((item) => (
+                      <div key={item.label} className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 min-w-[120px]">
+                          <span className="text-sm font-medium text-ink-700">{item.label}</span>
+                          <Badge variant="outline" className="text-xs">{item.weight}%</Badge>
+                        </div>
+                        <span className="text-xs text-ink-500">{item.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
               {sttSupported ? (
                 <div className="flex items-center justify-center gap-2 text-sage-600 text-sm mb-6">
@@ -777,14 +1020,225 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
                     </div>
                   )}
 
+                  {/* Microphone Setup - Request permission during prep */}
+                  {sttSupported && (permissionState === 'prompt' || permissionState === 'unknown') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6 p-4 bg-gradient-to-r from-gold-50 to-cream-100 rounded-xl border-2 border-gold-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Mic className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-ink-800 mb-1">Enable Voice Input</h4>
+                          <p className="text-sm text-ink-600 mb-3">
+                            Speak your arguments instead of typing! Enable your microphone now so it's ready when the debate starts.
+                          </p>
+                          <Button
+                            variant="gold"
+                            size="sm"
+                            onClick={handleRequestPermission}
+                            disabled={isRequestingPermission}
+                          >
+                            {isRequestingPermission ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Requesting...
+                              </>
+                            ) : (
+                              <>
+                                <Mic className="w-4 h-4 mr-2" />
+                                Allow Microphone
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {sttSupported && permissionState === 'granted' && (
+                    <div className="mt-6 flex items-center gap-2 text-sage-600 text-sm p-3 bg-sage-50 rounded-xl">
+                      <Mic className="w-4 h-4" />
+                      <span>Microphone enabled — you can speak your arguments during the debate</span>
+                    </div>
+                  )}
+
+                  {sttSupported && permissionState === 'denied' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6 p-4 bg-coral-50 rounded-xl border border-coral-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-coral-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-coral-800 mb-1">Microphone Blocked</h4>
+                          <p className="text-sm text-coral-700 mb-1">
+                            Click the lock icon in your address bar, allow microphone, and refresh.
+                          </p>
+                          <p className="text-xs text-coral-600">
+                            You can still type your arguments during the debate.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* AI Debate Hints */}
+                  <div className="mt-6">
+                    {!hints && !isLoadingHints && (
+                      <Button
+                        variant="secondary"
+                        onClick={fetchHints}
+                        className="gap-2 w-full"
+                      >
+                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        Get AI Hints
+                      </Button>
+                    )}
+
+                    {isLoadingHints && (
+                      <div className="flex items-center justify-center gap-2 text-sm text-ink-500 py-3">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        AI is preparing your hints...
+                      </div>
+                    )}
+
+                    {hintsError && (
+                      <p className="text-sm text-coral-600 mt-2">{hintsError}</p>
+                    )}
+
+                    {hints && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-4"
+                      >
+                        {/* Talking Points as Checklist */}
+                        <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Sparkles className="w-4 h-4 text-purple-600" />
+                            <span className="text-sm font-semibold text-purple-800">Talking Points</span>
+                          </div>
+                          <div className="space-y-3">
+                            {hints.talkingPoints.map((tp, i) => (
+                              <button
+                                key={i}
+                                onClick={() => toggleCoveredPoint(i)}
+                                className={`w-full text-left p-3 rounded-lg border transition-all ${
+                                  coveredPoints.has(i)
+                                    ? 'bg-sage-50 border-sage-300'
+                                    : 'bg-white border-purple-100 hover:border-purple-300'
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <CheckCircle2
+                                    className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                                      coveredPoints.has(i)
+                                        ? 'text-sage-600'
+                                        : 'text-ink-300'
+                                    }`}
+                                  />
+                                  <div>
+                                    <p className={`text-sm font-medium ${
+                                      coveredPoints.has(i) ? 'text-sage-700 line-through' : 'text-ink-700'
+                                    }`}>
+                                      {tp.point}
+                                    </p>
+                                    {tp.evidence && (
+                                      <p className="text-xs text-ink-500 mt-1">
+                                        Evidence: {tp.evidence}
+                                      </p>
+                                    )}
+                                    {tp.tip && (
+                                      <p className="text-xs text-purple-600 mt-1">
+                                        Tip: {tp.tip}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Counter-arguments to prepare for */}
+                        {hints.counterarguments.length > 0 && (
+                          <div className="p-3 bg-coral-50 border border-coral-200 rounded-xl">
+                            <p className="text-xs font-semibold text-coral-700 mb-2">They might argue:</p>
+                            <ul className="space-y-1">
+                              {hints.counterarguments.map((ca, i) => (
+                                <li key={i} className="text-xs text-coral-600 flex items-start gap-1">
+                                  <span>-</span> {ca}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Vocabulary */}
+                        {hints.vocabularyTips.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {hints.vocabularyTips.map((v, i) => (
+                              <Badge key={i} variant="outline" size="sm">{v}</Badge>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* How It Works - Phase Guide */}
+                  <div className="mt-6 p-4 bg-ink-50 rounded-xl">
+                    <h4 className="text-sm font-semibold text-ink-700 mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      How It Works
+                    </h4>
+                    <ol className="space-y-2">
+                      {currentFormatPhases.map((fp, i) => (
+                        <li key={fp.phase} className="flex items-start gap-2 text-sm text-ink-600">
+                          <span className="font-mono text-xs bg-ink-200 text-ink-700 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          <div>
+                            <span className="font-medium text-ink-700">{fp.name}</span>
+                            <span className="text-ink-500"> ({fp.minutes} min)</span>
+                            <span className="text-ink-400"> — {
+                              fp.phase === 'opening' ? 'Present your main argument' :
+                              fp.phase === 'rebuttal' ? 'Counter the opponent\'s points' :
+                              fp.phase === 'closing' ? 'Summarize and make your final appeal' :
+                              fp.phase === 'constructive' ? 'Build your case with evidence' :
+                              fp.phase === 'cross_exam' ? 'Challenge the opponent with questions' :
+                              fp.phase === 'wsc_rebuttal' ? 'Address opponent\'s arguments' :
+                              fp.phase === 'summary' ? 'Wrap up with your strongest points' :
+                              'Speak or type your argument'
+                            }</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                    <p className="text-xs text-ink-400 mt-3">
+                      After each speech, AI gives you feedback with a score. You and the AI opponent take turns.
+                    </p>
+                  </div>
+
                   <Button
                     variant="gold"
                     onClick={() => {
-                      setState((prev) => ({ ...prev, phase: 'opening', timeRemaining: 90 }));
+                      const firstPhase = currentFormatPhases[0];
+                      setState((prev) => ({
+                        ...prev,
+                        phase: firstPhase.phase,
+                        timeRemaining: firstPhase.minutes * 60,
+                      }));
                     }}
                     className="mt-6"
+                    size="lg"
                   >
-                    I'm Ready to Debate!
+                    I&apos;m Ready to Debate!
                   </Button>
                 </CardContent>
               </Card>
@@ -795,6 +1249,10 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
       case 'opening':
       case 'rebuttal':
       case 'closing':
+      case 'constructive':
+      case 'cross_exam':
+      case 'wsc_rebuttal':
+      case 'summary':
         return (
           <div className="flex-1 flex flex-col p-6">
             <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col">
@@ -829,6 +1287,86 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
                   </span>
                 </div>
               </div>
+
+              {/* Collapsible Hints Sidebar */}
+              {hints && isMyTurn && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mb-4"
+                >
+                  <button
+                    onClick={() => setShowHints(!showHints)}
+                    className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-800 mb-2"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span className="font-medium">AI Hints</span>
+                    {showHints ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                    <span className="text-xs text-ink-400">
+                      ({coveredPoints.size}/{hints.talkingPoints.length} covered)
+                    </span>
+                  </button>
+                  <AnimatePresence>
+                    {showHints && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
+                          {hints.talkingPoints.map((tp, i) => (
+                            <button
+                              key={i}
+                              onClick={() => toggleCoveredPoint(i)}
+                              className="w-full flex items-start gap-2 text-left"
+                            >
+                              <CheckCircle2
+                                className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                                  coveredPoints.has(i) ? 'text-sage-600' : 'text-ink-300'
+                                }`}
+                              />
+                              <span className={`text-xs ${
+                                coveredPoints.has(i)
+                                  ? 'text-sage-600 line-through'
+                                  : 'text-ink-600'
+                              }`}>
+                                {tp.point}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+
+              {/* Phase Instruction Banner */}
+              {isMyTurn && (
+                <motion.div
+                  key={state.phase}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-3 bg-gold-50 border border-gold-200 rounded-xl"
+                >
+                  <p className="text-sm text-gold-800 font-medium">
+                    {state.phase === 'opening' || state.phase === 'constructive'
+                      ? '🎤 Your turn! Present your main argument. Speak into your mic or type below.'
+                      : state.phase === 'rebuttal' || state.phase === 'wsc_rebuttal'
+                      ? '🔄 Rebuttal time! Address what the opponent said and defend your position.'
+                      : state.phase === 'closing' || state.phase === 'summary'
+                      ? '🏁 Final statement! Summarize your best points and make a strong closing.'
+                      : state.phase === 'cross_exam'
+                      ? '❓ Cross-examination! Ask pointed questions to challenge the opponent.'
+                      : '🎤 Your turn to speak or type your argument.'}
+                  </p>
+                </motion.div>
+              )}
 
               {/* Speech Area */}
               {isMyTurn ? (
@@ -945,8 +1483,8 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
       title="Mini Debate"
       subtitle={state.phase !== 'waiting' ? state.topic.topic : 'AI-Powered Practice'}
       players={[{ id: 'solo', display_name: 'You', avatar_color: '#6366F1', score: state.totalScore, is_ready: true, is_connected: true }]}
-      timeRemaining={['prep', 'opening', 'rebuttal', 'closing'].includes(state.phase) ? state.timeRemaining : undefined}
-      showTimer={['prep', 'opening', 'rebuttal', 'closing'].includes(state.phase)}
+      timeRemaining={activePhases.includes(state.phase) ? state.timeRemaining : undefined}
+      showTimer={activePhases.includes(state.phase)}
       showRound={false}
       onBack={handleExit}
     >
@@ -969,6 +1507,23 @@ function generateAISpeech(phase: string, position: 'pro' | 'con', topic: DebateT
     closing: {
       pro: `In conclusion, supporting this position leads to better outcomes for everyone. I urge you to consider the evidence and the positive impact this could have. Vote in favor of progress.`,
       con: `To summarize, we must be cautious about making changes without fully understanding the consequences. The current approach has merits we shouldn't dismiss lightly.`,
+    },
+    // WSC format phases
+    constructive: {
+      pro: `I firmly believe that ${topic.proPosition.toLowerCase()} Let me present my constructive case with three key arguments. First, the evidence from recent studies demonstrates clear benefits. Second, historical precedent supports this position. Third, the stakeholders most affected stand to gain significantly. The data is compelling and the logic is sound.`,
+      con: `I stand against the proposition. ${topic.conPosition} My constructive case rests on three pillars. First, the proposed change carries unacceptable risks. Second, current frameworks already address the core issues. Third, the opportunity cost of this approach diverts resources from proven solutions.`,
+    },
+    cross_exam: {
+      pro: `I would ask my opponent: how do you account for the growing body of evidence that supports our position? Can you explain why your alternative has failed in similar contexts? What specific harm do you foresee that outweighs the documented benefits?`,
+      con: `I challenge my opponent to explain: what safeguards prevent the risks I outlined? How do you address the cases where this approach has failed? Can you quantify the actual benefits beyond theoretical projections?`,
+    },
+    wsc_rebuttal: {
+      pro: `My opponent's cross-examination reveals gaps in their analysis. They cannot adequately explain away the evidence I presented. Their concerns, while understandable, are mitigated by the safeguards built into this approach. The benefits remain clear and compelling.`,
+      con: `The cross-examination exposed fundamental weaknesses in the proposition. My opponent relies on optimistic projections rather than proven outcomes. The risks I identified remain unaddressed. We must proceed with caution rather than optimism.`,
+    },
+    summary: {
+      pro: `In summary, the weight of evidence, precedent, and logic all support our position. We have demonstrated clear benefits, addressed concerns, and shown that this path forward serves the greatest good. I urge you to vote in favor.`,
+      con: `To conclude, the proposition has not met its burden of proof. The risks are real, the evidence is contested, and better alternatives exist. Prudence demands we reject this approach and pursue more measured solutions.`,
     },
   };
 

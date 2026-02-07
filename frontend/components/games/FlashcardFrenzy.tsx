@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Zap, RotateCcw, Check, X, ArrowRight, Star, Trophy } from 'lucide-react';
+import { Zap, RotateCcw, Check, X, ArrowRight, Star, Trophy, CalendarClock } from 'lucide-react';
 import { Button, Card, CardContent, Badge, Progress } from '@/components/ui';
 import { GameLayout, WaitingRoom, GameOver } from './GameLayout';
-import { type Question } from '@/lib/games/types';
+import { type Question, type FlashcardProgress } from '@/lib/games/types';
 import { gamesApi } from '@/lib/api/client';
+import { getStorage, setStorage, STORAGE_KEYS } from '@/lib/storage';
+import { useSounds } from '@/lib/hooks/useSounds';
 
 interface FlashcardFrenzyProps {
   sessionId?: string;
@@ -24,6 +26,53 @@ interface Flashcard {
   subject: string;
 }
 
+// SM-2 spaced repetition algorithm
+function calculateNextReview(progress: FlashcardProgress, quality: number): FlashcardProgress {
+  let { easeFactor, interval, repetitions } = progress;
+
+  if (quality >= 3) {
+    if (repetitions === 0) interval = 1;
+    else if (repetitions === 1) interval = 3;
+    else interval = Math.round(interval * easeFactor);
+    repetitions += 1;
+  } else {
+    repetitions = 0;
+    interval = 1;
+  }
+
+  easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+
+  const nextReview = new Date();
+  nextReview.setDate(nextReview.getDate() + interval);
+
+  return {
+    ...progress,
+    easeFactor,
+    interval,
+    repetitions,
+    nextReview: nextReview.toISOString(),
+  };
+}
+
+function getProgressMap(): Record<string, FlashcardProgress> {
+  return getStorage<Record<string, FlashcardProgress>>(STORAGE_KEYS.FLASHCARD_PROGRESS, {});
+}
+
+function saveProgressMap(map: Record<string, FlashcardProgress>): void {
+  setStorage(STORAGE_KEYS.FLASHCARD_PROGRESS, map);
+}
+
+function isDueForReview(progress: FlashcardProgress | undefined): boolean {
+  if (!progress) return true; // new card
+  return new Date(progress.nextReview) <= new Date();
+}
+
+function getDifficultyColor(easeFactor: number): string {
+  if (easeFactor >= 2.3) return 'bg-sage-500';
+  if (easeFactor >= 1.8) return 'bg-gold-500';
+  return 'bg-coral-500';
+}
+
 /**
  * FlashcardFrenzy - Speed flashcard practice
  * Flip cards and mark them as known or need practice
@@ -36,6 +85,10 @@ export function FlashcardFrenzy({
   subject = 'mixed',
   difficulty = 'medium',
 }: FlashcardFrenzyProps) {
+  const sounds = useSounds();
+  const [progressMap, setProgressMap] = useState<Record<string, FlashcardProgress>>({});
+  const [dueCount, setDueCount] = useState(0);
+
   const [state, setState] = useState({
     phase: 'loading' as 'loading' | 'waiting' | 'playing' | 'ended',
     cards: [] as Flashcard[],
@@ -46,6 +99,12 @@ export function FlashcardFrenzy({
     startTime: 0,
     endTime: 0,
   });
+
+  // Load flashcard progress from localStorage on mount
+  useEffect(() => {
+    const saved = getProgressMap();
+    setProgressMap(saved);
+  }, []);
 
   // Load questions and convert to flashcards
   useEffect(() => {
@@ -75,10 +134,26 @@ export function FlashcardFrenzy({
         subject: q.subject,
       }));
 
-      setState((prev) => ({ ...prev, cards, phase: 'waiting' }));
+      // Sort: cards due for review first, then new cards, then future reviews
+      const saved = getProgressMap();
+      const sorted = [...cards].sort((a, b) => {
+        const pa = saved[a.id];
+        const pb = saved[b.id];
+        const aDue = isDueForReview(pa);
+        const bDue = isDueForReview(pb);
+        if (aDue && !bDue) return -1;
+        if (!aDue && bDue) return 1;
+        if (!pa && pb) return -1; // new cards before reviewed future cards
+        if (pa && !pb) return 1;
+        return 0;
+      });
+
+      const due = sorted.filter((c) => isDueForReview(saved[c.id]));
+      setDueCount(due.length);
+
+      setState((prev) => ({ ...prev, cards: sorted, phase: 'waiting' }));
     } catch (err) {
       console.error('Failed to load flashcards:', err);
-      // Use fallback cards
       setState((prev) => ({
         ...prev,
         cards: FALLBACK_CARDS,
@@ -100,11 +175,31 @@ export function FlashcardFrenzy({
   };
 
   const handleFlip = () => {
+    sounds.play('flip');
     setState((prev) => ({ ...prev, isFlipped: !prev.isFlipped }));
   };
 
+  const updateCardProgress = useCallback((cardId: string, quality: number) => {
+    setProgressMap((prev) => {
+      const existing = prev[cardId] || {
+        questionId: cardId,
+        easeFactor: 2.5,
+        interval: 0,
+        repetitions: 0,
+        nextReview: new Date().toISOString(),
+      };
+      const updated = calculateNextReview(existing, quality);
+      const newMap = { ...prev, [cardId]: updated };
+      saveProgressMap(newMap);
+      return newMap;
+    });
+  }, []);
+
   const handleKnown = () => {
     const currentCard = state.cards[state.currentIndex];
+    sounds.play('correct');
+    updateCardProgress(currentCard.id, 5);
+
     setState((prev) => {
       const newKnown = [...prev.knownCards, currentCard.id];
       const isLastCard = prev.currentIndex >= prev.cards.length - 1;
@@ -129,6 +224,8 @@ export function FlashcardFrenzy({
 
   const handlePractice = () => {
     const currentCard = state.cards[state.currentIndex];
+    updateCardProgress(currentCard.id, 1);
+
     setState((prev) => {
       const newPractice = [...prev.practiceCards, currentCard.id];
       const isLastCard = prev.currentIndex >= prev.cards.length - 1;
@@ -204,8 +301,18 @@ export function FlashcardFrenzy({
               <p className="text-ink-600 mb-4">
                 {state.cards.length} cards ready to review
               </p>
+
+              {dueCount > 0 && (
+                <div className="flex items-center justify-center gap-2 mb-4 text-coral-700 bg-coral-50 rounded-xl py-2 px-4">
+                  <CalendarClock className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    {dueCount} card{dueCount !== 1 ? 's' : ''} due for review today
+                  </span>
+                </div>
+              )}
+
               <p className="text-ink-500 text-sm mb-8">
-                Tap to flip each card. Mark cards as "Got it" or "Practice" to track your progress.
+                Tap to flip each card. Mark cards as &quot;Got it&quot; or &quot;Practice&quot; to track your progress.
               </p>
               <Button variant="gold" size="lg" onClick={handleStart}>
                 Start Review
@@ -254,9 +361,19 @@ export function FlashcardFrenzy({
                       className="absolute inset-0 bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center justify-center backface-hidden"
                       style={{ backfaceVisibility: 'hidden' }}
                     >
-                      <Badge variant="outline" className="mb-4">
-                        {currentCard?.subject?.replace('_', ' ').toUpperCase() || 'MIXED'}
-                      </Badge>
+                      <div className="flex items-center gap-2 mb-4">
+                        <Badge variant="outline">
+                          {currentCard?.subject?.replace('_', ' ').toUpperCase() || 'MIXED'}
+                        </Badge>
+                        {currentCard && (
+                          <span
+                            className={`w-3 h-3 rounded-full ${getDifficultyColor(
+                              progressMap[currentCard.id]?.easeFactor ?? 2.5
+                            )}`}
+                            title={`Ease: ${(progressMap[currentCard.id]?.easeFactor ?? 2.5).toFixed(1)}`}
+                          />
+                        )}
+                      </div>
                       <p className="font-display text-xl md:text-2xl text-ink-800 text-center leading-relaxed">
                         {currentCard?.front}
                       </p>

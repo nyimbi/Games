@@ -128,6 +128,7 @@ class SessionCreate(BaseModel):
 	scheduled_at: datetime | None = None
 	games: list[GameType] = Field(..., min_length=1)
 	difficulty: Difficulty = Difficulty.MEDIUM
+	team_id: int | None = None
 
 
 class SessionUpdate(BaseModel):

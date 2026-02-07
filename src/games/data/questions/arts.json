@@ -8,7 +8,10 @@
       "options": ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Michelangelo"],
       "correct_index": 1,
       "explanation": "Leonardo da Vinci painted the Mona Lisa between 1503-1519.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The Mona Lisa's journey from Florence to the Louvre mirrors art's journey from private patronage to public treasure.",
+      "deep_explanation": "Leonardo began the Mona Lisa (also called 'La Gioconda') around 1503 and may have continued working on it until 1517. The subject is believed to be Lisa Gherardini, wife of Florentine merchant Francesco del Giocondo. The painting's fame skyrocketed after it was stolen from the Louvre in 1911 by an Italian handyman, making international headlines. Leonardo used his signature 'sfumato' technique — thin, translucent layers of paint creating a smoky, mysterious effect around the eyes and mouth.",
+      "tags": ["painting", "Renaissance", "Leonardo", "Louvre"]
     },
     {
       "id": "art-002",
@@ -17,7 +20,10 @@
       "options": ["Red, Yellow, Blue", "Red, Green, Blue", "Cyan, Magenta, Yellow", "Orange, Purple, Green"],
       "correct_index": 0,
       "explanation": "In traditional art, red, yellow, and blue are primary colors that cannot be mixed from other colors.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Color theory has journeyed from Newton's prism experiments to modern digital displays, changing how we see the world.",
+      "deep_explanation": "In traditional (subtractive) color theory used in painting, red, yellow, and blue are primary colors because they cannot be created by mixing other pigments. Mixing two primaries creates secondaries: red+yellow=orange, yellow+blue=green, blue+red=purple. Note that digital screens use a different (additive) system with red, green, and blue (RGB), and modern printing uses cyan, magenta, yellow, and black (CMYK). Isaac Newton first demonstrated the color spectrum using a prism in 1666.",
+      "tags": ["color-theory", "fundamentals", "painting", "visual-arts"]
     },
     {
       "id": "art-003",
@@ -26,7 +32,10 @@
       "options": ["Guitar", "Violin", "Piano", "Flute"],
       "correct_index": 2,
       "explanation": "A standard piano has 88 keys: 52 white and 36 black.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The piano's evolution from harpsichord to modern concert grand represents a 300-year journey of acoustic engineering.",
+      "deep_explanation": "The modern piano has 88 keys spanning 7 full octaves plus a few extra notes (A0 to C8). The instrument was invented around 1700 by Bartolomeo Cristofori in Italy, originally called 'pianoforte' because unlike the harpsichord, it could play both soft (piano) and loud (forte). The 88-key standard was established by Steinway in the 1880s. A concert grand piano contains over 12,000 individual parts and approximately 230 strings under 20 tons of combined tension.",
+      "tags": ["music", "instruments", "piano", "keyboard"]
     },
     {
       "id": "art-004",
@@ -35,7 +44,10 @@
       "options": ["Mozart", "Bach", "Beethoven", "Chopin"],
       "correct_index": 2,
       "explanation": "Ludwig van Beethoven composed Für Elise around 1810.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Beethoven's journey from hearing loss to composing some of history's greatest music shows that obstacles don't prevent arrival.",
+      "deep_explanation": "Für Elise (Bagatelle No. 25 in A minor) was composed around 1810 but not published until 1867, 40 years after Beethoven's death. The identity of 'Elise' remains debated — she may have been Therese Malfatti, a woman Beethoven proposed to (and who rejected him). Despite beginning to lose his hearing in his late 20s and becoming almost completely deaf by his 40s, Beethoven continued composing masterworks including his 9th Symphony, demonstrating extraordinary inner hearing ability.",
+      "tags": ["music", "classical", "Beethoven", "composition"]
     },
     {
       "id": "art-005",
@@ -44,7 +56,10 @@
       "options": ["Impressionism", "Surrealism", "Cubism", "Pop Art"],
       "correct_index": 1,
       "explanation": "Dalí was a leading figure in Surrealism, known for his striking and bizarre imagery.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Surrealism questioned whether 'reality' is a destination we've ever truly reached, suggesting the subconscious holds deeper truths.",
+      "deep_explanation": "Surrealism emerged in the 1920s from the Dada movement, heavily influenced by Sigmund Freud's theories of the unconscious mind. André Breton wrote the Surrealist Manifesto in 1924, defining it as 'pure psychic automatism.' Dalí joined in 1929 and became its most famous practitioner. His 'paranoiac-critical method' involved deliberately inducing hallucinatory states to access irrational imagery. His most famous work, 'The Persistence of Memory' (1931), with its melting clocks, challenged conventional perceptions of time and reality.",
+      "tags": ["art-movements", "Surrealism", "Dali", "modern-art"]
     },
     {
       "id": "art-006",

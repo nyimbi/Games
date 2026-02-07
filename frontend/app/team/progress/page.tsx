@@ -91,6 +91,7 @@ export default function ProgressPage() {
           <div className="flex items-center gap-4">
             <Avatar
               name={user?.display_name || 'Player'}
+              animal={user?.avatar}
               color={user?.avatar_color}
               size="lg"
             />

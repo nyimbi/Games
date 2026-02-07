@@ -33,6 +33,11 @@ class Question(BaseModel):
 	correct_index: int = Field(..., ge=0)
 	explanation: str | None = None
 	time_limit_seconds: int = Field(default=30, ge=5, le=120)
+	theme_connection: str | None = None
+	deep_explanation: str | None = None
+	related_questions: list[str] = Field(default_factory=list)
+	tags: list[str] = Field(default_factory=list)
+	source: str | None = None
 
 	def is_correct(self, answer_index: int) -> bool:
 		"""Check if the given answer is correct."""

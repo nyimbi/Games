@@ -18,6 +18,28 @@ def generate_team_code() -> str:
 	return secrets.token_hex(3).upper()
 
 
+async def generate_scholar_code(conn, avatar: str, display_name: str) -> str:
+	"""Generate a unique AVATAR-FIRSTNAME scholar code (e.g. OWL-SIPHO).
+
+	If the base code already exists, appends an incrementing number (OWL-SIPHO2, OWL-SIPHO3, etc.)."""
+	avatar_upper = avatar.upper()
+	# Use first name only (first word), strip non-alpha chars
+	first_name = display_name.split()[0].upper() if display_name.strip() else "SCHOLAR"
+	first_name = "".join(c for c in first_name if c.isalpha()) or "SCHOLAR"
+
+	base_code = f"{avatar_upper}-{first_name}"
+	code = base_code
+	for suffix in range(2, 100):
+		existing = await conn.fetchrow(
+			"SELECT 1 FROM users WHERE scholar_code = $1",
+			code,
+		)
+		if existing is None:
+			return code
+		code = f"{base_code}{suffix}"
+	raise RuntimeError("Failed to generate unique scholar code after 98 attempts")
+
+
 async def get_user_by_id(user_id: int) -> User | None:
 	"""Get a user by ID."""
 	async with get_connection() as conn:
@@ -33,24 +55,51 @@ async def get_user_by_id(user_id: int) -> User | None:
 			role=UserRole(row["role"]),
 			team_id=row["team_id"],
 			avatar_color=row["avatar_color"],
+			scholar_code=row["scholar_code"],
+			avatar=row["avatar"] or "fox",
+			created_at=row["created_at"],
+		)
+
+
+async def get_user_by_scholar_code(code: str) -> User | None:
+	"""Look up a user by scholar code (case-insensitive)."""
+	normalized = code.strip().upper()
+	async with get_connection() as conn:
+		row = await conn.fetchrow(
+			"SELECT * FROM users WHERE scholar_code = $1",
+			normalized,
+		)
+		if row is None:
+			return None
+		return User(
+			id=row["id"],
+			display_name=row["display_name"],
+			role=UserRole(row["role"]),
+			team_id=row["team_id"],
+			avatar_color=row["avatar_color"],
+			scholar_code=row["scholar_code"],
+			avatar=row["avatar"] or "fox",
 			created_at=row["created_at"],
 		)
 
 
 async def create_user(user_data: UserCreate) -> User:
-	"""Create a new user."""
+	"""Create a new user with a generated scholar code."""
 	now = datetime.utcnow()
 
 	async with get_connection() as conn:
+		scholar_code = await generate_scholar_code(conn, user_data.avatar or "fox", user_data.display_name)
 		row = await conn.fetchrow(
 			"""
-			INSERT INTO users (display_name, role, avatar_color, created_at)
-			VALUES ($1, $2, $3, $4)
+			INSERT INTO users (display_name, role, avatar_color, avatar, scholar_code, created_at)
+			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id
 			""",
 			user_data.display_name,
 			user_data.role.value,
 			user_data.avatar_color or "#6b9080",
+			user_data.avatar or "fox",
+			scholar_code,
 			now,
 		)
 		user_id = row["id"]
@@ -60,16 +109,36 @@ async def create_user(user_data: UserCreate) -> User:
 		display_name=user_data.display_name,
 		role=user_data.role,
 		avatar_color=user_data.avatar_color or "#6b9080",
+		avatar=user_data.avatar or "fox",
+		scholar_code=scholar_code,
 		created_at=now,
 	)
 
 
 async def create_team(coach_id: int, team_data: TeamCreate) -> Team:
-	"""Create a new team."""
-	join_code = generate_team_code()
+	"""Create a new team. Uses custom join_code if provided, otherwise generates one."""
 	now = datetime.utcnow()
 
 	async with get_connection() as conn:
+		# Determine join code
+		if team_data.join_code:
+			code = team_data.join_code.strip().upper()
+			# Validate format: alphanumeric + hyphens, 4-12 chars
+			if not (4 <= len(code) <= 12):
+				raise ValueError("Team code must be 4-12 characters")
+			if not all(c.isalnum() or c == "-" for c in code):
+				raise ValueError("Team code must be alphanumeric (hyphens allowed)")
+			# Check uniqueness
+			existing = await conn.fetchrow(
+				"SELECT 1 FROM teams WHERE join_code = $1",
+				code,
+			)
+			if existing is not None:
+				raise ValueError(f"Team code '{code}' is already taken")
+			join_code = code
+		else:
+			join_code = generate_team_code()
+
 		# Create the team
 		row = await conn.fetchrow(
 			"""
@@ -166,7 +235,54 @@ async def get_team_members(team_id: int) -> list[User]:
 				role=UserRole(row["role"]),
 				team_id=row["team_id"],
 				avatar_color=row["avatar_color"],
+				scholar_code=row["scholar_code"],
+				avatar=row["avatar"] or "fox",
 				created_at=row["created_at"],
 			)
 			for row in rows
 		]
+
+
+async def get_coach_teams(coach_id: int) -> list[Team]:
+	"""Get all teams owned by a coach."""
+	async with get_connection() as conn:
+		rows = await conn.fetch(
+			"SELECT * FROM teams WHERE coach_id = $1 ORDER BY created_at DESC",
+			coach_id,
+		)
+		return [
+			Team(
+				id=row["id"],
+				name=row["name"],
+				join_code=row["join_code"],
+				coach_id=row["coach_id"],
+				created_at=row["created_at"],
+			)
+			for row in rows
+		]
+
+
+async def switch_active_team(coach_id: int, team_id: int) -> Team | None:
+	"""Switch a coach's active team pointer. Returns the team if valid, None otherwise."""
+	async with get_connection() as conn:
+		row = await conn.fetchrow(
+			"SELECT * FROM teams WHERE id = $1 AND coach_id = $2",
+			team_id,
+			coach_id,
+		)
+		if row is None:
+			return None
+
+		await conn.execute(
+			"UPDATE users SET team_id = $1 WHERE id = $2",
+			team_id,
+			coach_id,
+		)
+
+		return Team(
+			id=row["id"],
+			name=row["name"],
+			join_code=row["join_code"],
+			coach_id=row["coach_id"],
+			created_at=row["created_at"],
+		)

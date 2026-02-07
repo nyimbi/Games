@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 	secret_key: str = "change-me-in-production-use-a-real-secret-key"
 
 	# Database
-	database_url: str = "postgresql://azureuser:Abcd1234.@lindela16.postgres.database.azure.com:5432/scholar"
+	database_url: str = "postgresql://azureuser:Abcd1234.@lindela16.postgres.database.azure.com:5432/scholar?sslmode=require"
 
 	# JWT Auth
 	jwt_algorithm: str = "HS256"
@@ -34,6 +34,10 @@ class Settings(BaseSettings):
 		"http://127.0.0.1:3000",
 		"http://20.63.27.56:3000",
 		"http://20.63.27.56",
+		"https://llocal.com",
+		"http://llocal.com",
+		"https://www.llocal.com",
+		"http://www.llocal.com",
 	]
 
 	# Server

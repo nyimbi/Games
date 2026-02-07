@@ -94,16 +94,27 @@ deploy_frontend() {
         "${PROJECT_ROOT}/frontend/postcss.config.js" \
         "${SERVER_USER}@${SERVER_IP}:~/${REMOTE_BASE}/frontend/" 2>/dev/null || true
 
-    # Create/update .env with correct server IP
-    # Note: NEXT_PUBLIC_API_URL is client-side, so it needs the actual server IP, not localhost
+    # Create/update .env with correct API URL
+    # If nginx+SSL is configured, use the domain; otherwise fall back to direct IP
     ssh ${SSH_OPTS} "${SERVER_USER}@${SERVER_IP}" bash -s "${SERVER_IP}" << 'REMOTE_SCRIPT'
 SERVER_IP="$1"
 FRONTEND_DIR="${HOME}/src/games/frontend"
 echo "Creating/updating frontend .env..."
+
+# Check if nginx is serving llocal.com with SSL
+if nginx -t &>/dev/null 2>&1 && [ -f /etc/letsencrypt/live/llocal.com/fullchain.pem ] 2>/dev/null; then
+    API_URL="https://llocal.com/api"
+elif nginx -t &>/dev/null 2>&1 && [ -f /etc/nginx/sites-enabled/llocal.com ]; then
+    API_URL="http://llocal.com/api"
+else
+    API_URL="http://${SERVER_IP}:8000/api"
+fi
+
 cat > "${FRONTEND_DIR}/.env" << EOF
 NODE_ENV=production
-NEXT_PUBLIC_API_URL=http://${SERVER_IP}:8000/api
+NEXT_PUBLIC_API_URL=${API_URL}
 EOF
+echo "Frontend API URL set to: ${API_URL}"
 REMOTE_SCRIPT
 
     log_success "Frontend deployed"
@@ -144,22 +155,27 @@ deploy_backend() {
     ssh ${SSH_OPTS} "${SERVER_USER}@${SERVER_IP}" bash -s << 'REMOTE_SCRIPT'
 BACKEND_DIR="${HOME}/src/games/backend"
 
-# Create .env if needed
+# Create .env if needed (defaults in config.py handle DB and CORS correctly)
 if [ ! -f "${BACKEND_DIR}/.env" ]; then
     echo "Creating backend .env..."
-    cat > "${BACKEND_DIR}/.env" << 'EOF'
-DATABASE_URL=sqlite:///./data/games.db
-JWT_SECRET=change-this-in-production
-CORS_ORIGINS=http://localhost:3000
+    cat > "${BACKEND_DIR}/.env" << EOF
+# Database URL defaults to Azure PostgreSQL in config.py
+# Only set here to override
+DEBUG=false
 EOF
 fi
 
-# Install Python dependencies
+# Install Python dependencies using venv
 cd "${BACKEND_DIR}"
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv .venv
+fi
+source .venv/bin/activate
 if command -v uv &> /dev/null; then
     echo "Installing backend dependencies with uv..."
-    uv sync --no-dev 2>/dev/null || uv pip install -e . 2>/dev/null || pip install -e .
-elif command -v pip &> /dev/null; then
+    uv pip install -e . 2>/dev/null || pip install -e .
+else
     echo "Installing backend dependencies with pip..."
     pip install -e .
 fi
@@ -205,8 +221,10 @@ else
         if pm2 describe games-backend &>/dev/null 2>&1; then
             pm2 restart games-backend
         else
-            pm2 start "uv run python -m games.api" --name "games-backend" 2>/dev/null || \
-            pm2 start "python -m games.api" --name "games-backend"
+            pm2 start "${REMOTE_BACKEND}/.venv/bin/python" \
+                --name "games-backend" \
+                --cwd "${REMOTE_BACKEND}" \
+                -- -m uvicorn games.api:app --host 0.0.0.0 --port 8000
         fi
 
         pm2 save
@@ -214,7 +232,7 @@ else
         echo ""
         echo "NOTICE: No service manager found. Start services manually:"
         echo "  Frontend: cd ${REMOTE_FRONTEND} && npm start"
-        echo "  Backend:  cd ${REMOTE_BACKEND} && uv run python -m games.api"
+        echo "  Backend:  cd ${REMOTE_BACKEND} && .venv/bin/python -m games.api"
         echo ""
     fi
 fi

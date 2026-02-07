@@ -2,10 +2,11 @@
 
 import { ReactNode } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Users, Clock, Trophy } from 'lucide-react';
+import { ArrowLeft, Users, Clock, Trophy, Volume2, VolumeX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button, Avatar, Badge, TimerDisplay } from '@/components/ui';
 import { type GamePlayer } from '@/lib/games/types';
+import { useSounds } from '@/lib/hooks/useSounds';
 
 interface GameLayoutProps {
   title: string;
@@ -37,6 +38,7 @@ export function GameLayout({
   footer,
 }: GameLayoutProps) {
   const router = useRouter();
+  const { muted, toggleMute } = useSounds();
 
   const handleBack = () => {
     if (onBack) {
@@ -86,6 +88,14 @@ export function GameLayout({
               />
             )}
 
+            <button
+              onClick={toggleMute}
+              className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
+              title={muted ? 'Unmute sounds' : 'Mute sounds'}
+            >
+              {muted ? <VolumeX className="w-4 h-4 text-ink-400" /> : <Volume2 className="w-4 h-4 text-ink-500" />}
+            </button>
+
             {headerAction}
           </div>
         </div>
@@ -115,6 +125,7 @@ export function GameLayout({
                 )}
                 <Avatar
                   name={player.display_name}
+                  animal={player.avatar}
                   color={player.avatar_color}
                   size="xs"
                 />
@@ -332,6 +343,7 @@ export function GameOver({ players, winnerId, onPlayAgain, onExit }: GameOverPro
                 </span>
                 <Avatar
                   name={player.display_name}
+                  animal={player.avatar}
                   color={player.avatar_color}
                   size="sm"
                 />

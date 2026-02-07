@@ -34,13 +34,16 @@ from games.models.session import (
 	SessionUpdate,
 )
 from games.models.user import (
+	ANIMAL_AVATARS,
 	Team,
 	TeamCode,
 	TeamCreate,
 	TeamJoin,
+	TeamSwitch,
 	User,
 	UserCreate,
 	UserRole,
+	ScholarCodeLookup,
 )
 
 __all__ = [
@@ -52,6 +55,9 @@ __all__ = [
 	"TeamCode",
 	"TeamCreate",
 	"TeamJoin",
+	"TeamSwitch",
+	"ScholarCodeLookup",
+	"ANIMAL_AVATARS",
 	# Session models
 	"Session",
 	"SessionCreate",

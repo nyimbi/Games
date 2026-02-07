@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   GraduationCap,
   LayoutDashboard,
@@ -12,8 +12,11 @@ import {
   LogOut,
   Menu,
   X,
+  ChevronDown,
+  Plus,
+  Check,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Avatar } from '@/components/ui';
 
@@ -25,15 +28,118 @@ const navItems = [
   { href: '/coach/analytics', icon: BarChart3, label: 'Analytics' },
 ];
 
+function TeamSelector({ onCreateTeam }: { onCreateTeam: () => void }) {
+  const { team, teams, switchTeam } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [switching, setSwitching] = useState<number | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleSwitch = async (teamId: number) => {
+    if (teamId === team?.id) {
+      setOpen(false);
+      return;
+    }
+    setSwitching(teamId);
+    try {
+      await switchTeam(teamId);
+      setOpen(false);
+    } catch (err) {
+      console.error('Failed to switch team:', err);
+    } finally {
+      setSwitching(null);
+    }
+  };
+
+  if (teams.length === 0 && !team) return null;
+
+  return (
+    <div ref={ref} className="relative mb-4">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full px-4 py-3 bg-ink-700 hover:bg-ink-600 rounded-xl transition-colors flex items-center justify-between"
+      >
+        <div className="text-left min-w-0">
+          <span className="text-xs text-ink-400 block">Team</span>
+          <span className="font-medium text-cream-100 truncate block">
+            {team?.name || 'Select team'}
+          </span>
+        </div>
+        {teams.length > 1 && (
+          <ChevronDown className={`w-4 h-4 text-ink-400 shrink-0 ml-2 transition-transform ${open ? 'rotate-180' : ''}`} />
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && teams.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="absolute left-0 right-0 mt-1 bg-ink-700 rounded-xl border border-ink-600 overflow-hidden z-50 shadow-lg"
+          >
+            <div className="max-h-48 overflow-y-auto py-1">
+              {teams.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => handleSwitch(t.id)}
+                  disabled={switching !== null}
+                  className={`w-full px-4 py-2.5 flex items-center justify-between text-left transition-colors ${
+                    t.id === team?.id
+                      ? 'bg-gold-500/20 text-gold-300'
+                      : 'text-ink-200 hover:bg-ink-600'
+                  }`}
+                >
+                  <span className="truncate text-sm font-medium">{t.name}</span>
+                  {t.id === team?.id && <Check className="w-4 h-4 shrink-0 ml-2" />}
+                  {switching === t.id && (
+                    <div className="w-4 h-4 border-2 border-ink-400 border-t-cream-100 rounded-full animate-spin shrink-0 ml-2" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-ink-600">
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  onCreateTeam();
+                }}
+                className="w-full px-4 py-2.5 flex items-center gap-2 text-sm text-gold-400 hover:bg-ink-600 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Create New Team
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function CoachNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, team, logout } = useAuth();
+  const { user, team, teams, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileTeamOpen, setMobileTeamOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  const handleCreateTeam = () => {
+    router.push('/coach/team');
   };
 
   return (
@@ -83,17 +189,14 @@ export function CoachNav() {
 
         {/* User Section */}
         <div className="p-4 border-t border-ink-700">
-          {team && (
-            <div className="mb-4 px-4 py-3 bg-ink-700 rounded-xl">
-              <span className="text-xs text-ink-400 block">Team</span>
-              <span className="font-medium text-cream-100">{team.name}</span>
-            </div>
-          )}
+          <TeamSelector onCreateTeam={handleCreateTeam} />
           <div className="flex items-center gap-3 px-4 py-2">
-            <Avatar name={user?.display_name || ''} color={user?.avatar_color} size="sm" />
+            <Avatar name={user?.display_name || ''} animal={user?.avatar} color={user?.avatar_color} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{user?.display_name}</p>
-              <p className="text-xs text-ink-400 truncate">Coach</p>
+              <p className="text-xs text-ink-400 truncate">
+                Coach{teams.length > 1 ? ` · ${teams.length} teams` : ''}
+              </p>
             </div>
           </div>
           <button
@@ -159,9 +262,33 @@ export function CoachNav() {
               })}
             </ul>
 
+            {/* Mobile Team Selector */}
+            {teams.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-ink-700">
+                <button
+                  onClick={() => setMobileTeamOpen(!mobileTeamOpen)}
+                  className="w-full px-4 py-2.5 flex items-center justify-between text-ink-300"
+                >
+                  <span className="text-sm">
+                    Team: <span className="text-cream-100 font-medium">{team?.name}</span>
+                  </span>
+                  {teams.length > 1 && (
+                    <ChevronDown className={`w-4 h-4 transition-transform ${mobileTeamOpen ? 'rotate-180' : ''}`} />
+                  )}
+                </button>
+                <MobileTeamList
+                  open={mobileTeamOpen}
+                  onClose={() => {
+                    setMobileTeamOpen(false);
+                    setMobileMenuOpen(false);
+                  }}
+                />
+              </div>
+            )}
+
             <div className="mt-4 pt-4 border-t border-ink-700">
               <div className="flex items-center gap-3 px-4 py-2">
-                <Avatar name={user?.display_name || ''} color={user?.avatar_color} size="sm" />
+                <Avatar name={user?.display_name || ''} animal={user?.avatar} color={user?.avatar_color} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{user?.display_name}</p>
                 </div>
@@ -177,5 +304,62 @@ export function CoachNav() {
         </motion.div>
       </header>
     </>
+  );
+}
+
+function MobileTeamList({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { team, teams, switchTeam } = useAuth();
+  const router = useRouter();
+  const [switching, setSwitching] = useState<number | null>(null);
+
+  if (!open || teams.length <= 1) return null;
+
+  const handleSwitch = async (teamId: number) => {
+    if (teamId === team?.id) {
+      onClose();
+      return;
+    }
+    setSwitching(teamId);
+    try {
+      await switchTeam(teamId);
+      onClose();
+    } catch (err) {
+      console.error('Failed to switch team:', err);
+    } finally {
+      setSwitching(null);
+    }
+  };
+
+  return (
+    <div className="mt-1 space-y-1">
+      {teams.map((t) => (
+        <button
+          key={t.id}
+          onClick={() => handleSwitch(t.id)}
+          disabled={switching !== null}
+          className={`w-full px-6 py-2 flex items-center justify-between text-sm rounded-lg transition-colors ${
+            t.id === team?.id
+              ? 'text-gold-300 bg-ink-700'
+              : 'text-ink-300 hover:bg-ink-700'
+          }`}
+        >
+          <span>{t.name}</span>
+          {t.id === team?.id && <Check className="w-4 h-4" />}
+          {switching === t.id && (
+            <div className="w-4 h-4 border-2 border-ink-400 border-t-cream-100 rounded-full animate-spin" />
+          )}
+        </button>
+      ))}
+      <button
+        onClick={() => {
+          router.push('/coach/team');
+          onClose();
+        }}
+        className="w-full px-6 py-2 flex items-center gap-2 text-sm text-gold-400 hover:bg-ink-700 rounded-lg transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        Create New Team
+      </button>
+    </div>
   );
 }

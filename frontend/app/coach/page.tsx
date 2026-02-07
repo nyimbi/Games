@@ -35,12 +35,14 @@ const itemVariants = {
 
 export default function CoachDashboard() {
   const router = useRouter();
-  const { user, team, teamMembers, createTeam, refreshTeam } = useAuth();
+  const { user, team, teams, teamMembers, createTeam, refreshTeam } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [teamName, setTeamName] = useState('');
+  const [teamCode, setTeamCode] = useState('');
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
@@ -63,12 +65,15 @@ export default function CoachDashboard() {
     if (!teamName.trim()) return;
 
     setIsCreatingTeam(true);
+    setCreateError('');
     try {
-      await createTeam(teamName.trim());
+      await createTeam(teamName.trim(), teamCode.trim() || undefined);
       setShowCreateTeam(false);
       setTeamName('');
-    } catch (err) {
-      console.error('Failed to create team:', err);
+      setTeamCode('');
+    } catch (err: any) {
+      const msg = err?.data?.detail || 'Failed to create team';
+      setCreateError(msg);
     } finally {
       setIsCreatingTeam(false);
     }
@@ -101,7 +106,9 @@ export default function CoachDashboard() {
               Welcome, {user?.display_name}!
             </h1>
             <p className="text-ink-600 mt-1">
-              {team ? `Managing ${team.name}` : 'Set up your team to get started'}
+              {team
+                ? `Managing ${team.name}${teams.length > 1 ? ` (${teams.length} teams)` : ''}`
+                : 'Set up your team to get started'}
             </p>
           </div>
 
@@ -138,14 +145,25 @@ export default function CoachDashboard() {
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       placeholder="Team name"
-                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-4"
+                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-3"
                       autoFocus
                     />
+                    <input
+                      type="text"
+                      value={teamCode}
+                      onChange={(e) => setTeamCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 12))}
+                      placeholder="Custom team code (optional, e.g. LIONS)"
+                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-1 font-mono uppercase"
+                    />
+                    <p className="text-xs text-ink-400 mb-4">4-12 characters, letters, numbers, hyphens. Leave blank for auto-generated.</p>
+                    {createError && (
+                      <p className="text-sm text-coral-600 mb-3">{createError}</p>
+                    )}
                     <div className="flex gap-3 justify-center">
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => setShowCreateTeam(false)}
+                        onClick={() => { setShowCreateTeam(false); setCreateError(''); }}
                       >
                         Cancel
                       </Button>
@@ -220,6 +238,7 @@ export default function CoachDashboard() {
                           <Avatar
                             key={member.id}
                             name={member.display_name}
+                            animal={member.avatar}
                             color={member.avatar_color}
                             size="sm"
                             className="ring-2 ring-cream-100"
@@ -227,8 +246,11 @@ export default function CoachDashboard() {
                         ))}
                       </div>
                       <span className="text-ink-600 font-medium">
-                        {teamMembers.length} {teamMembers.length === 1 ? 'member' : 'members'}
+                        {teamMembers.filter(m => m.role === 'player').length}/5 scholars
                       </span>
+                      {teamMembers.filter(m => m.role === 'player').length >= 5 && (
+                        <Badge className="bg-coral-100 text-coral-700 ml-2">Full</Badge>
+                      )}
                     </div>
                   </div>
                 </div>

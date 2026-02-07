@@ -14,7 +14,7 @@ interface PatternPuzzlesProps {
 
 interface Pattern {
   id: string;
-  type: 'number' | 'letter' | 'shape' | 'color';
+  type: 'number' | 'letter' | 'shape' | 'color' | 'word' | 'concept' | 'chronology';
   sequence: string[];
   options: string[];
   correctIndex: number;
@@ -586,6 +586,235 @@ const PATTERNS: Pattern[] = [
     explanation: 'Simple counting: 1, 2, 3, 4, 5. Number emojis in order!',
     difficulty: 'easy',
   },
+  // =========================================================================
+  // CHRONOLOGY PATTERNS (historical order)
+  // =========================================================================
+  {
+    id: 'chrono-1',
+    type: 'chronology',
+    sequence: ['Wheel', 'Printing Press', 'Steam Engine', 'Telephone', '?'],
+    options: ['Television', 'Internet', 'Radio', 'Bicycle'],
+    correctIndex: 1,
+    hint: 'Think about major inventions in chronological order',
+    explanation: 'Major inventions timeline: Wheel (~3500 BCE) -> Printing Press (1440) -> Steam Engine (1712) -> Telephone (1876) -> Internet (1983). Each revolutionized how humanity moves, shares, or connects.',
+    difficulty: 'medium',
+  },
+  {
+    id: 'chrono-2',
+    type: 'chronology',
+    sequence: ['Columbus', 'Magellan', 'Cook', 'Armstrong', '?'],
+    options: ['Curiosity Rover', 'Hubble Telescope', 'Voyager 1', 'Mars Rover'],
+    correctIndex: 3,
+    hint: 'Famous explorers and exploration milestones in order',
+    explanation: 'Exploration milestones: Columbus (1492) -> Magellan (1519) -> Cook (1768) -> Armstrong on Moon (1969) -> Mars Rover (Perseverance, 2021). Humanity keeps pushing further!',
+    difficulty: 'hard',
+  },
+  {
+    id: 'chrono-3',
+    type: 'chronology',
+    sequence: ['Cave Paintings', 'Writing', 'Printing', 'Telegraph', '?'],
+    options: ['Television', 'Internet', 'Radio', 'Telephone'],
+    correctIndex: 1,
+    hint: 'How humans communicate through history',
+    explanation: 'Communication evolution: Cave Paintings (~40,000 years ago) -> Writing (~3400 BCE) -> Printing (1440) -> Telegraph (1837) -> Internet (1983). Each leap connected more people faster.',
+    difficulty: 'medium',
+  },
+  {
+    id: 'chrono-4',
+    type: 'chronology',
+    sequence: ['Ancient Greece', 'Roman Empire', 'Renaissance', 'Industrial Revolution', '?'],
+    options: ['Space Age', 'Bronze Age', 'Middle Ages', 'Stone Age'],
+    correctIndex: 0,
+    hint: 'Major eras of human civilization in order',
+    explanation: 'Civilization eras: Ancient Greece (~800 BCE) -> Roman Empire (~27 BCE) -> Renaissance (~1400s) -> Industrial Revolution (~1760s) -> Space Age (1957+). Each era built on the previous!',
+    difficulty: 'medium',
+  },
+  {
+    id: 'chrono-5',
+    type: 'chronology',
+    sequence: ['Bicycle', 'Automobile', 'Airplane', 'Rocket', '?'],
+    options: ['Hyperloop', 'Scooter', 'Boat', 'Train'],
+    correctIndex: 0,
+    hint: 'Transportation getting faster through time',
+    explanation: 'Transport evolution: Bicycle (1817) -> Automobile (1886) -> Airplane (1903) -> Rocket (1926) -> Hyperloop (proposed future). Each generation goes faster!',
+    difficulty: 'hard',
+  },
+  // =========================================================================
+  // WORD PATTERNS (text-based)
+  // =========================================================================
+  {
+    id: 'word-1',
+    type: 'word',
+    sequence: ['cat', 'hat', 'bat', 'mat', '?'],
+    options: ['dog', 'rat', 'cup', 'car'],
+    correctIndex: 1,
+    hint: 'These words all sound similar at the end',
+    explanation: 'Rhyming pattern: All words end in "-at": cat, hat, bat, mat, rat. They all rhyme!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'word-2',
+    type: 'word',
+    sequence: ['sun+flower', 'rain+bow', 'butter+fly', 'fire+work', '?'],
+    options: ['water+fall', 'thunder+storm', 'snow+ball', 'moon+light'],
+    correctIndex: 0,
+    hint: 'Two small words combine to make one bigger word',
+    explanation: 'Compound words: sunflower, rainbow, butterfly, firework, waterfall. Two words joined together to form a new meaning!',
+    difficulty: 'medium',
+  },
+  {
+    id: 'word-3',
+    type: 'word',
+    sequence: ['hot', 'cold', 'big', 'small', 'fast', '?'],
+    options: ['quick', 'slow', 'large', 'warm'],
+    correctIndex: 1,
+    hint: 'Look at pairs of words - they are opposites',
+    explanation: 'Antonym pairs: hot/cold, big/small, fast/slow. Each pair contains a word and its opposite!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'word-4',
+    type: 'word',
+    sequence: ['apple', 'banana', 'cherry', 'date', '?'],
+    options: ['elderberry', 'grape', 'kiwi', 'fig'],
+    correctIndex: 0,
+    hint: 'Look at the first letter of each word',
+    explanation: 'Alphabetical fruits: Apple (A), Banana (B), Cherry (C), Date (D), Elderberry (E). First letters go A, B, C, D, E!',
+    difficulty: 'medium',
+  },
+  {
+    id: 'word-5',
+    type: 'word',
+    sequence: ['one', 'two', 'six', 'ten', '?'],
+    options: ['eleven', 'four', 'three', 'five'],
+    correctIndex: 2,
+    hint: 'Count the letters in each word',
+    explanation: 'Letter count pattern: one(3), two(3), six(3), ten(3), three(5)... Wait! All have 3 letters except the answer. Actually: one=3, two=3, six=3, ten=3, three=5. The pattern is number words with 3 letters, then 5.',
+    difficulty: 'hard',
+  },
+  {
+    id: 'word-6',
+    type: 'word',
+    sequence: ['dog', 'god', 'star', 'rats', '?'],
+    options: ['tac', 'top', 'live', 'evil'],
+    correctIndex: 2,
+    hint: 'Try reading each word backwards',
+    explanation: 'Reversed word pairs: dog/god, star/rats, live/evil. Each pair reads as a different word when spelled backwards!',
+    difficulty: 'medium',
+  },
+  {
+    id: 'word-7',
+    type: 'word',
+    sequence: ['red', 'orange', 'yellow', 'green', '?'],
+    options: ['purple', 'blue', 'pink', 'brown'],
+    correctIndex: 1,
+    hint: 'Think about the sky after rain',
+    explanation: 'Rainbow order: Red, Orange, Yellow, Green, Blue. These are the colors of the rainbow (ROYGBIV) in order!',
+    difficulty: 'easy',
+  },
+  // =========================================================================
+  // CONCEPT PATTERNS (cross-disciplinary)
+  // =========================================================================
+  {
+    id: 'concept-1',
+    type: 'concept',
+    sequence: ['Seed', 'Sprout', 'Sapling', 'Tree', '?'],
+    options: ['Forest', 'Leaf', 'Root', 'Flower'],
+    correctIndex: 0,
+    hint: 'Think about growth stages and what comes after many trees',
+    explanation: 'Growth stages: Seed -> Sprout -> Sapling -> Tree -> Forest. One tree grows, then many trees together form a forest!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'concept-2',
+    type: 'concept',
+    sequence: ['Mercury', 'Venus', 'Earth', 'Mars', '?'],
+    options: ['Saturn', 'Jupiter', 'Neptune', 'Uranus'],
+    correctIndex: 1,
+    hint: 'Planets ordered by distance from the Sun',
+    explanation: 'Solar system order: Mercury, Venus, Earth, Mars, Jupiter. The planets ordered from closest to farthest from the Sun!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'concept-3',
+    type: 'concept',
+    sequence: ['Do', 'Re', 'Mi', 'Fa', '?'],
+    options: ['La', 'Sol', 'Ti', 'Do'],
+    correctIndex: 1,
+    hint: 'Think of the famous song from The Sound of Music',
+    explanation: 'Musical scale: Do, Re, Mi, Fa, Sol, La, Ti, Do. These are the solfege syllables used to teach music!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'concept-4',
+    type: 'concept',
+    sequence: ['Bronze Age', 'Iron Age', 'Middle Ages', 'Renaissance', '?'],
+    options: ['Stone Age', 'Enlightenment', 'Dark Ages', 'Ice Age'],
+    correctIndex: 1,
+    hint: 'Historical periods in chronological order',
+    explanation: 'Historical progression: Bronze Age -> Iron Age -> Middle Ages -> Renaissance -> Enlightenment. Each era brought new knowledge and advancement!',
+    difficulty: 'medium',
+  },
+  {
+    id: 'concept-5',
+    type: 'concept',
+    sequence: ['Egg', 'Caterpillar', 'Chrysalis', '?'],
+    options: ['Moth', 'Butterfly', 'Cocoon', 'Larva'],
+    correctIndex: 1,
+    hint: 'Think about metamorphosis - a beautiful transformation',
+    explanation: 'Butterfly life cycle: Egg -> Caterpillar (larva) -> Chrysalis (pupa) -> Butterfly (adult). A complete metamorphosis!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'concept-6',
+    type: 'concept',
+    sequence: ['Hydrogen', 'Helium', 'Lithium', 'Beryllium', '?'],
+    options: ['Carbon', 'Boron', 'Nitrogen', 'Oxygen'],
+    correctIndex: 1,
+    hint: 'The periodic table of elements in order',
+    explanation: 'Periodic table order: H(1), He(2), Li(3), Be(4), B(5). These are the first five elements by atomic number!',
+    difficulty: 'medium',
+  },
+  {
+    id: 'concept-7',
+    type: 'concept',
+    sequence: ['Stream', 'River', 'Lake', 'Sea', '?'],
+    options: ['Ocean', 'Pond', 'Creek', 'Puddle'],
+    correctIndex: 0,
+    hint: 'Bodies of water from smallest to largest',
+    explanation: 'Water bodies by size: Stream -> River -> Lake -> Sea -> Ocean. Each is larger than the last!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'concept-8',
+    type: 'concept',
+    sequence: ['Village', 'Town', 'City', 'Metropolis', '?'],
+    options: ['Country', 'Megalopolis', 'Hamlet', 'County'],
+    correctIndex: 1,
+    hint: 'Human settlements getting bigger and bigger',
+    explanation: 'Settlement size progression: Village -> Town -> City -> Metropolis -> Megalopolis. Each is a larger human settlement! A megalopolis is when multiple metropolises merge.',
+    difficulty: 'hard',
+  },
+  {
+    id: 'concept-9',
+    type: 'concept',
+    sequence: ['Letter', 'Word', 'Sentence', 'Paragraph', '?'],
+    options: ['Chapter', 'Book', 'Page', 'Line'],
+    correctIndex: 0,
+    hint: 'Building blocks of writing, from smallest to largest',
+    explanation: 'Writing hierarchy: Letter -> Word -> Sentence -> Paragraph -> Chapter. Each builds on the smaller unit to create meaning!',
+    difficulty: 'easy',
+  },
+  {
+    id: 'concept-10',
+    type: 'concept',
+    sequence: ['Note', 'Measure', 'Phrase', 'Movement', '?'],
+    options: ['Song', 'Symphony', 'Beat', 'Chord'],
+    correctIndex: 1,
+    hint: 'Musical structures from smallest to largest',
+    explanation: 'Music hierarchy: Note -> Measure -> Phrase -> Movement -> Symphony. Musical compositions build from single notes to grand orchestral works!',
+    difficulty: 'hard',
+  },
 ];
 
 /**
@@ -938,43 +1167,52 @@ export function PatternPuzzles({ sessionId, isHost = false, onExit }: PatternPuz
                   </AnimatePresence>
 
                   {/* Answer Options */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {currentPattern?.options.map((option, index) => {
-                      const isSelected = state.selectedAnswer === index;
-                      const isCorrectAnswer = index === currentPattern.correctIndex;
-                      const isRevealing = state.phase === 'revealing';
+                  {(() => {
+                    const maxLen = Math.max(...(currentPattern?.options.map(o => o.length) ?? [0]));
+                    const isLongText = maxLen > 6;
+                    const isVeryLong = maxLen > 12;
+                    return (
+                      <div className={`grid gap-3 ${isVeryLong ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {currentPattern?.options.map((option, index) => {
+                          const isSelected = state.selectedAnswer === index;
+                          const isCorrectAnswer = index === currentPattern.correctIndex;
+                          const isRevealing = state.phase === 'revealing';
 
-                      let buttonClass = 'bg-white hover:bg-ink-50 border-2 border-ink-200';
-                      if (isRevealing) {
-                        if (isCorrectAnswer) {
-                          buttonClass = 'bg-sage-100 border-2 border-sage-500 text-sage-800';
-                        } else if (isSelected && !isCorrectAnswer) {
-                          buttonClass = 'bg-coral-100 border-2 border-coral-500 text-coral-800';
-                        }
-                      }
+                          let buttonClass = 'bg-white hover:bg-ink-50 border-2 border-ink-200';
+                          if (isRevealing) {
+                            if (isCorrectAnswer) {
+                              buttonClass = 'bg-sage-100 border-2 border-sage-500 text-sage-800';
+                            } else if (isSelected && !isCorrectAnswer) {
+                              buttonClass = 'bg-coral-100 border-2 border-coral-500 text-coral-800';
+                            }
+                          }
 
-                      return (
-                        <motion.button
-                          key={index}
-                          whileHover={state.phase === 'playing' ? { scale: 1.02 } : {}}
-                          whileTap={state.phase === 'playing' ? { scale: 0.98 } : {}}
-                          onClick={() => state.phase === 'playing' && handleAnswer(index)}
-                          disabled={state.phase !== 'playing'}
-                          className={`p-4 rounded-xl text-2xl font-bold transition-all ${buttonClass}`}
-                        >
-                          <span className="flex items-center justify-center gap-2">
-                            {option}
-                            {isRevealing && isCorrectAnswer && (
-                              <Check className="w-5 h-5 text-sage-600" />
-                            )}
-                            {isRevealing && isSelected && !isCorrectAnswer && (
-                              <X className="w-5 h-5 text-coral-600" />
-                            )}
-                          </span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
+                          const textSize = isVeryLong ? 'text-base' : isLongText ? 'text-lg' : 'text-2xl';
+
+                          return (
+                            <motion.button
+                              key={index}
+                              whileHover={state.phase === 'playing' ? { scale: 1.02 } : {}}
+                              whileTap={state.phase === 'playing' ? { scale: 0.98 } : {}}
+                              onClick={() => state.phase === 'playing' && handleAnswer(index)}
+                              disabled={state.phase !== 'playing'}
+                              className={`px-3 py-3 min-h-[3rem] rounded-xl font-bold transition-all break-words text-center ${textSize} ${buttonClass}`}
+                            >
+                              <span className="flex items-center justify-center gap-2">
+                                {option}
+                                {isRevealing && isCorrectAnswer && (
+                                  <Check className="w-5 h-5 text-sage-600 flex-shrink-0" />
+                                )}
+                                {isRevealing && isSelected && !isCorrectAnswer && (
+                                  <X className="w-5 h-5 text-coral-600 flex-shrink-0" />
+                                )}
+                              </span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
 
                   {/* Explanation when wrong */}
                   <AnimatePresence>

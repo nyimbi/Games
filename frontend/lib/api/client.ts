@@ -52,6 +52,8 @@ export interface User {
   role: 'coach' | 'player';
   team_id: number | null;
   avatar_color: string;
+  scholar_code: string | null;
+  avatar: string;
   created_at: string;
 }
 
@@ -78,13 +80,21 @@ export const authApi = {
     display_name: string;
     role: 'coach' | 'player';
     avatar_color?: string;
+    avatar?: string;
   }) =>
     fetcher<UserResponse>('/auth/join', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  createTeam: (data: { name: string }) =>
+  // Recover identity using a Scholar Code
+  recover: (data: { scholar_code: string }) =>
+    fetcher<UserResponse>('/auth/recover', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  createTeam: (data: { name: string; join_code?: string }) =>
     fetcher<Team>('/auth/team', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -97,6 +107,14 @@ export const authApi = {
     }),
 
   getTeam: () => fetcher<TeamResponse>('/auth/team'),
+
+  listTeams: () => fetcher<Team[]>('/auth/teams'),
+
+  switchTeam: (data: { team_id: number }) =>
+    fetcher<TeamResponse>('/auth/team/switch', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 // Sessions API
@@ -128,6 +146,7 @@ export const sessionsApi = {
     scheduled_at?: string;
     games: string[];
     difficulty?: 'easy' | 'medium' | 'hard';
+    team_id?: number;
   }) =>
     fetcher<SessionResponse>('/sessions', {
       method: 'POST',
