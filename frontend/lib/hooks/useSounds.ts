@@ -8,7 +8,7 @@ import { getStorage, setStorage, STORAGE_KEYS } from '@/lib/storage';
  * Each effect is a short oscillator-based tone designed for game feedback.
  */
 
-type SoundEffect = 'correct' | 'wrong' | 'streak' | 'achievement' | 'tick' | 'complete' | 'flip';
+type SoundEffect = 'correct' | 'wrong' | 'streak' | 'achievement' | 'tick' | 'complete' | 'flip' | 'powerup';
 
 interface SoundConfig {
   frequency: number;
@@ -27,6 +27,7 @@ const SOUND_CONFIGS: Record<SoundEffect, SoundConfig> = {
   tick: { frequency: 1000, duration: 0.05, type: 'sine', gain: 0.1 },
   complete: { frequency: 440, duration: 0.4, type: 'sine', ramp: 880, gain: 0.2 },
   flip: { frequency: 600, duration: 0.08, type: 'sine', ramp: 900, gain: 0.15 },
+  powerup: { frequency: 523, duration: 0.12, type: 'sine', ramp: 784, gain: 0.25, secondFreq: 1047 },
 };
 
 function playTone(ctx: AudioContext, config: SoundConfig) {

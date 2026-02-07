@@ -199,6 +199,204 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: 'special',
     condition: (s) => s.perfectRounds >= 5,
   },
+
+  // Connection Quest
+  {
+    id: 'connection_first',
+    name: 'Connected!',
+    description: 'Complete 1 Connection Quest puzzle',
+    icon: '🔗',
+    category: 'exploration',
+    condition: (s) => (s.connectionPuzzlesSolved ?? 0) >= 1,
+  },
+  {
+    id: 'connection_perfect',
+    name: 'Perfect Connection',
+    description: 'Solve a puzzle with 0 mistakes',
+    icon: '💎',
+    category: 'special',
+    condition: (s) => (s.connectionPerfects ?? 0) >= 1,
+  },
+  {
+    id: 'connection_5',
+    name: 'Link Master',
+    description: 'Solve 5 Connection Quest puzzles',
+    icon: '🧩',
+    category: 'mastery',
+    condition: (s) => (s.connectionPuzzlesSolved ?? 0) >= 5,
+  },
+  {
+    id: 'connection_daily_7',
+    name: 'Daily Connector',
+    description: 'Complete 7 daily puzzles',
+    icon: '📅',
+    category: 'streak',
+    condition: (s) => (s.connectionDailyCount ?? 0) >= 7,
+  },
+
+  // Scholar Sprint
+  {
+    id: 'sprint_100',
+    name: 'Century Sprint',
+    description: 'Reach 100m in Scholar Sprint',
+    icon: '🏃',
+    category: 'exploration',
+    condition: (s) => (s.sprintBestDistance ?? 0) >= 100,
+  },
+  {
+    id: 'sprint_500',
+    name: 'Half Kilometer',
+    description: 'Reach 500m in Scholar Sprint',
+    icon: '🏃‍♂️',
+    category: 'mastery',
+    condition: (s) => (s.sprintBestDistance ?? 0) >= 500,
+  },
+  {
+    id: 'sprint_1km',
+    name: 'Kilometer Scholar',
+    description: 'Reach 1000m in Scholar Sprint',
+    icon: '🏅',
+    category: 'mastery',
+    condition: (s) => (s.sprintBestDistance ?? 0) >= 1000,
+  },
+  {
+    id: 'sprint_5x',
+    name: 'Maximum Velocity',
+    description: 'Reach 5x multiplier in Scholar Sprint',
+    icon: '🚀',
+    category: 'speed',
+    condition: (s) => (s.sprintMaxMultiplier ?? 0) >= 5,
+  },
+  {
+    id: 'sprint_power',
+    name: 'Power Scholar',
+    description: 'Use all 4 power-up types in Scholar Sprint',
+    icon: '⚡',
+    category: 'special',
+    condition: (s) => {
+      const used = s.sprintPowerUpsUsed ?? [];
+      const arr = Array.isArray(used) ? used : Array.from(used);
+      return arr.length >= 4;
+    },
+  },
+
+  // Memory Mosaic
+  {
+    id: 'mosaic_first',
+    name: 'First Match',
+    description: 'Complete a Memory Mosaic game',
+    icon: '🧩',
+    category: 'exploration',
+    condition: (s) => (s.mosaicGridsCompleted ?? []).length >= 1,
+  },
+  {
+    id: 'mosaic_perfect',
+    name: 'Perfect Memory',
+    description: 'Complete a mosaic with zero misses',
+    icon: '🧠',
+    category: 'special',
+    condition: (s) => (s.mosaicPerfects ?? 0) >= 1,
+  },
+  {
+    id: 'mosaic_combo_5',
+    name: 'Combo Master',
+    description: 'Get a 5+ combo in Memory Mosaic',
+    icon: '🔥',
+    category: 'streak',
+    condition: (s) => (s.mosaicBestCombo ?? 0) >= 5,
+  },
+  {
+    id: 'mosaic_6x6',
+    name: 'Grand Mosaic',
+    description: 'Complete a 6x6 Memory Mosaic',
+    icon: '🖼️',
+    category: 'mastery',
+    condition: (s) => (s.mosaicGridsCompleted ?? []).includes('6x6'),
+  },
+  {
+    id: 'mosaic_speed',
+    name: 'Photographic',
+    description: 'Complete 4x4 mosaic in under 30 seconds',
+    icon: '📸',
+    category: 'speed',
+    condition: (s) => s.fastestCorrectMs > 0 && s.fastestCorrectMs < 30000,
+  },
+
+  // Argument Arena
+  {
+    id: 'arena_first',
+    name: 'Opening Argument',
+    description: 'Win your first Argument Arena match',
+    icon: '⚖️',
+    category: 'exploration',
+    condition: (s) => (s.arenaWins ?? 0) >= 1,
+  },
+  {
+    id: 'arena_perfect',
+    name: 'Flawless Logic',
+    description: 'Win all 5 rounds in an Argument Arena match',
+    icon: '💎',
+    category: 'special',
+    condition: (s) => (s.arenaRoundsWon ?? 0) >= 5,
+  },
+  {
+    id: 'arena_devil',
+    name: "Devil's Defeat",
+    description: "Beat The Devil's Advocate",
+    icon: '😈',
+    category: 'mastery',
+    condition: (s) => s.arenaDevilBeaten === true,
+  },
+  {
+    id: 'arena_rebuttal',
+    name: 'Master Rebuttal',
+    description: 'Win a round using a rebuttal card',
+    icon: '🗡️',
+    category: 'special',
+    condition: (s) => (s.arenaRebuttalWins ?? 0) >= 1,
+  },
+
+  // Treasure Hunt
+  {
+    id: 'treasure_first',
+    name: 'First Discovery',
+    description: 'Earn your first Treasure Hunt star',
+    icon: '⭐',
+    category: 'exploration',
+    condition: (s) => (s.treasureStars ?? 0) >= 1,
+  },
+  {
+    id: 'treasure_region',
+    name: 'Region Explorer',
+    description: 'Complete 1 Treasure Hunt region',
+    icon: '🗺️',
+    category: 'mastery',
+    condition: (s) => (s.treasureRegionsComplete ?? 0) >= 1,
+  },
+  {
+    id: 'treasure_all',
+    name: 'World Explorer',
+    description: 'Complete all 5 Treasure Hunt regions',
+    icon: '🌍',
+    category: 'mastery',
+    condition: (s) => (s.treasureRegionsComplete ?? 0) >= 5,
+  },
+  {
+    id: 'treasure_30_stars',
+    name: 'Star Collector',
+    description: 'Earn 30 total Treasure Hunt stars',
+    icon: '✨',
+    category: 'exploration',
+    condition: (s) => (s.treasureStars ?? 0) >= 30,
+  },
+  {
+    id: 'treasure_bridge',
+    name: 'Bridge Builder',
+    description: 'Complete a bridge challenge',
+    icon: '🌉',
+    category: 'special',
+    condition: (s) => (s.treasureBridgesComplete ?? 0) >= 1,
+  },
 ];
 
 const DEFAULT_STATS: PlayerStats = {
@@ -212,6 +410,22 @@ const DEFAULT_STATS: PlayerStats = {
   fastestCorrectMs: 0,
   perfectRounds: 0,
   totalTimePlayed: 0,
+  connectionPuzzlesSolved: 0,
+  connectionPerfects: 0,
+  connectionDailyCount: 0,
+  sprintBestDistance: 0,
+  sprintMaxMultiplier: 0,
+  sprintPowerUpsUsed: [],
+  mosaicPerfects: 0,
+  mosaicBestCombo: 0,
+  mosaicGridsCompleted: [],
+  arenaWins: 0,
+  arenaRoundsWon: 0,
+  arenaDevilBeaten: false,
+  arenaRebuttalWins: 0,
+  treasureStars: 0,
+  treasureRegionsComplete: 0,
+  treasureBridgesComplete: 0,
 };
 
 export function getPlayerStats(): PlayerStats {

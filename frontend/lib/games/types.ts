@@ -26,7 +26,13 @@ export type GameType =
   | 'mini_debate'
   | 'role_play_debates'
   | 'argument_builder'
-  | 'impromptu_challenge';
+  | 'impromptu_challenge'
+  // New viral games
+  | 'connection_quest'
+  | 'scholar_sprint'
+  | 'treasure_hunt'
+  | 'argument_arena'
+  | 'memory_mosaic';
 
 // Game sync types
 export type SyncType = 'real_time' | 'turn_based' | 'synchronized' | 'parallel' | 'individual' | 'role_assigned' | 'collaborative';
@@ -119,6 +125,23 @@ export interface PlayerStats {
   fastestCorrectMs: number;
   perfectRounds: number;
   totalTimePlayed: number;
+  // New viral game stats
+  connectionPuzzlesSolved: number;
+  connectionPerfects: number;
+  connectionDailyCount: number;
+  sprintBestDistance: number;
+  sprintMaxMultiplier: number;
+  sprintPowerUpsUsed: Set<string> | string[];
+  mosaicPerfects: number;
+  mosaicBestCombo: number;
+  mosaicGridsCompleted: string[];
+  arenaWins: number;
+  arenaRoundsWon: number;
+  arenaDevilBeaten: boolean;
+  arenaRebuttalWins: number;
+  treasureStars: number;
+  treasureRegionsComplete: number;
+  treasureBridgesComplete: number;
 }
 
 // Wrong answer entry

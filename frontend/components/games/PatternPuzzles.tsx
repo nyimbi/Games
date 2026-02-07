@@ -1167,43 +1167,52 @@ export function PatternPuzzles({ sessionId, isHost = false, onExit }: PatternPuz
                   </AnimatePresence>
 
                   {/* Answer Options */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {currentPattern?.options.map((option, index) => {
-                      const isSelected = state.selectedAnswer === index;
-                      const isCorrectAnswer = index === currentPattern.correctIndex;
-                      const isRevealing = state.phase === 'revealing';
+                  {(() => {
+                    const maxLen = Math.max(...(currentPattern?.options.map(o => o.length) ?? [0]));
+                    const isLongText = maxLen > 6;
+                    const isVeryLong = maxLen > 12;
+                    return (
+                      <div className={`grid gap-3 ${isVeryLong ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {currentPattern?.options.map((option, index) => {
+                          const isSelected = state.selectedAnswer === index;
+                          const isCorrectAnswer = index === currentPattern.correctIndex;
+                          const isRevealing = state.phase === 'revealing';
 
-                      let buttonClass = 'bg-white hover:bg-ink-50 border-2 border-ink-200';
-                      if (isRevealing) {
-                        if (isCorrectAnswer) {
-                          buttonClass = 'bg-sage-100 border-2 border-sage-500 text-sage-800';
-                        } else if (isSelected && !isCorrectAnswer) {
-                          buttonClass = 'bg-coral-100 border-2 border-coral-500 text-coral-800';
-                        }
-                      }
+                          let buttonClass = 'bg-white hover:bg-ink-50 border-2 border-ink-200';
+                          if (isRevealing) {
+                            if (isCorrectAnswer) {
+                              buttonClass = 'bg-sage-100 border-2 border-sage-500 text-sage-800';
+                            } else if (isSelected && !isCorrectAnswer) {
+                              buttonClass = 'bg-coral-100 border-2 border-coral-500 text-coral-800';
+                            }
+                          }
 
-                      return (
-                        <motion.button
-                          key={index}
-                          whileHover={state.phase === 'playing' ? { scale: 1.02 } : {}}
-                          whileTap={state.phase === 'playing' ? { scale: 0.98 } : {}}
-                          onClick={() => state.phase === 'playing' && handleAnswer(index)}
-                          disabled={state.phase !== 'playing'}
-                          className={`p-4 rounded-xl text-2xl font-bold transition-all ${buttonClass}`}
-                        >
-                          <span className="flex items-center justify-center gap-2">
-                            {option}
-                            {isRevealing && isCorrectAnswer && (
-                              <Check className="w-5 h-5 text-sage-600" />
-                            )}
-                            {isRevealing && isSelected && !isCorrectAnswer && (
-                              <X className="w-5 h-5 text-coral-600" />
-                            )}
-                          </span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
+                          const textSize = isVeryLong ? 'text-base' : isLongText ? 'text-lg' : 'text-2xl';
+
+                          return (
+                            <motion.button
+                              key={index}
+                              whileHover={state.phase === 'playing' ? { scale: 1.02 } : {}}
+                              whileTap={state.phase === 'playing' ? { scale: 0.98 } : {}}
+                              onClick={() => state.phase === 'playing' && handleAnswer(index)}
+                              disabled={state.phase !== 'playing'}
+                              className={`px-3 py-3 min-h-[3rem] rounded-xl font-bold transition-all break-words text-center ${textSize} ${buttonClass}`}
+                            >
+                              <span className="flex items-center justify-center gap-2">
+                                {option}
+                                {isRevealing && isCorrectAnswer && (
+                                  <Check className="w-5 h-5 text-sage-600 flex-shrink-0" />
+                                )}
+                                {isRevealing && isSelected && !isCorrectAnswer && (
+                                  <X className="w-5 h-5 text-coral-600 flex-shrink-0" />
+                                )}
+                              </span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
 
                   {/* Explanation when wrong */}
                   <AnimatePresence>

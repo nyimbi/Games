@@ -64,16 +64,8 @@ function LoginContent() {
   }, [isAuthenticated, authLoading, user, router, step]);
 
   const formatScholarCode = (input: string) => {
-    const cleaned = input.replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
-    // Auto-insert hyphen after letters if user types continuously
-    if (cleaned.length > 0 && !cleaned.includes('-')) {
-      const letters = cleaned.replace(/[0-9]/g, '');
-      const digits = cleaned.replace(/[^0-9]/g, '');
-      if (letters && digits) {
-        return `${letters}-${digits}`;
-      }
-    }
-    return cleaned;
+    // Scholar codes are AVATAR-NAME format (e.g., OWL-SIPHO)
+    return input.replace(/[^a-zA-Z0-9-]/g, '').toUpperCase();
   };
 
   const handleRecover = async () => {
@@ -112,6 +104,8 @@ function LoginContent() {
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.data?.detail || 'Failed to join. Please try again.');
+      } else if (err instanceof TypeError) {
+        setError('Cannot reach the server. Please check your connection and try again.');
       } else {
         setError('Something went wrong. Please try again.');
       }
@@ -324,9 +318,9 @@ function LoginContent() {
                       type="text"
                       value={scholarCode}
                       onChange={(e) => setScholarCode(formatScholarCode(e.target.value))}
-                      placeholder="FOX-1234"
+                      placeholder="OWL-SIPHO"
                       className="w-full px-4 py-4 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none font-mono text-2xl text-center tracking-wider uppercase"
-                      maxLength={15}
+                      maxLength={30}
                       autoFocus
                     />
                     <Button
@@ -341,7 +335,7 @@ function LoginContent() {
                   </div>
 
                   <p className="text-center text-sm text-ink-400 mt-4">
-                    Example: PANDA-0291, OWL-7382
+                    Example: OWL-SIPHO, DOLPHIN-AMARA
                   </p>
                 </CardContent>
               </Card>

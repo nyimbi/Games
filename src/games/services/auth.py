@@ -1,12 +1,10 @@
 """Simplified user and team management - no password authentication."""
 
-import random
 import secrets
 from datetime import datetime
 
 from games.core.database import get_connection
 from games.models import (
-	ANIMAL_AVATARS,
 	Team,
 	TeamCreate,
 	User,
@@ -14,27 +12,32 @@ from games.models import (
 	UserRole,
 )
 
-ANIMAL_NAMES_UPPER = [a.upper() for a in ANIMAL_AVATARS]
-
 
 def generate_team_code() -> str:
 	"""Generate a unique 6-character team join code."""
 	return secrets.token_hex(3).upper()
 
 
-async def generate_scholar_code(conn) -> str:
-	"""Generate a unique ANIMAL-NNNN scholar code with collision checking."""
-	for _ in range(10):
-		animal = random.choice(ANIMAL_NAMES_UPPER)
-		digits = f"{random.randint(0, 9999):04d}"
-		code = f"{animal}-{digits}"
+async def generate_scholar_code(conn, avatar: str, display_name: str) -> str:
+	"""Generate a unique AVATAR-FIRSTNAME scholar code (e.g. OWL-SIPHO).
+
+	If the base code already exists, appends an incrementing number (OWL-SIPHO2, OWL-SIPHO3, etc.)."""
+	avatar_upper = avatar.upper()
+	# Use first name only (first word), strip non-alpha chars
+	first_name = display_name.split()[0].upper() if display_name.strip() else "SCHOLAR"
+	first_name = "".join(c for c in first_name if c.isalpha()) or "SCHOLAR"
+
+	base_code = f"{avatar_upper}-{first_name}"
+	code = base_code
+	for suffix in range(2, 100):
 		existing = await conn.fetchrow(
 			"SELECT 1 FROM users WHERE scholar_code = $1",
 			code,
 		)
 		if existing is None:
 			return code
-	raise RuntimeError("Failed to generate unique scholar code after 10 attempts")
+		code = f"{base_code}{suffix}"
+	raise RuntimeError("Failed to generate unique scholar code after 98 attempts")
 
 
 async def get_user_by_id(user_id: int) -> User | None:
@@ -85,7 +88,7 @@ async def create_user(user_data: UserCreate) -> User:
 	now = datetime.utcnow()
 
 	async with get_connection() as conn:
-		scholar_code = await generate_scholar_code(conn)
+		scholar_code = await generate_scholar_code(conn, user_data.avatar or "fox", user_data.display_name)
 		row = await conn.fetchrow(
 			"""
 			INSERT INTO users (display_name, role, avatar_color, avatar, scholar_code, created_at)

@@ -1020,6 +1020,73 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
                     </div>
                   )}
 
+                  {/* Microphone Setup - Request permission during prep */}
+                  {sttSupported && (permissionState === 'prompt' || permissionState === 'unknown') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6 p-4 bg-gradient-to-r from-gold-50 to-cream-100 rounded-xl border-2 border-gold-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Mic className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-ink-800 mb-1">Enable Voice Input</h4>
+                          <p className="text-sm text-ink-600 mb-3">
+                            Speak your arguments instead of typing! Enable your microphone now so it's ready when the debate starts.
+                          </p>
+                          <Button
+                            variant="gold"
+                            size="sm"
+                            onClick={handleRequestPermission}
+                            disabled={isRequestingPermission}
+                          >
+                            {isRequestingPermission ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Requesting...
+                              </>
+                            ) : (
+                              <>
+                                <Mic className="w-4 h-4 mr-2" />
+                                Allow Microphone
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {sttSupported && permissionState === 'granted' && (
+                    <div className="mt-6 flex items-center gap-2 text-sage-600 text-sm p-3 bg-sage-50 rounded-xl">
+                      <Mic className="w-4 h-4" />
+                      <span>Microphone enabled — you can speak your arguments during the debate</span>
+                    </div>
+                  )}
+
+                  {sttSupported && permissionState === 'denied' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6 p-4 bg-coral-50 rounded-xl border border-coral-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-coral-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-coral-800 mb-1">Microphone Blocked</h4>
+                          <p className="text-sm text-coral-700 mb-1">
+                            Click the lock icon in your address bar, allow microphone, and refresh.
+                          </p>
+                          <p className="text-xs text-coral-600">
+                            You can still type your arguments during the debate.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* AI Debate Hints */}
                   <div className="mt-6">
                     {!hints && !isLoadingHints && (
@@ -1124,6 +1191,40 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
                     )}
                   </div>
 
+                  {/* How It Works - Phase Guide */}
+                  <div className="mt-6 p-4 bg-ink-50 rounded-xl">
+                    <h4 className="text-sm font-semibold text-ink-700 mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      How It Works
+                    </h4>
+                    <ol className="space-y-2">
+                      {currentFormatPhases.map((fp, i) => (
+                        <li key={fp.phase} className="flex items-start gap-2 text-sm text-ink-600">
+                          <span className="font-mono text-xs bg-ink-200 text-ink-700 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          <div>
+                            <span className="font-medium text-ink-700">{fp.name}</span>
+                            <span className="text-ink-500"> ({fp.minutes} min)</span>
+                            <span className="text-ink-400"> — {
+                              fp.phase === 'opening' ? 'Present your main argument' :
+                              fp.phase === 'rebuttal' ? 'Counter the opponent\'s points' :
+                              fp.phase === 'closing' ? 'Summarize and make your final appeal' :
+                              fp.phase === 'constructive' ? 'Build your case with evidence' :
+                              fp.phase === 'cross_exam' ? 'Challenge the opponent with questions' :
+                              fp.phase === 'wsc_rebuttal' ? 'Address opponent\'s arguments' :
+                              fp.phase === 'summary' ? 'Wrap up with your strongest points' :
+                              'Speak or type your argument'
+                            }</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                    <p className="text-xs text-ink-400 mt-3">
+                      After each speech, AI gives you feedback with a score. You and the AI opponent take turns.
+                    </p>
+                  </div>
+
                   <Button
                     variant="gold"
                     onClick={() => {
@@ -1135,6 +1236,7 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
                       }));
                     }}
                     className="mt-6"
+                    size="lg"
                   >
                     I&apos;m Ready to Debate!
                   </Button>
@@ -1241,6 +1343,28 @@ export function MiniDebate({ sessionId, isHost = false, onExit, mode = 'solo' }:
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </motion.div>
+              )}
+
+              {/* Phase Instruction Banner */}
+              {isMyTurn && (
+                <motion.div
+                  key={state.phase}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-3 bg-gold-50 border border-gold-200 rounded-xl"
+                >
+                  <p className="text-sm text-gold-800 font-medium">
+                    {state.phase === 'opening' || state.phase === 'constructive'
+                      ? '🎤 Your turn! Present your main argument. Speak into your mic or type below.'
+                      : state.phase === 'rebuttal' || state.phase === 'wsc_rebuttal'
+                      ? '🔄 Rebuttal time! Address what the opponent said and defend your position.'
+                      : state.phase === 'closing' || state.phase === 'summary'
+                      ? '🏁 Final statement! Summarize your best points and make a strong closing.'
+                      : state.phase === 'cross_exam'
+                      ? '❓ Cross-examination! Ask pointed questions to challenge the opponent.'
+                      : '🎤 Your turn to speak or type your argument.'}
+                  </p>
                 </motion.div>
               )}
 

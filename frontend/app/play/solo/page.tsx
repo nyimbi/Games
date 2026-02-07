@@ -7,7 +7,8 @@ import {
   Zap, BookOpen, Beaker, Palette, Globe, Sparkles, ArrowLeft,
   MessageSquare, PenTool, FileText, Puzzle, Mic, RotateCcw, Play, Settings2,
   Swords, BookOpenCheck, GraduationCap, Flame, BarChart3, Award,
-  Volume2, VolumeX, ClipboardList, ChevronDown, ChevronUp, Loader2
+  Volume2, VolumeX, ClipboardList, ChevronDown, ChevronUp, Loader2,
+  Link2, Map, Grid3X3,
 } from 'lucide-react';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import {
@@ -23,6 +24,11 @@ import {
   ScholarsChallenge,
   BattleMode,
   WrongAnswerJournal,
+  ConnectionQuest,
+  ScholarSprint,
+  MemoryMosaic,
+  ArgumentArena,
+  TreasureHunt,
 } from '@/components/games';
 import type { Question } from '@/lib/games/types';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -32,6 +38,7 @@ import { getQuestionsBySubject, getMixedQuestions } from '@/lib/games/questions'
 import { getDailyStreakData } from '@/lib/games/dailyChallenge';
 import { getWrongAnswerCount } from '@/lib/games/wrongAnswerJournal';
 import { getEffectiveLevel } from '@/lib/games/studentLevel';
+import { getCrossGameStreak, type CrossGameStreakData } from '@/lib/games/crossGameStreak';
 import { getStorage, setStorage, STORAGE_KEYS } from '@/lib/storage';
 
 interface CachedGeneratedQuestions {
@@ -71,9 +78,14 @@ const SOLO_GAMES = [
   { id: 'scholars_challenge', name: "Scholar's Challenge", icon: GraduationCap, color: 'bg-gold-100 text-gold-700', description: 'Full WSC simulation', needsQuestions: false },
   { id: 'battle_mode', name: 'Battle vs AI', icon: Swords, color: 'bg-coral-100 text-coral-700', description: 'Race against AI', needsQuestions: false },
   { id: 'wrong_answer_review', name: 'Review Mistakes', icon: ClipboardList, color: 'bg-ink-100 text-ink-700', description: 'Learn from errors', needsQuestions: false },
+  { id: 'connection_quest', name: 'Connection Quest', icon: Link2, color: 'bg-gold-100 text-gold-700', description: 'Find hidden groups', needsQuestions: false },
+  { id: 'scholar_sprint', name: 'Scholar Sprint', icon: Zap, color: 'bg-coral-100 text-coral-700', description: 'Endless speed quiz', needsQuestions: false },
+  { id: 'treasure_hunt', name: 'Treasure Hunt', icon: Map, color: 'bg-sage-100 text-sage-700', description: 'Explore & conquer', needsQuestions: false },
+  { id: 'argument_arena', name: 'Argument Arena', icon: Swords, color: 'bg-purple-100 text-purple-700', description: 'Card debate battle', needsQuestions: false },
+  { id: 'memory_mosaic', name: 'Memory Mosaic', icon: Grid3X3, color: 'bg-sky-100 text-sky-700', description: 'Match connections', needsQuestions: false },
 ];
 
-type GameId = 'quickfire_quiz' | 'flashcard_frenzy' | 'pattern_puzzles' | 'story_chain' | 'essay_sprint' | 'mini_debate' | 'impromptu_challenge' | 'daily_challenge' | 'scholar_read' | 'scholars_challenge' | 'battle_mode' | 'wrong_answer_review';
+type GameId = 'quickfire_quiz' | 'flashcard_frenzy' | 'pattern_puzzles' | 'story_chain' | 'essay_sprint' | 'mini_debate' | 'impromptu_challenge' | 'daily_challenge' | 'scholar_read' | 'scholars_challenge' | 'battle_mode' | 'wrong_answer_review' | 'connection_quest' | 'scholar_sprint' | 'treasure_hunt' | 'argument_arena' | 'memory_mosaic';
 
 export default function SoloPracticePage() {
   const router = useRouter();
@@ -88,6 +100,7 @@ export default function SoloPracticePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [dailyStreak, setDailyStreak] = useState(0);
   const [wrongAnswerCount, setWrongAnswerCount] = useState(0);
+  const [crossGameStreak, setCrossGameStreak] = useState<CrossGameStreakData | null>(null);
 
   // AI Questions state
   const [aiQuestionsEnabled, setAiQuestionsEnabled] = useState(false);
@@ -166,6 +179,7 @@ export default function SoloPracticePage() {
   useEffect(() => {
     setDailyStreak(getDailyStreakData().currentStreak);
     setWrongAnswerCount(getWrongAnswerCount());
+    setCrossGameStreak(getCrossGameStreak());
   }, [isPlaying]);
 
   // Quick play - start immediately with current settings
@@ -263,6 +277,11 @@ export default function SoloPracticePage() {
       scholars_challenge: <ScholarsChallenge onExit={handleExit} />,
       battle_mode: <BattleMode onExit={handleExit} />,
       wrong_answer_review: <WrongAnswerJournal onExit={handleExit} />,
+      connection_quest: <ConnectionQuest onExit={handleExit} />,
+      scholar_sprint: <ScholarSprint onExit={handleExit} />,
+      treasure_hunt: <TreasureHunt onExit={handleExit} />,
+      argument_arena: <ArgumentArena onExit={handleExit} />,
+      memory_mosaic: <MemoryMosaic onExit={handleExit} />,
     };
 
     return (
@@ -407,6 +426,40 @@ export default function SoloPracticePage() {
             </div>
           </div>
         </motion.button>
+
+        {/* Cross-Game Variety Streak */}
+        {crossGameStreak && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 px-4 py-3 bg-gradient-to-r from-purple-50 to-sky-50 rounded-xl border border-purple-200"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        i < (crossGameStreak.today.gamesPlayed.length) ? 'bg-purple-500' : 'bg-purple-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-purple-800">
+                  {crossGameStreak.today.gamesPlayed.length >= 3
+                    ? 'Variety goal reached!'
+                    : `${crossGameStreak.today.gamesPlayed.length}/3 different games today`}
+                </span>
+              </div>
+              {crossGameStreak.currentStreak > 0 && (
+                <Badge className="bg-purple-500 text-white text-xs">
+                  {crossGameStreak.currentStreak} day streak
+                </Badge>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Current Settings Preview */}
         <div className="mb-4 px-4 py-3 bg-white rounded-xl border border-ink-100 flex items-center justify-between">

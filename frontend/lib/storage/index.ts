@@ -17,6 +17,11 @@ export const STORAGE_KEYS = {
   STUDENT_PROFILE: `${STORAGE_PREFIX}student_profile`,
   GENERATED_QUESTIONS: `${STORAGE_PREFIX}generated_questions`,
   SCHOLAR_CODE: `${STORAGE_PREFIX}scholar_code`,
+  CONNECTION_QUEST_STATS: `${STORAGE_PREFIX}connection_quest_stats`,
+  SCHOLAR_SPRINT_BEST: `${STORAGE_PREFIX}scholar_sprint_best`,
+  TREASURE_HUNT_PROGRESS: `${STORAGE_PREFIX}treasure_hunt_progress`,
+  MEMORY_MOSAIC_RECORDS: `${STORAGE_PREFIX}memory_mosaic_records`,
+  CROSS_GAME_DAILY: `${STORAGE_PREFIX}cross_game_daily`,
 } as const;
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
