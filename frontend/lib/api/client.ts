@@ -107,6 +107,14 @@ export const authApi = {
     }),
 
   getTeam: () => fetcher<TeamResponse>('/auth/team'),
+
+  listTeams: () => fetcher<Team[]>('/auth/teams'),
+
+  switchTeam: (data: { team_id: number }) =>
+    fetcher<TeamResponse>('/auth/team/switch', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 // Sessions API
@@ -138,6 +146,7 @@ export const sessionsApi = {
     scheduled_at?: string;
     games: string[];
     difficulty?: 'easy' | 'medium' | 'hard';
+    team_id?: number;
   }) =>
     fetcher<SessionResponse>('/sessions', {
       method: 'POST',

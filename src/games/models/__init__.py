@@ -39,6 +39,7 @@ from games.models.user import (
 	TeamCode,
 	TeamCreate,
 	TeamJoin,
+	TeamSwitch,
 	User,
 	UserCreate,
 	UserRole,
@@ -54,6 +55,7 @@ __all__ = [
 	"TeamCode",
 	"TeamCreate",
 	"TeamJoin",
+	"TeamSwitch",
 	"ScholarCodeLookup",
 	"ANIMAL_AVATARS",
 	# Session models

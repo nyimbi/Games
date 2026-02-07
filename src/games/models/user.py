@@ -102,3 +102,11 @@ class ScholarCodeLookup(BaseModel):
 	model_config = ConfigDict(extra="forbid")
 
 	scholar_code: str = Field(..., min_length=5, max_length=15)
+
+
+class TeamSwitch(BaseModel):
+	"""Schema for switching active team."""
+
+	model_config = ConfigDict(extra="forbid")
+
+	team_id: int

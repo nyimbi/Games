@@ -6,6 +6,7 @@ import { authApi, type User, type Team } from '@/lib/api/client';
 interface AuthState {
   user: User | null;
   team: Team | null;
+  teams: Team[];
   teamMembers: User[];
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -23,6 +24,8 @@ interface AuthContextType extends AuthState {
   createTeam: (name: string) => Promise<Team>;
   joinTeam: (joinCode: string) => Promise<Team>;
   refreshTeam: () => Promise<void>;
+  switchTeam: (teamId: number) => Promise<void>;
+  loadTeams: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -51,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [state, setState] = useState<AuthState>({
     user: null,
     team: null,
+    teams: [],
     teamMembers: [],
     isLoading: true,
     isAuthenticated: false,
@@ -75,6 +79,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (user.team_id) {
           loadTeam();
         }
+
+        // Load all teams for coaches
+        if (user.role === 'coach') {
+          loadTeamsInternal();
+        }
       } catch {
         // Invalid stored user, clear it
         localStorage.removeItem('user_id');
@@ -85,6 +94,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } else {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
+  }, []);
+
+  // Safety timeout - prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setState((prev) => {
+        if (prev.isLoading) {
+          return { ...prev, isLoading: false };
+        }
+        return prev;
+      });
+    }, 5000);
+    return () => clearTimeout(timeout);
   }, []);
 
   const loadTeam = useCallback(async () => {
@@ -100,6 +122,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  const loadTeamsInternal = useCallback(async () => {
+    try {
+      const teams = await authApi.listTeams();
+      setState((prev) => ({ ...prev, teams }));
+    } catch {
+      // Continue without teams list
+    }
+  }, []);
+
+  const loadTeams = useCallback(async () => {
+    await loadTeamsInternal();
+  }, [loadTeamsInternal]);
+
   const join = useCallback(
     async (data: {
       display_name: string;
@@ -114,6 +149,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setState({
           user: response.user,
           team: null,
+          teams: [],
           teamMembers: [],
           isLoading: false,
           isAuthenticated: true,
@@ -135,6 +171,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setState({
         user: response.user,
         team: null,
+        teams: [],
         teamMembers: [],
         isLoading: false,
         isAuthenticated: true,
@@ -145,12 +182,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         loadTeam();
       }
 
+      // Load all teams for coaches
+      if (response.user.role === 'coach') {
+        loadTeamsInternal();
+      }
+
       return response.user;
     } catch (error) {
       setState((prev) => ({ ...prev, isLoading: false }));
       throw error;
     }
-  }, [loadTeam]);
+  }, [loadTeam, loadTeamsInternal]);
 
   const logout = useCallback(() => {
     localStorage.removeItem('user_id');
@@ -159,6 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState({
       user: null,
       team: null,
+      teams: [],
       teamMembers: [],
       isLoading: false,
       isAuthenticated: false,
@@ -176,6 +219,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return {
         ...prev,
         team,
+        teams: [team, ...prev.teams],
         teamMembers: prev.user ? [prev.user] : [],
         user: updatedUser,
       };
@@ -201,6 +245,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
     });
     return team;
+  }, []);
+
+  const switchTeam = useCallback(async (teamId: number) => {
+    const response = await authApi.switchTeam({ team_id: teamId });
+    setState((prev) => {
+      const updatedUser = prev.user ? { ...prev.user, team_id: response.team.id } : null;
+      if (updatedUser) {
+        storeUser(updatedUser);
+      }
+      return {
+        ...prev,
+        team: response.team,
+        teamMembers: response.members,
+        user: updatedUser,
+      };
+    });
   }, []);
 
   const refreshTeam = useCallback(async () => {
@@ -232,6 +292,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         createTeam,
         joinTeam,
         refreshTeam,
+        switchTeam,
+        loadTeams,
       }}
     >
       {children}

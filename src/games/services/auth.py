@@ -223,3 +223,48 @@ async def get_team_members(team_id: int) -> list[User]:
 			)
 			for row in rows
 		]
+
+
+async def get_coach_teams(coach_id: int) -> list[Team]:
+	"""Get all teams owned by a coach."""
+	async with get_connection() as conn:
+		rows = await conn.fetch(
+			"SELECT * FROM teams WHERE coach_id = $1 ORDER BY created_at DESC",
+			coach_id,
+		)
+		return [
+			Team(
+				id=row["id"],
+				name=row["name"],
+				join_code=row["join_code"],
+				coach_id=row["coach_id"],
+				created_at=row["created_at"],
+			)
+			for row in rows
+		]
+
+
+async def switch_active_team(coach_id: int, team_id: int) -> Team | None:
+	"""Switch a coach's active team pointer. Returns the team if valid, None otherwise."""
+	async with get_connection() as conn:
+		row = await conn.fetchrow(
+			"SELECT * FROM teams WHERE id = $1 AND coach_id = $2",
+			team_id,
+			coach_id,
+		)
+		if row is None:
+			return None
+
+		await conn.execute(
+			"UPDATE users SET team_id = $1 WHERE id = $2",
+			team_id,
+			coach_id,
+		)
+
+		return Team(
+			id=row["id"],
+			name=row["name"],
+			join_code=row["join_code"],
+			coach_id=row["coach_id"],
+			created_at=row["created_at"],
+		)

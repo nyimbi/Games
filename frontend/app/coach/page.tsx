@@ -35,7 +35,7 @@ const itemVariants = {
 
 export default function CoachDashboard() {
   const router = useRouter();
-  const { user, team, teamMembers, createTeam, refreshTeam } = useAuth();
+  const { user, team, teams, teamMembers, createTeam, refreshTeam } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
@@ -101,7 +101,9 @@ export default function CoachDashboard() {
               Welcome, {user?.display_name}!
             </h1>
             <p className="text-ink-600 mt-1">
-              {team ? `Managing ${team.name}` : 'Set up your team to get started'}
+              {team
+                ? `Managing ${team.name}${teams.length > 1 ? ` (${teams.length} teams)` : ''}`
+                : 'Set up your team to get started'}
             </p>
           </div>
 
@@ -228,9 +230,9 @@ export default function CoachDashboard() {
                         ))}
                       </div>
                       <span className="text-ink-600 font-medium">
-                        {teamMembers.length}/6 members
+                        {teamMembers.filter(m => m.role === 'player').length}/5 scholars
                       </span>
-                      {teamMembers.length >= 6 && (
+                      {teamMembers.filter(m => m.role === 'player').length >= 5 && (
                         <Badge className="bg-coral-100 text-coral-700 ml-2">Full</Badge>
                       )}
                     </div>

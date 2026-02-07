@@ -8,22 +8,25 @@ from games.models import (
 	Team,
 	TeamCreate,
 	TeamJoin,
+	TeamSwitch,
 	User,
 	UserCreate,
 )
 from games.services.auth import (
 	create_team,
 	create_user,
+	get_coach_teams,
 	get_team_by_id,
 	get_team_members,
 	get_user_by_id,
 	get_user_by_scholar_code,
 	join_team,
+	switch_active_team,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-MAX_TEAM_SIZE = 6  # 5 scholars + 1 coach
+MAX_TEAM_SCHOLARS = 5  # Max scholars per team (coach doesn't count)
 
 
 class UserResponse(BaseModel):
@@ -90,7 +93,7 @@ async def create_new_team(
 	team_data: TeamCreate,
 	x_user_id: int = Header(..., description="User ID"),
 ) -> Team:
-	"""Create a new team (coach only)."""
+	"""Create a new team (coach only). Coaches can create multiple teams."""
 	user = await get_user_by_id(x_user_id)
 	if user is None:
 		raise HTTPException(
@@ -102,12 +105,6 @@ async def create_new_team(
 		raise HTTPException(
 			status_code=status.HTTP_403_FORBIDDEN,
 			detail="Only coaches can create teams",
-		)
-
-	if user.team_id:
-		raise HTTPException(
-			status_code=status.HTTP_400_BAD_REQUEST,
-			detail="You already have a team",
 		)
 
 	team = await create_team(user.id, team_data)
@@ -133,7 +130,7 @@ async def join_existing_team(
 			detail="You are already in a team",
 		)
 
-	# Check team size before joining
+	# Check team size before joining (only count players, not the coach)
 	from games.services.auth import get_team_by_code
 	team_check = await get_team_by_code(join_data.join_code)
 	if team_check is None:
@@ -143,10 +140,11 @@ async def join_existing_team(
 		)
 
 	members = await get_team_members(team_check.id)
-	if len(members) >= MAX_TEAM_SIZE:
+	player_count = sum(1 for m in members if m.role.value == "player")
+	if player_count >= MAX_TEAM_SCHOLARS:
 		raise HTTPException(
 			status_code=status.HTTP_409_CONFLICT,
-			detail="This team is full (max 5 scholars + 1 coach)",
+			detail=f"This team is full (max {MAX_TEAM_SCHOLARS} scholars per team)",
 		)
 
 	team = await join_team(user.id, join_data.join_code)
@@ -186,6 +184,57 @@ async def get_my_team(
 
 	members = await get_team_members(user.team_id)
 
+	return TeamResponse(team=team, members=members)
+
+
+@router.get("/teams", response_model=list[Team])
+async def list_coach_teams(
+	x_user_id: int = Header(..., description="User ID"),
+) -> list[Team]:
+	"""List all teams owned by the current coach."""
+	user = await get_user_by_id(x_user_id)
+	if user is None:
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="User not found",
+		)
+
+	if not user.is_coach():
+		raise HTTPException(
+			status_code=status.HTTP_403_FORBIDDEN,
+			detail="Only coaches can list their teams",
+		)
+
+	return await get_coach_teams(user.id)
+
+
+@router.post("/team/switch", response_model=TeamResponse)
+async def switch_team(
+	data: TeamSwitch,
+	x_user_id: int = Header(..., description="User ID"),
+) -> TeamResponse:
+	"""Switch the coach's active team."""
+	user = await get_user_by_id(x_user_id)
+	if user is None:
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="User not found",
+		)
+
+	if not user.is_coach():
+		raise HTTPException(
+			status_code=status.HTTP_403_FORBIDDEN,
+			detail="Only coaches can switch teams",
+		)
+
+	team = await switch_active_team(user.id, data.team_id)
+	if team is None:
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="Team not found or you don't own it",
+		)
+
+	members = await get_team_members(team.id)
 	return TeamResponse(team=team, members=members)
 
 

@@ -88,12 +88,22 @@ async def create_session(
 				status_code=status.HTTP_403_FORBIDDEN,
 				detail="Only coaches can create team sessions",
 			)
-		if not user.team_id:
+		# Use explicit team_id from request, or fall back to active team
+		team_id = session_data.team_id or user.team_id
+		if not team_id:
 			raise HTTPException(
 				status_code=status.HTTP_400_BAD_REQUEST,
 				detail="You need to create a team first",
 			)
-		team_id = user.team_id
+		# Verify coach owns the specified team
+		if session_data.team_id:
+			from games.services.auth import get_team_by_id
+			target_team = await get_team_by_id(session_data.team_id)
+			if target_team is None or target_team.coach_id != user.id:
+				raise HTTPException(
+					status_code=status.HTTP_403_FORBIDDEN,
+					detail="You don't own that team",
+				)
 		coach_id = user.id
 		player_id = None
 
