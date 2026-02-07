@@ -107,7 +107,13 @@ async def create_new_team(
 			detail="Only coaches can create teams",
 		)
 
-	team = await create_team(user.id, team_data)
+	try:
+		team = await create_team(user.id, team_data)
+	except ValueError as e:
+		raise HTTPException(
+			status_code=status.HTTP_409_CONFLICT,
+			detail=str(e),
+		)
 	return team
 
 

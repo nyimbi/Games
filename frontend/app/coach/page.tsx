@@ -40,7 +40,9 @@ export default function CoachDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [teamName, setTeamName] = useState('');
+  const [teamCode, setTeamCode] = useState('');
   const [isCreatingTeam, setIsCreatingTeam] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
@@ -63,12 +65,15 @@ export default function CoachDashboard() {
     if (!teamName.trim()) return;
 
     setIsCreatingTeam(true);
+    setCreateError('');
     try {
-      await createTeam(teamName.trim());
+      await createTeam(teamName.trim(), teamCode.trim() || undefined);
       setShowCreateTeam(false);
       setTeamName('');
-    } catch (err) {
-      console.error('Failed to create team:', err);
+      setTeamCode('');
+    } catch (err: any) {
+      const msg = err?.data?.detail || 'Failed to create team';
+      setCreateError(msg);
     } finally {
       setIsCreatingTeam(false);
     }
@@ -140,14 +145,25 @@ export default function CoachDashboard() {
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       placeholder="Team name"
-                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-4"
+                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-3"
                       autoFocus
                     />
+                    <input
+                      type="text"
+                      value={teamCode}
+                      onChange={(e) => setTeamCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 12))}
+                      placeholder="Custom team code (optional, e.g. LIONS)"
+                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-1 font-mono uppercase"
+                    />
+                    <p className="text-xs text-ink-400 mb-4">4-12 characters, letters, numbers, hyphens. Leave blank for auto-generated.</p>
+                    {createError && (
+                      <p className="text-sm text-coral-600 mb-3">{createError}</p>
+                    )}
                     <div className="flex gap-3 justify-center">
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => setShowCreateTeam(false)}
+                        onClick={() => { setShowCreateTeam(false); setCreateError(''); }}
                       >
                         Cancel
                       </Button>

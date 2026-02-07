@@ -116,11 +116,29 @@ async def create_user(user_data: UserCreate) -> User:
 
 
 async def create_team(coach_id: int, team_data: TeamCreate) -> Team:
-	"""Create a new team."""
-	join_code = generate_team_code()
+	"""Create a new team. Uses custom join_code if provided, otherwise generates one."""
 	now = datetime.utcnow()
 
 	async with get_connection() as conn:
+		# Determine join code
+		if team_data.join_code:
+			code = team_data.join_code.strip().upper()
+			# Validate format: alphanumeric + hyphens, 4-12 chars
+			if not (4 <= len(code) <= 12):
+				raise ValueError("Team code must be 4-12 characters")
+			if not all(c.isalnum() or c == "-" for c in code):
+				raise ValueError("Team code must be alphanumeric (hyphens allowed)")
+			# Check uniqueness
+			existing = await conn.fetchrow(
+				"SELECT 1 FROM teams WHERE join_code = $1",
+				code,
+			)
+			if existing is not None:
+				raise ValueError(f"Team code '{code}' is already taken")
+			join_code = code
+		else:
+			join_code = generate_team_code()
+
 		# Create the team
 		row = await conn.fetchrow(
 			"""

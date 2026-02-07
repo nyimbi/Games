@@ -21,7 +21,7 @@ interface AuthContextType extends AuthState {
   }) => Promise<User>;
   recover: (scholarCode: string) => Promise<User>;
   logout: () => void;
-  createTeam: (name: string) => Promise<Team>;
+  createTeam: (name: string, joinCode?: string) => Promise<Team>;
   joinTeam: (joinCode: string) => Promise<Team>;
   refreshTeam: () => Promise<void>;
   switchTeam: (teamId: number) => Promise<void>;
@@ -208,8 +208,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   }, []);
 
-  const createTeam = useCallback(async (name: string) => {
-    const team = await authApi.createTeam({ name });
+  const createTeam = useCallback(async (name: string, joinCode?: string) => {
+    const team = await authApi.createTeam({ name, join_code: joinCode || undefined });
     // Update user with new team_id
     setState((prev) => {
       const updatedUser = prev.user ? { ...prev.user, team_id: team.id } : null;

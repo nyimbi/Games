@@ -94,7 +94,7 @@ export const authApi = {
       body: JSON.stringify(data),
     }),
 
-  createTeam: (data: { name: string }) =>
+  createTeam: (data: { name: string; join_code?: string }) =>
     fetcher<Team>('/auth/team', {
       method: 'POST',
       body: JSON.stringify(data),

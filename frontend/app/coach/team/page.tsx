@@ -36,7 +36,9 @@ export default function TeamManagement() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [teamName, setTeamName] = useState('');
+  const [teamCode, setTeamCode] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [switchingTo, setSwitchingTo] = useState<number | null>(null);
 
   const copyJoinCode = () => {
@@ -51,12 +53,15 @@ export default function TeamManagement() {
     e.preventDefault();
     if (!teamName.trim()) return;
     setIsCreating(true);
+    setCreateError('');
     try {
-      await createTeam(teamName.trim());
+      await createTeam(teamName.trim(), teamCode.trim() || undefined);
       setShowCreateTeam(false);
       setTeamName('');
-    } catch (err) {
-      console.error('Failed to create team:', err);
+      setTeamCode('');
+    } catch (err: any) {
+      const msg = err?.data?.detail || 'Failed to create team';
+      setCreateError(msg);
     } finally {
       setIsCreating(false);
     }
@@ -164,11 +169,22 @@ export default function TeamManagement() {
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                       placeholder="Team name"
-                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-4"
+                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-3"
                       autoFocus
                     />
+                    <input
+                      type="text"
+                      value={teamCode}
+                      onChange={(e) => setTeamCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 12))}
+                      placeholder="Custom team code (optional, e.g. LIONS)"
+                      className="w-full px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none mb-1 font-mono uppercase"
+                    />
+                    <p className="text-xs text-ink-400 mb-4">4-12 characters. Leave blank for auto-generated.</p>
+                    {createError && (
+                      <p className="text-sm text-coral-600 mb-3">{createError}</p>
+                    )}
                     <div className="flex gap-3 justify-center">
-                      <Button type="button" variant="ghost" onClick={() => setShowCreateTeam(false)}>
+                      <Button type="button" variant="ghost" onClick={() => { setShowCreateTeam(false); setCreateError(''); }}>
                         Cancel
                       </Button>
                       <Button type="submit" variant="gold" disabled={!teamName.trim() || isCreating}>
@@ -193,21 +209,35 @@ export default function TeamManagement() {
                 <Card className="border-gold-200 bg-gold-50">
                   <CardContent className="p-6">
                     <h3 className="font-semibold text-ink-800 mb-4">Create Another Team</h3>
-                    <form onSubmit={handleCreateTeam} className="flex gap-3">
-                      <input
-                        type="text"
-                        value={teamName}
-                        onChange={(e) => setTeamName(e.target.value)}
-                        placeholder="Team name"
-                        className="flex-1 px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none"
-                        autoFocus
-                      />
-                      <Button type="button" variant="ghost" onClick={() => { setShowCreateTeam(false); setTeamName(''); }}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" variant="gold" disabled={!teamName.trim() || isCreating}>
-                        {isCreating ? 'Creating...' : 'Create'}
-                      </Button>
+                    <form onSubmit={handleCreateTeam} className="space-y-3">
+                      <div className="flex gap-3">
+                        <input
+                          type="text"
+                          value={teamName}
+                          onChange={(e) => setTeamName(e.target.value)}
+                          placeholder="Team name"
+                          className="flex-1 px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none"
+                          autoFocus
+                        />
+                        <input
+                          type="text"
+                          value={teamCode}
+                          onChange={(e) => setTeamCode(e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 12))}
+                          placeholder="Code (optional)"
+                          className="w-40 px-4 py-3 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none font-mono uppercase"
+                        />
+                      </div>
+                      {createError && (
+                        <p className="text-sm text-coral-600">{createError}</p>
+                      )}
+                      <div className="flex gap-3 justify-end">
+                        <Button type="button" variant="ghost" onClick={() => { setShowCreateTeam(false); setTeamName(''); setTeamCode(''); setCreateError(''); }}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" variant="gold" disabled={!teamName.trim() || isCreating}>
+                          {isCreating ? 'Creating...' : 'Create'}
+                        </Button>
+                      </div>
                     </form>
                   </CardContent>
                 </Card>

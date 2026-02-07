@@ -9,10 +9,12 @@ from pydantic.functional_validators import AfterValidator
 
 
 def _validate_team_code(code: str) -> str:
-	"""Validate team code format (6 alphanumeric chars)."""
-	assert len(code) == 6, "Team code must be 6 characters"
-	assert code.isalnum(), "Team code must be alphanumeric"
-	return code.upper()
+	"""Validate team code format (4-12 alphanumeric chars, hyphens allowed in middle)."""
+	stripped = code.strip()
+	assert 4 <= len(stripped) <= 12, "Team code must be 4-12 characters"
+	assert all(c.isalnum() or c == "-" for c in stripped), "Team code must be alphanumeric (hyphens allowed)"
+	assert stripped[0].isalnum() and stripped[-1].isalnum(), "Team code must start and end with a letter or number"
+	return stripped.upper()
 
 
 TeamCode = Annotated[str, AfterValidator(_validate_team_code)]
@@ -81,11 +83,12 @@ class UserCreate(BaseModel):
 
 
 class TeamCreate(BaseModel):
-	"""Schema for creating a new team."""
+	"""Schema for creating a new team. Optional join_code lets coaches pick a memorable code."""
 
 	model_config = ConfigDict(extra="forbid")
 
 	name: str = Field(..., min_length=2, max_length=50)
+	join_code: str | None = Field(default=None, min_length=4, max_length=12)
 
 
 class TeamJoin(BaseModel):
@@ -93,7 +96,7 @@ class TeamJoin(BaseModel):
 
 	model_config = ConfigDict(extra="forbid")
 
-	join_code: str = Field(..., min_length=6, max_length=6)
+	join_code: str = Field(..., min_length=4, max_length=12)
 
 
 class ScholarCodeLookup(BaseModel):
