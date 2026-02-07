@@ -108,7 +108,7 @@ const GAMES = [
     time: '10-15 min',
     difficulty: 3,
     syncType: 'real-time',
-    available: false,
+    available: true,
   },
 
   // Writing
@@ -121,7 +121,7 @@ const GAMES = [
     time: '15-20 min',
     difficulty: 2,
     syncType: 'turn-based',
-    available: false,
+    available: true,
   },
   {
     id: 'essay-sprint',
@@ -132,7 +132,7 @@ const GAMES = [
     time: '20-25 min',
     difficulty: 3,
     syncType: 'parallel',
-    available: false,
+    available: true,
   },
   {
     id: 'role-writing',
@@ -143,7 +143,7 @@ const GAMES = [
     time: '15-20 min',
     difficulty: 2,
     syncType: 'role-assigned',
-    available: false,
+    available: true,
   },
   {
     id: 'argument-tennis',
@@ -154,7 +154,7 @@ const GAMES = [
     time: '10-15 min',
     difficulty: 3,
     syncType: 'turn-based',
-    available: false,
+    available: true,
   },
 
   // Challenge
@@ -167,7 +167,7 @@ const GAMES = [
     time: '5-10 min',
     difficulty: 1,
     syncType: 'individual',
-    available: false,
+    available: true,
   },
   {
     id: 'pattern-puzzles',
@@ -178,7 +178,7 @@ const GAMES = [
     time: '10-15 min',
     difficulty: 3,
     syncType: 'synchronized',
-    available: false,
+    available: true,
   },
   {
     id: 'quickfire-quiz',
@@ -200,7 +200,7 @@ const GAMES = [
     time: '10-15 min',
     difficulty: 2,
     syncType: 'individual',
-    available: false,
+    available: true,
   },
 
   // Debate
@@ -213,7 +213,7 @@ const GAMES = [
     time: '10-15 min',
     difficulty: 3,
     syncType: 'turn-based',
-    available: false,
+    available: true,
   },
   {
     id: 'role-play-debates',
@@ -224,7 +224,7 @@ const GAMES = [
     time: '15-20 min',
     difficulty: 3,
     syncType: 'role-assigned',
-    available: false,
+    available: true,
   },
   {
     id: 'argument-builder',
@@ -235,7 +235,7 @@ const GAMES = [
     time: '15-20 min',
     difficulty: 2,
     syncType: 'collaborative',
-    available: false,
+    available: true,
   },
   {
     id: 'impromptu-challenge',
@@ -246,7 +246,7 @@ const GAMES = [
     time: '10-15 min',
     difficulty: 3,
     syncType: 'individual',
-    available: false,
+    available: true,
   },
 ];
 
@@ -280,9 +280,7 @@ export default function GamesPage() {
   const selectedCategoryData = GAME_CATEGORIES.find((c) => c.id === selectedCategory);
 
   const handlePlayGame = (gameId: string) => {
-    // For now, redirect to a practice session
-    // In the future, this could create a solo practice session
-    router.push(`/play/solo?game=${gameId}`);
+    router.push(`/play/solo?game=${gameId.replace(/-/g, '_')}`);
   };
 
   return (

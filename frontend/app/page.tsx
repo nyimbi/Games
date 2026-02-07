@@ -65,7 +65,7 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, user, router]);
 
-  if (isLoading) {
+  if (isLoading || isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-100">
         <motion.div

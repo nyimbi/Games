@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, ReactElement } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, ReactElement, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import {
   Zap, BookOpen, Beaker, Palette, Globe, Sparkles, ArrowLeft,
@@ -29,6 +29,12 @@ import {
   MemoryMosaic,
   ArgumentArena,
   TreasureHunt,
+  ScavengerBowl,
+  RoleWriting,
+  ArgumentTennis,
+  EliminationOlympics,
+  RolePlayDebates,
+  ArgumentBuilder,
 } from '@/components/games';
 import type { Question } from '@/lib/games/types';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -83,12 +89,31 @@ const SOLO_GAMES = [
   { id: 'treasure_hunt', name: 'Treasure Hunt', icon: Map, color: 'bg-sage-100 text-sage-700', description: 'Explore & conquer', needsQuestions: false },
   { id: 'argument_arena', name: 'Argument Arena', icon: Swords, color: 'bg-purple-100 text-purple-700', description: 'Card debate battle', needsQuestions: false },
   { id: 'memory_mosaic', name: 'Memory Mosaic', icon: Grid3X3, color: 'bg-sky-100 text-sky-700', description: 'Match connections', needsQuestions: false },
+  { id: 'scavenger_bowl', name: 'Scavenger Bowl', icon: Map, color: 'bg-coral-100 text-coral-700', description: 'Clue-based quiz', needsQuestions: false },
+  { id: 'role_writing', name: 'Role Writing', icon: PenTool, color: 'bg-sage-100 text-sage-700', description: 'Write in character', needsQuestions: false },
+  { id: 'argument_tennis', name: 'Argument Tennis', icon: MessageSquare, color: 'bg-purple-100 text-purple-700', description: 'Debate vs AI', needsQuestions: false },
+  { id: 'elimination_olympics', name: 'Elimination Olympics', icon: Swords, color: 'bg-coral-100 text-coral-700', description: 'Survive the rounds', needsQuestions: false },
+  { id: 'role_play_debates', name: 'Role-Play Debates', icon: Mic, color: 'bg-ink-100 text-ink-700', description: 'Debate in character', needsQuestions: false },
+  { id: 'argument_builder', name: 'Argument Builder', icon: FileText, color: 'bg-gold-100 text-gold-700', description: 'Build arguments step-by-step', needsQuestions: false },
 ];
 
-type GameId = 'quickfire_quiz' | 'flashcard_frenzy' | 'pattern_puzzles' | 'story_chain' | 'essay_sprint' | 'mini_debate' | 'impromptu_challenge' | 'daily_challenge' | 'scholar_read' | 'scholars_challenge' | 'battle_mode' | 'wrong_answer_review' | 'connection_quest' | 'scholar_sprint' | 'treasure_hunt' | 'argument_arena' | 'memory_mosaic';
+type GameId = 'quickfire_quiz' | 'flashcard_frenzy' | 'pattern_puzzles' | 'story_chain' | 'essay_sprint' | 'mini_debate' | 'impromptu_challenge' | 'daily_challenge' | 'scholar_read' | 'scholars_challenge' | 'battle_mode' | 'wrong_answer_review' | 'connection_quest' | 'scholar_sprint' | 'treasure_hunt' | 'argument_arena' | 'memory_mosaic' | 'scavenger_bowl' | 'role_writing' | 'argument_tennis' | 'elimination_olympics' | 'role_play_debates' | 'argument_builder';
 
-export default function SoloPracticePage() {
+export default function SoloPracticePageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+        <div className="w-12 h-12 border-4 border-ink-200 border-t-gold-500 rounded-full animate-spin" />
+      </div>
+    }>
+      <SoloPracticePage />
+    </Suspense>
+  );
+}
+
+function SoloPracticePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { muted, toggleMute } = useSounds();
 
@@ -181,6 +206,17 @@ export default function SoloPracticePage() {
     setWrongAnswerCount(getWrongAnswerCount());
     setCrossGameStreak(getCrossGameStreak());
   }, [isPlaying]);
+
+  // Auto-launch game from URL param (e.g., from team games page)
+  useEffect(() => {
+    const gameParam = searchParams.get('game');
+    if (gameParam && !isPlaying && !authLoading && isAuthenticated) {
+      const validGame = SOLO_GAMES.find(g => g.id === gameParam);
+      if (validGame) {
+        handleQuickPlay(gameParam as GameId);
+      }
+    }
+  }, [searchParams, authLoading, isAuthenticated]);
 
   // Quick play - start immediately with current settings
   const handleQuickPlay = (gameId: GameId) => {
@@ -282,6 +318,12 @@ export default function SoloPracticePage() {
       treasure_hunt: <TreasureHunt onExit={handleExit} />,
       argument_arena: <ArgumentArena onExit={handleExit} />,
       memory_mosaic: <MemoryMosaic onExit={handleExit} />,
+      scavenger_bowl: <ScavengerBowl onExit={handleExit} />,
+      role_writing: <RoleWriting onExit={handleExit} />,
+      argument_tennis: <ArgumentTennis onExit={handleExit} />,
+      elimination_olympics: <EliminationOlympics onExit={handleExit} />,
+      role_play_debates: <RolePlayDebates onExit={handleExit} />,
+      argument_builder: <ArgumentBuilder onExit={handleExit} />,
     };
 
     return (

@@ -88,7 +88,7 @@ class TeamCreate(BaseModel):
 	model_config = ConfigDict(extra="forbid")
 
 	name: str = Field(..., min_length=2, max_length=50)
-	join_code: str | None = Field(default=None, min_length=4, max_length=12)
+	join_code: str | None = None
 
 
 class TeamJoin(BaseModel):
@@ -104,7 +104,7 @@ class ScholarCodeLookup(BaseModel):
 
 	model_config = ConfigDict(extra="forbid")
 
-	scholar_code: str = Field(..., min_length=5, max_length=15)
+	scholar_code: str = Field(..., min_length=3, max_length=30)
 
 
 class TeamSwitch(BaseModel):

@@ -706,7 +706,7 @@ function LoginContent() {
                             onChange={(e) => setTeamInput(e.target.value.toUpperCase())}
                             placeholder="Enter code"
                             className="w-full px-4 py-4 rounded-xl border border-ink-200 focus:border-gold-400 focus:ring-2 focus:ring-gold-200 outline-none font-mono text-2xl text-center tracking-[0.3em] uppercase"
-                            maxLength={8}
+                            maxLength={12}
                             autoFocus
                           />
                         </>
