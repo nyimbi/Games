@@ -11,3 +11,6 @@ export * from './Badge';
 export * from './ScoreBoard';
 export * from './Buzzer';
 export * from './PlayerList';
+export * from './AchievementToast';
+export * from './AvatarPicker';
+export * from './ScholarCodeCard';

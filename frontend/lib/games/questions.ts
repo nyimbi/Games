@@ -1,10 +1,10 @@
 /**
  * Question database for Scholar Games
- * Contains 200+ questions across 5 subjects and 3 difficulty levels
- * Designed for World Scholars Cup preparation (ages 9-12)
+ * Contains 500+ questions across 5 subjects and 3 difficulty levels
+ * Designed for World Scholars Cup preparation (ages 9-16)
  */
 
-import type { Question } from '@/lib/api/client';
+import type { Question } from './types';
 
 // Helper to create question IDs
 let questionId = 0;
@@ -14,7 +14,13 @@ const createQuestion = (
   text: string,
   options: string[],
   correct_index: number,
-  explanation?: string
+  explanation?: string,
+  extras?: {
+    theme_connection?: string;
+    deep_explanation?: string;
+    related_questions?: string[];
+    tags?: string[];
+  }
 ): Question => ({
   id: `q${++questionId}`,
   subject,
@@ -24,6 +30,7 @@ const createQuestion = (
   correct_index,
   explanation,
   time_limit_seconds: difficulty === 'easy' ? 20 : difficulty === 'medium' ? 25 : 30,
+  ...extras,
 });
 
 // ============================================================================
@@ -151,6 +158,238 @@ export const scienceQuestions: Question[] = [
   createQuestion('science', 'hard', 'What is the Doppler effect?', ['Light bending around objects', 'Change in frequency due to motion', 'Heat transfer through radiation', 'Sound echoing'], 1, 'Moving sources cause frequency shifts - this is why sirens change pitch.'),
   createQuestion('science', 'hard', 'What is the powerhouse of the cell?', ['Nucleus', 'Ribosome', 'Mitochondria', 'Golgi apparatus'], 2, 'Mitochondria produce ATP through cellular respiration.'),
   createQuestion('science', 'hard', 'What is nuclear fusion?', ['Splitting atoms', 'Combining atomic nuclei to release energy', 'Chemical reaction', 'Radioactive decay'], 1, 'The Sun produces energy through nuclear fusion of hydrogen.'),
+
+  // ==========================================================================
+  // OCEAN SCIENCE (WSC 2026 Theme: "Are We There Yet?" - Exploring Earth's Frontiers)
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What percentage of the ocean floor has been mapped in detail?', ['100%', 'About 75%', 'About 25%', 'Less than 10%'], 3, 'We know more about the Moon\'s surface than the deep ocean floor.', {
+    theme_connection: 'The ocean is a frontier where we are decidedly not "there yet" in terms of exploration.',
+    deep_explanation: 'Modern sonar and satellite technology are gradually filling in the map, but the ocean\'s sheer size and depth make full mapping a massive ongoing challenge.',
+    tags: ['ocean', 'exploration', 'mapping'],
+  }),
+  createQuestion('science', 'easy', 'What is the deepest point in the ocean called?', ['The Great Barrier Reef', 'The Mariana Trench', 'The Mid-Atlantic Ridge', 'The Bermuda Triangle'], 1, 'The Challenger Deep in the Mariana Trench reaches about 11,000 meters below sea level.', {
+    theme_connection: 'Only three people have visited the deepest ocean point, reminding us how much of our own planet remains unexplored.',
+    deep_explanation: 'The Challenger Deep is about 11 km down, deeper than Mount Everest is tall. The pressure there is over 1,000 times atmospheric pressure at sea level.',
+    tags: ['ocean', 'geography', 'depth'],
+  }),
+  createQuestion('science', 'easy', 'What gas do oceans absorb that helps slow climate change?', ['Oxygen', 'Nitrogen', 'Carbon dioxide', 'Helium'], 2, 'Oceans absorb roughly 30% of human-produced CO2, acting as a carbon sink.', {
+    theme_connection: 'The ocean\'s role in absorbing carbon is crucial to whether we "get there" on climate goals.',
+    deep_explanation: 'While this absorption slows atmospheric warming, it also causes ocean acidification, which threatens marine life like coral reefs and shellfish.',
+    tags: ['ocean', 'climate', 'carbon-cycle'],
+  }),
+  createQuestion('science', 'easy', 'What causes ocean tides?', ['Wind', 'The Moon\'s gravitational pull', 'Earthquakes', 'Fish swimming'], 1, 'The Moon\'s gravity creates bulges in the ocean, causing high and low tides roughly twice a day.', {
+    theme_connection: 'Tides are a journey that never stops, endlessly cycling as the Moon orbits Earth.',
+    deep_explanation: 'The Sun also affects tides. When Sun and Moon align (spring tides), tides are extra strong. When at right angles (neap tides), they are weaker.',
+    tags: ['ocean', 'tides', 'gravity'],
+  }),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is an ocean "dead zone"?', ['An area with no water', 'A region with too little oxygen to support marine life', 'A place where boats cannot sail', 'An empty stretch of sea'], 1, 'Dead zones are often caused by excess nutrient runoff from agriculture, which triggers algal blooms.', {
+    theme_connection: 'Dead zones represent places where environmental progress has gone backward rather than forward.',
+    deep_explanation: 'When algae die, bacteria consume them and deplete dissolved oxygen. Over 400 dead zones have been identified worldwide, including a massive one in the Gulf of Mexico.',
+    tags: ['ocean', 'pollution', 'marine-life'],
+  }),
+  createQuestion('science', 'medium', 'What is coral bleaching?', ['Painting coral white', 'Corals expelling their symbiotic algae due to heat stress', 'Coral dying of old age', 'A natural seasonal change'], 1, 'Bleaching occurs when water temperatures rise even 1-2 degrees above normal, threatening reef ecosystems.', {
+    theme_connection: 'Coral bleaching is a visible sign of whether we are "getting there" on protecting ocean ecosystems or falling behind.',
+    deep_explanation: 'Corals have a symbiotic relationship with zooxanthellae algae that provide them with food and color. Heat stress breaks this partnership, starving the coral.',
+    tags: ['ocean', 'coral', 'climate'],
+  }),
+  createQuestion('science', 'medium', 'What is bioluminescence in the ocean?', ['Sunlight reflecting off water', 'Living organisms producing their own light', 'Underwater volcanoes glowing', 'Moonlight on waves'], 1, 'Many deep-sea creatures, like anglerfish and jellyfish, produce light through chemical reactions in their bodies.', {
+    theme_connection: 'Bioluminescence shows that nature arrived at its own "light technology" billions of years before humans invented electric light.',
+    deep_explanation: 'About 76% of deep-sea creatures produce bioluminescence. Uses include attracting prey, finding mates, and confusing predators.',
+    tags: ['ocean', 'biology', 'deep-sea'],
+  }),
+  createQuestion('science', 'medium', 'What are hydrothermal vents?', ['Underwater air conditioners', 'Openings in the seafloor that release superheated mineral-rich water', 'Coral formations', 'Underground caves'], 1, 'Discovered in 1977, these vents support unique ecosystems that thrive without sunlight, using chemosynthesis instead.', {
+    theme_connection: 'Hydrothermal vents show that life can exist in places we once thought impossible, expanding what "there" means in exploring our planet.',
+    deep_explanation: 'The discovery of vent ecosystems changed our understanding of where life can exist and fueled speculation about life on other worlds like Europa.',
+    tags: ['ocean', 'deep-sea', 'biology', 'vents'],
+  }),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is the "thermohaline circulation" in the ocean?', ['Tidal movements', 'A global system of deep ocean currents driven by temperature and salinity differences', 'Waves caused by wind', 'Currents from river outflows'], 1, 'Often called the "global conveyor belt," it distributes heat around the planet and takes about 1,000 years for a full cycle.', {
+    theme_connection: 'This slow circulation reminds us that some of Earth\'s most important processes take far longer than a human lifetime.',
+    deep_explanation: 'Climate change may weaken the Atlantic portion (AMOC), which could dramatically alter weather patterns in Europe and beyond. Scientists are actively monitoring this risk.',
+    tags: ['ocean', 'climate', 'currents', 'thermohaline'],
+  }),
+  createQuestion('science', 'hard', 'What is ocean acidification?', ['The ocean becoming salty', 'A decrease in ocean pH caused by absorbing excess CO2', 'Oil spills making water acidic', 'Natural volcanic activity'], 1, 'Ocean pH has dropped by 0.1 units since the Industrial Revolution, representing a 30% increase in acidity.', {
+    theme_connection: 'Ocean acidification is a hidden consequence of our carbon journey, threatening marine life even as we focus on atmospheric warming.',
+    deep_explanation: 'Lower pH dissolves the calcium carbonate shells of oysters, mussels, and corals. By 2100, oceans could be 150% more acidic than pre-industrial levels.',
+    tags: ['ocean', 'chemistry', 'climate'],
+  }),
+
+  // ==========================================================================
+  // RENEWABLE ENERGY TECHNOLOGY
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What type of energy comes from the Sun?', ['Nuclear energy', 'Solar energy', 'Geothermal energy', 'Tidal energy'], 1, 'The Sun provides enough energy in one hour to power Earth for a year if we could capture it all.', {
+    theme_connection: 'The Sun delivers virtually unlimited energy. The question "are we there yet?" on solar power is really about our ability to capture it.',
+    deep_explanation: 'Solar panel costs have dropped 99% since 1976. Solar is now the cheapest form of new electricity generation in most of the world.',
+    tags: ['energy', 'solar', 'renewables'],
+  }),
+  createQuestion('science', 'easy', 'How do wind turbines generate electricity?', ['By burning fuel', 'By using wind to spin blades connected to a generator', 'By using solar panels', 'By heating water'], 1, 'Modern wind turbines can have blades over 80 meters long and power thousands of homes.', {
+    theme_connection: 'Wind energy is part of the journey toward a clean energy future, but are we there yet?',
+    deep_explanation: 'Wind power capacity has grown enormously, but intermittency (wind doesn\'t always blow) means we also need energy storage solutions.',
+    tags: ['energy', 'wind', 'renewables'],
+  }),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is a "green hydrogen" fuel?', ['Hydrogen from natural gas', 'Hydrogen produced using renewable energy to split water', 'Hydrogen mixed with chlorophyll', 'Hydrogen from coal'], 1, 'Green hydrogen could decarbonize industries like steel and shipping that are hard to electrify directly.', {
+    theme_connection: 'Green hydrogen is a technology that could help us "get there" on decarbonizing heavy industry.',
+    deep_explanation: 'Electrolysis uses electricity to split water (H2O) into hydrogen and oxygen. If the electricity comes from renewables, the hydrogen is "green" with zero carbon emissions.',
+    tags: ['energy', 'hydrogen', 'renewables', 'decarbonization'],
+  }),
+  createQuestion('science', 'medium', 'What is a "battery storage system" for renewable energy?', ['A giant AA battery', 'Large-scale batteries that store excess energy for use when the sun or wind stops', 'A type of solar panel', 'A wind turbine component'], 1, 'Lithium-ion battery costs have fallen about 90% since 2010, making grid storage increasingly viable.', {
+    theme_connection: 'Battery storage is the missing piece in the renewable energy journey: we can generate clean power, but can we store enough to get "there"?',
+    deep_explanation: 'The Hornsdale Power Reserve in Australia (Tesla\'s "Big Battery") demonstrated how grid-scale batteries can stabilize power supplies and reduce costs.',
+    tags: ['energy', 'batteries', 'storage', 'renewables'],
+  }),
+  createQuestion('science', 'medium', 'What is geothermal energy?', ['Heat from the Sun', 'Heat from inside the Earth used for electricity or heating', 'Energy from ocean waves', 'Energy from burning wood'], 1, 'Iceland generates about 25% of its electricity from geothermal sources due to its volcanic geology.', {
+    theme_connection: 'Geothermal energy taps into heat that has been flowing since Earth formed, a source we are only beginning to harness.',
+    deep_explanation: 'Enhanced geothermal systems (EGS) could unlock geothermal power almost anywhere by drilling deep enough. This technology could provide baseload clean energy 24/7.',
+    tags: ['energy', 'geothermal', 'renewables'],
+  }),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is "perovskite" in solar technology?', ['A type of rock used in buildings', 'A crystal structure that could make solar cells cheaper and more efficient', 'A brand of solar panel', 'A solar tracking device'], 1, 'Perovskite solar cells have reached lab efficiencies rivaling silicon in just over a decade of research.', {
+    theme_connection: 'Perovskite technology asks whether we can leapfrog traditional solar to get "there" faster on clean energy.',
+    deep_explanation: 'Unlike silicon, perovskites can be printed onto flexible surfaces at low temperatures, potentially slashing manufacturing costs. The main challenge is long-term stability.',
+    tags: ['energy', 'solar', 'materials-science', 'innovation'],
+  }),
+
+  // ==========================================================================
+  // NEUROSCIENCE & GENETICS
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What organ controls your thoughts, feelings, and movements?', ['Heart', 'Brain', 'Lungs', 'Stomach'], 1, 'The human brain contains roughly 86 billion neurons connected by trillions of synapses.', {
+    theme_connection: 'Understanding the brain is one of science\'s greatest ongoing journeys, with much of its complexity still unmapped.',
+    deep_explanation: 'The Human Brain Project and BRAIN Initiative are massive efforts to map the brain\'s connections. We have identified major regions but the detailed wiring remains largely mysterious.',
+    tags: ['neuroscience', 'brain', 'biology'],
+  }),
+  createQuestion('science', 'easy', 'What is DNA?', ['A type of medicine', 'The molecule that carries genetic instructions for life', 'A computer program', 'A type of energy'], 1, 'DNA stands for deoxyribonucleic acid and is found in nearly every cell of your body.', {
+    theme_connection: 'DNA is the instruction manual for life\'s journey, carrying information across billions of years of evolution.',
+    deep_explanation: 'If you uncoiled all the DNA in your body, it would stretch to the Sun and back about 600 times. Yet it fits inside microscopic cell nuclei.',
+    tags: ['genetics', 'DNA', 'biology'],
+  }),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is "neuroplasticity"?', ['A type of brain surgery', 'The brain\'s ability to reorganize and form new neural connections throughout life', 'A brain disease', 'An intelligence test'], 1, 'Learning a new language, instrument, or skill physically changes your brain structure.', {
+    theme_connection: 'Neuroplasticity shows our brains are always on a journey of change, never truly "there" in a final state.',
+    deep_explanation: 'Once scientists believed the adult brain was fixed. Now we know neurons can form new pathways even in old age, which has revolutionized stroke rehabilitation and education.',
+    tags: ['neuroscience', 'brain', 'learning', 'plasticity'],
+  }),
+  createQuestion('science', 'medium', 'What is the Human Genome Project?', ['A music competition', 'An international effort that mapped all human genes, completed in 2003', 'A fitness program', 'A space mission'], 1, 'The project identified about 20,000-25,000 human genes and cost approximately $2.7 billion over 13 years.', {
+    theme_connection: 'The Human Genome Project was a milestone on the journey to understanding ourselves, but reading the code was just the beginning.',
+    deep_explanation: 'Today, sequencing a human genome costs under $1,000 and takes hours. But understanding what all the genes do and how they interact is a far longer journey.',
+    tags: ['genetics', 'genome', 'science-history'],
+  }),
+  createQuestion('science', 'medium', 'What are "stem cells" and why are they important?', ['Plant cells', 'Cells that can develop into many different cell types in the body', 'Blood cells only', 'Skin cells only'], 1, 'Stem cells have the potential to repair damaged tissues and organs, offering hope for diseases currently without cures.', {
+    theme_connection: 'Stem cell research is a journey from laboratory discovery toward regenerative medicine that could transform healthcare.',
+    deep_explanation: 'In 2006, Shinya Yamanaka discovered how to reprogram adult cells into stem cells (iPSCs), winning a Nobel Prize. This avoids the ethical issues of embryonic stem cells.',
+    tags: ['biology', 'stem-cells', 'medicine'],
+  }),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is "epigenetics"?', ['The study of outer space', 'The study of how behaviors and environment can change the way genes work', 'A branch of mathematics', 'A type of genetic mutation'], 1, 'Epigenetic changes don\'t alter DNA sequence but can turn genes on or off, and some can be passed to offspring.', {
+    theme_connection: 'Epigenetics reveals that our genetic journey is shaped by our environment and choices, not just inherited code.',
+    deep_explanation: 'Diet, stress, and exposure to toxins can add or remove chemical tags on DNA. This explains why identical twins can develop different health conditions over time.',
+    tags: ['genetics', 'epigenetics', 'biology', 'environment'],
+  }),
+  createQuestion('science', 'hard', 'What is a "brain-computer interface" (BCI)?', ['A video game controller', 'Technology that enables direct communication between the brain and external devices', 'A type of MRI scan', 'An intelligence test'], 1, 'Companies like Neuralink are developing BCIs that could help paralyzed patients control computers with their thoughts.', {
+    theme_connection: 'BCIs represent one of the most ambitious journeys in science: bridging the gap between mind and machine.',
+    deep_explanation: 'In 2024, Neuralink\'s first human patient could control a computer cursor with thoughts alone. The technology raises profound questions about privacy, identity, and what it means to be human.',
+    tags: ['neuroscience', 'technology', 'BCI', 'innovation'],
+  }),
+
+  // ==========================================================================
+  // WEATHER, CLIMATE EXTREMES & MATERIALS SCIENCE
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What is the difference between weather and climate?', ['They are the same', 'Weather is short-term conditions; climate is long-term patterns', 'Climate is about space', 'Weather only applies to cold places'], 1, 'Weather can change hour to hour, while climate describes averages over decades.', {
+    theme_connection: 'Understanding the difference helps us see that individual weather events are stops on the journey, while climate is the overall direction of travel.',
+    deep_explanation: 'A cold winter day does not disprove global warming, just as a hot summer day does not prove it. Climate trends emerge from decades of data.',
+    tags: ['weather', 'climate', 'earth-science'],
+  }),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is the "heat island" effect in cities?', ['Islands that are hot', 'Urban areas being significantly warmer than surrounding rural areas', 'Tropical island weather', 'Heated swimming pools'], 1, 'Concrete, asphalt, and lack of vegetation in cities can make temperatures 1-3 degrees Celsius higher than nearby countryside.', {
+    theme_connection: 'Urban heat islands show that "progress" through urbanization can create unintended environmental setbacks.',
+    deep_explanation: 'Green roofs, urban trees, and reflective building materials are being used to combat this effect. Some cities have reduced temperatures by several degrees using these strategies.',
+    tags: ['climate', 'cities', 'heat-island', 'urbanization'],
+  }),
+  createQuestion('science', 'medium', 'What is graphene?', ['A type of pencil lead', 'A single layer of carbon atoms arranged in a hexagonal lattice, the thinnest known material', 'A chemical compound in ink', 'A type of plastic'], 1, 'Graphene is 200 times stronger than steel yet incredibly lightweight and an excellent conductor of electricity and heat.', {
+    theme_connection: 'Graphene was discovered in 2004 using sticky tape and pencil lead, showing that breakthrough materials can come from simple beginnings.',
+    deep_explanation: 'Andre Geim and Konstantin Novoselov won the 2010 Nobel Prize for isolating graphene. It could revolutionize electronics, water purification, and energy storage, but mass production remains challenging.',
+    tags: ['materials-science', 'graphene', 'innovation'],
+  }),
+  createQuestion('science', 'medium', 'What is an "atmospheric river"?', ['A river that flows through mountains', 'A long, narrow corridor of water vapor in the atmosphere that can cause extreme rainfall', 'Underground water channels', 'A type of cloud formation'], 1, 'Atmospheric rivers can carry as much water vapor as 15 Mississippi Rivers and cause both beneficial rain and devastating floods.', {
+    theme_connection: 'Atmospheric rivers are invisible journeys of water vapor that can bring life-giving rain or catastrophic floods, depending on intensity.',
+    deep_explanation: 'California depends on atmospheric rivers for 30-50% of its annual precipitation. Climate change is making these events more intense, increasing both drought and flood risk.',
+    tags: ['weather', 'atmospheric-river', 'extreme-weather'],
+  }),
+
+  // Hard
+  createQuestion('science', 'hard', 'What are "quantum dots" and why are they important?', ['Decorative patterns', 'Nanoscale semiconductor particles with unique optical properties used in displays and medicine', 'A type of computer virus', 'Astronomical objects'], 1, 'The 2023 Nobel Prize in Chemistry was awarded for the discovery of quantum dots, which are now used in QLED TVs and cancer imaging.', {
+    theme_connection: 'Quantum dots show how nanoscale science has arrived at real-world applications after decades of research.',
+    deep_explanation: 'By changing their size, scientists can tune the color of light quantum dots emit. This property makes them useful for ultra-efficient displays, solar cells, and medical imaging.',
+    tags: ['materials-science', 'quantum-dots', 'nanotechnology', 'innovation'],
+  }),
+  createQuestion('science', 'hard', 'What is a "feedback loop" in climate science?', ['A music recording technique', 'A process where the output of a system amplifies or dampens the original change', 'A recycling method', 'A weather forecasting tool'], 1, 'Ice melting exposes dark water, which absorbs more heat, melting more ice. This positive feedback accelerates warming.', {
+    tags: ['climate', 'feedback-loops', 'earth-science'],
+  }),
+
+  // ==========================================================================
+  // QUANTUM COMPUTING & ADDITIONAL SCIENCE
+  // ==========================================================================
+  // Easy
+  createQuestion('science', 'easy', 'What is a "renewable" resource?', ['Oil', 'A resource that can be replenished naturally, like sunlight, wind, or water', 'Coal', 'Natural gas'], 1, 'Unlike fossil fuels, renewable resources are not depleted when used and are central to sustainable energy plans.', {
+    tags: ['energy', 'renewables', 'sustainability'],
+  }),
+  createQuestion('science', 'easy', 'What is the ozone layer?', ['A type of cloud', 'A protective layer in Earth\'s atmosphere that absorbs harmful ultraviolet radiation', 'A layer of ocean water', 'Part of the Earth\'s crust'], 1, 'The ozone layer is found in the stratosphere, about 15-35 km above Earth\'s surface.', {
+    theme_connection: 'The ozone layer\'s recovery after the Montreal Protocol is a rare success story of global cooperation getting us "there."',
+    deep_explanation: 'The 1987 Montreal Protocol banned CFCs that were destroying ozone. The ozone hole is now gradually healing, showing international agreements can work.',
+    tags: ['atmosphere', 'ozone', 'climate', 'environment'],
+  }),
+  createQuestion('science', 'easy', 'What is pollination?', ['Pollution from factories', 'The transfer of pollen between flowers, enabling plants to reproduce', 'Watering plants', 'Cutting grass'], 1, 'Bees, butterflies, and other pollinators are responsible for about one-third of the food we eat.', {
+    tags: ['biology', 'ecology', 'pollination', 'biodiversity'],
+  }),
+  createQuestion('science', 'easy', 'What is a "fossil"?', ['A type of fuel', 'Preserved remains or traces of ancient organisms found in rock', 'A living animal', 'A crystal'], 1, 'Fossils can be millions of years old and help scientists understand the history of life on Earth.', {
+    tags: ['paleontology', 'fossils', 'earth-science', 'biology'],
+  }),
+
+  // Medium
+  createQuestion('science', 'medium', 'What is a "quantum computer"?', ['A very fast regular computer', 'A computer that uses quantum mechanics principles like superposition to process information', 'A tiny computer', 'A space computer'], 1, 'Quantum computers use "qubits" that can be 0, 1, or both simultaneously, enabling calculations impossible for traditional computers.', {
+    theme_connection: 'Quantum computing asks whether we are "there yet" in computing power, or if an entirely new paradigm is just beginning.',
+    deep_explanation: 'Google claimed "quantum supremacy" in 2019 by solving a problem in 200 seconds that would take a classical supercomputer 10,000 years. But practical quantum computers are still years away.',
+    tags: ['quantum-computing', 'technology', 'physics', 'innovation'],
+  }),
+  createQuestion('science', 'medium', 'What is "microplastic" pollution?', ['Small recycling bins', 'Tiny plastic fragments less than 5mm found in oceans, soil, and even human blood', 'Plastic wrap', 'Small plastic toys'], 1, 'Microplastics have been found in Arctic ice, deep ocean trenches, and inside human organs, raising serious health concerns.', {
+    tags: ['pollution', 'microplastics', 'ocean', 'health', 'environment'],
+  }),
+  createQuestion('science', 'medium', 'What is "biomimicry" in science and engineering?', ['Cloning animals', 'Designing solutions inspired by nature\'s time-tested patterns and strategies', 'Keeping pets', 'Nature photography'], 1, 'Velcro was inspired by burrs sticking to dog fur. Bullet train noses were redesigned based on kingfisher beaks to reduce noise.', {
+    theme_connection: 'Biomimicry suggests nature has already "arrived" at elegant solutions that human engineering is still catching up to.',
+    deep_explanation: 'From termite mound ventilation inspiring energy-efficient buildings to shark skin patterns reducing drag on aircraft, biomimicry shows that 3.8 billion years of evolution holds design wisdom.',
+    tags: ['biomimicry', 'engineering', 'nature', 'innovation', 'design'],
+  }),
+  createQuestion('science', 'medium', 'What is the "greenhouse effect"?', ['Growing plants in greenhouses', 'The trapping of heat in Earth\'s atmosphere by gases like CO2 and methane', 'Painting houses green', 'A type of farming'], 1, 'The greenhouse effect is natural and necessary for life, but human activities have intensified it, causing global warming.', {
+    tags: ['climate', 'greenhouse-effect', 'atmosphere', 'earth-science'],
+  }),
+
+  // Hard
+  createQuestion('science', 'hard', 'What is "CRISPR-Cas9" and why is it revolutionary?', ['A crispy snack', 'A gene-editing tool that can precisely cut and modify DNA sequences', 'A medical scanner', 'A computer chip'], 1, 'CRISPR allows scientists to edit genes with unprecedented precision. In 2023, the first CRISPR therapy for sickle cell disease was approved.', {
+    tags: ['genetics', 'CRISPR', 'biotechnology', 'medicine'],
+  }),
+  createQuestion('science', 'hard', 'What is "dark matter" in cosmology?', ['Unlit areas of space', 'Invisible matter that makes up about 27% of the universe but doesn\'t interact with light', 'Black holes', 'Cosmic dust'], 1, 'Scientists know dark matter exists because of its gravitational effects on visible matter, but no one has directly detected it yet.', {
+    theme_connection: 'Dark matter reminds us that we are far from "there" in understanding the universe; we can\'t even see most of what it\'s made of.',
+    deep_explanation: 'Together with dark energy (~68%), dark matter means that ordinary matter (atoms, stars, planets) makes up only about 5% of the universe. This is one of physics\' greatest mysteries.',
+    tags: ['cosmology', 'dark-matter', 'physics', 'universe'],
+  }),
+  createQuestion('science', 'hard', 'What is "antibiotic resistance" and why is it dangerous?', ['Allergies to medicine', 'When bacteria evolve to survive antibiotics, making infections harder to treat', 'A strong immune system', 'Vaccine side effects'], 1, 'The WHO calls antibiotic resistance one of the greatest threats to global health. Overuse in medicine and agriculture accelerates it.', {
+    tags: ['health', 'antibiotics', 'bacteria', 'public-health', 'evolution'],
+  }),
+  createQuestion('science', 'hard', 'What is "nuclear fission" and how does it differ from fusion?', ['They are the same', 'Fission splits heavy atoms (used in power plants); fusion combines light atoms (powers the Sun)', 'Fission is chemical; fusion is physical', 'Fission needs cold; fusion needs heat'], 1, 'Current nuclear power plants use fission. Fusion promises nearly limitless clean energy but has not yet been achieved at commercial scale.', {
+    tags: ['nuclear', 'fission', 'fusion', 'energy', 'physics'],
+  }),
 ];
 
 // ============================================================================
@@ -202,6 +441,181 @@ export const socialStudiesQuestions: Question[] = [
   createQuestion('social_studies', 'hard', 'What was the code name for the Allied invasion of Normandy?', ['Operation Torch', 'Operation Overlord', 'Operation Market Garden', 'Operation Barbarossa'], 1, 'D-Day was June 6, 1944.'),
   createQuestion('social_studies', 'hard', 'What ancient Greek city-state was known for its military culture?', ['Athens', 'Corinth', 'Sparta', 'Thebes'], 2, 'Spartan boys began military training at age 7.'),
   createQuestion('social_studies', 'hard', 'What event sparked the beginning of World War I?', ['Sinking of Lusitania', 'Assassination of Archduke Franz Ferdinand', 'Invasion of Poland', 'Treaty of Versailles'], 1, 'Franz Ferdinand was assassinated on June 28, 1914, in Sarajevo.'),
+
+  // ==========================================================================
+  // INDIGENOUS PEOPLES & CULTURAL EXCHANGE (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('social_studies', 'easy', 'Who are the Aboriginal Australians?', ['European settlers', 'The Indigenous peoples of Australia, with over 65,000 years of continuous culture', 'Immigrants from Asia', 'Pacific Island settlers'], 1, 'Aboriginal Australians have the oldest continuing civilization on Earth.', {
+    theme_connection: 'Aboriginal culture asks us to consider the journey of humanity itself and what endures across millennia.',
+    deep_explanation: 'Aboriginal Australians maintained rich oral traditions, art (like rock paintings over 40,000 years old), and deep ecological knowledge long before written records.',
+    tags: ['indigenous', 'australia', 'culture', 'history'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is the Maori name for New Zealand?', ['Kangaroo Land', 'Aotearoa', 'Tasmania', 'Oceania'], 1, 'Aotearoa means "Land of the Long White Cloud" in the Maori language.', {
+    theme_connection: 'The growing use of "Aotearoa" alongside "New Zealand" reflects the ongoing journey toward recognizing Indigenous identity.',
+    deep_explanation: 'New Zealand officially added Aotearoa to its name in some contexts. The Maori people navigated thousands of kilometers across the Pacific to settle the islands around 1250-1300 CE.',
+    tags: ['indigenous', 'new-zealand', 'maori', 'geography'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is "cultural exchange"?', ['Buying souvenirs', 'Sharing ideas, traditions, and practices between different cultures', 'Trading currencies', 'Watching foreign movies only'], 1, 'Cultural exchange has occurred throughout history through trade, migration, and diplomacy.', {
+    theme_connection: 'Cultural exchange is a journey where ideas travel between societies, enriching both origin and destination.',
+    deep_explanation: 'The Silk Road, Columbian Exchange, and modern globalization all facilitated cultural exchange. The challenge is ensuring exchange is mutual rather than one-sided cultural dominance.',
+    tags: ['culture', 'exchange', 'globalization'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is the United Nations?', ['A country', 'An international organization of 193 countries working for peace and cooperation', 'A military alliance', 'A trade company'], 1, 'The UN was founded in 1945 after World War II to prevent future conflicts.', {
+    theme_connection: 'The UN embodies the journey toward global cooperation, though achieving its goals remains an ongoing challenge.',
+    deep_explanation: 'The UN includes specialized agencies like WHO, UNICEF, and UNESCO. Its Security Council has five permanent members with veto power, which critics say limits its effectiveness.',
+    tags: ['international-organizations', 'UN', 'peace'],
+  }),
+
+  // Medium
+  createQuestion('social_studies', 'medium', 'What is the Inuit "qulliq" and why is it important?', ['A weapon', 'A traditional oil lamp that provided heat, light, and cooking in the Arctic', 'A type of boat', 'A musical instrument'], 1, 'The qulliq was essential for Inuit survival in extreme Arctic conditions and represents resourcefulness.', {
+    theme_connection: 'Indigenous technologies like the qulliq remind us that human ingenuity has always been on a journey of problem-solving.',
+    deep_explanation: 'Made from soapstone and fueled by seal oil with an Arctic cotton wick, the qulliq was the center of Inuit family life, demonstrating remarkable adaptation to one of Earth\'s harshest environments.',
+    tags: ['indigenous', 'inuit', 'arctic', 'technology'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is the difference between a "refugee" and a "migrant"?', ['They are the same', 'Refugees flee danger and persecution; migrants move voluntarily for better opportunities', 'Refugees travel by boat; migrants by land', 'There is no difference'], 1, 'Refugees are protected by international law, particularly the 1951 Refugee Convention.', {
+    theme_connection: 'The refugee experience is the ultimate "Are We There Yet?" question, as displaced people seek safety and a new home.',
+    deep_explanation: 'Over 100 million people were forcibly displaced worldwide by 2023. The distinction matters because refugees have specific legal protections that voluntary migrants may not.',
+    tags: ['migration', 'refugees', 'international-law'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is the World Trade Organization (WTO)?', ['A department store', 'An international body that sets rules for trade between nations', 'A shipping company', 'A bank'], 1, 'The WTO has 164 member countries and helps resolve trade disputes and reduce barriers to international commerce.', {
+    tags: ['international-organizations', 'trade', 'economics'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is "urbanization"?', ['Building more parks', 'The increasing movement of people from rural areas to cities', 'Destroying old buildings', 'Creating farms'], 1, 'Over 55% of the world\'s population now lives in urban areas, projected to reach 68% by 2050.', {
+    theme_connection: 'Urbanization is one of the biggest journeys of our time. Are we "there" in building cities that work for everyone?',
+    deep_explanation: 'While cities offer economic opportunities, rapid urbanization can lead to overcrowding, pollution, and inequality if not managed well.',
+    tags: ['urbanization', 'cities', 'demographics', 'development'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is "economic inequality"?', ['Everyone earning the same', 'The gap between the richest and poorest people in a society', 'A type of tax', 'A banking system'], 1, 'The richest 1% of the world\'s population owns more wealth than the bottom 50% combined.', {
+    theme_connection: 'Rising inequality asks whether economic progress has brought everyone along on the journey or left many behind.',
+    deep_explanation: 'Between 1990 and 2020, the richest 1% captured more new wealth than the entire bottom 50%. Both between and within countries, inequality shapes life outcomes dramatically.',
+    tags: ['economics', 'inequality', 'society'],
+  }),
+  createQuestion('social_studies', 'medium', 'What was the "Scramble for Africa"?', ['A running race', 'European powers rapidly colonizing African territories in the late 1800s', 'A treasure hunt', 'An African marathon'], 1, 'The Berlin Conference of 1884-85 divided Africa among European nations with no African representation.', {
+    theme_connection: 'Colonial boundaries drawn by outsiders continue to affect African nations, raising questions about whose journey matters in defining progress.',
+    deep_explanation: 'Artificial borders split ethnic groups and merged rivals, creating lasting political tensions. Many modern African conflicts trace back to these colonial-era divisions.',
+    tags: ['colonialism', 'africa', 'history', 'european-imperialism'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is the African Union?', ['A trade company', 'A continental organization of 55 African nations promoting unity and development', 'A military alliance', 'A sports league'], 1, 'Founded in 2002, the AU works on issues including peace, human rights, and economic integration across Africa.', {
+    tags: ['international-organizations', 'africa', 'cooperation'],
+  }),
+
+  // Hard
+  createQuestion('social_studies', 'hard', 'What is "truth and reconciliation" in the context of Indigenous rights?', ['A court case', 'A process where nations acknowledge historical injustices against Indigenous peoples', 'A peace treaty', 'A school subject'], 1, 'Canada\'s Truth and Reconciliation Commission documented the impact of residential schools on Indigenous children.', {
+    theme_connection: 'Truth and reconciliation asks whether societies can ever truly "arrive" at justice after historical wrongs.',
+    deep_explanation: 'South Africa, Canada, and Australia have all undertaken reconciliation processes. These efforts acknowledge that healing from colonial injustice is a long journey, not a single destination.',
+    tags: ['indigenous', 'reconciliation', 'justice', 'human-rights'],
+  }),
+  createQuestion('social_studies', 'hard', 'What is the "Gini coefficient"?', ['A magic lamp measurement', 'A number between 0 and 1 that measures income inequality in a country', 'A population count', 'A happiness score'], 1, 'A Gini of 0 means perfect equality; 1 means one person has everything. South Africa has one of the highest Gini coefficients.', {
+    tags: ['economics', 'inequality', 'measurement', 'statistics'],
+  }),
+  createQuestion('social_studies', 'hard', 'What is "brain drain" and how does it affect developing countries?', ['Memory loss', 'The emigration of highly educated people from poorer to wealthier countries', 'A medical condition', 'A cleaning product'], 1, 'Countries like India and Nigeria lose many doctors and engineers to higher-paying jobs abroad, weakening local institutions.', {
+    theme_connection: 'Brain drain shows that individual journeys toward better opportunities can slow a nation\'s collective journey toward development.',
+    deep_explanation: 'Some argue "brain circulation" is more accurate: diaspora communities send remittances and knowledge back home. India\'s tech sector has benefited from returnees who gained experience abroad.',
+    tags: ['migration', 'brain-drain', 'development', 'economics'],
+  }),
+  createQuestion('social_studies', 'hard', 'What is "gerrymandering" in democratic systems?', ['A type of gardening', 'Manipulating electoral district boundaries to favor a particular political party', 'A voting machine', 'A campaign strategy'], 1, 'Named after Governor Elbridge Gerry in 1812, gerrymandering can distort representation and undermine fair elections.', {
+    tags: ['democracy', 'elections', 'politics', 'governance'],
+  }),
+  createQuestion('social_studies', 'hard', 'What was the "Green Revolution" in agriculture?', ['Painting farms green', 'A period of dramatic increases in crop yields through new technologies in the 1960s-70s', 'An environmental protest', 'A garden design movement'], 1, 'Norman Borlaug\'s work on high-yield wheat varieties saved an estimated billion lives from famine.', {
+    tags: ['agriculture', 'history', 'development', 'food-security'],
+  }),
+
+  // ==========================================================================
+  // MODERN DEMOCRACY & GLOBAL CHALLENGES
+  // ==========================================================================
+  // Easy
+  createQuestion('social_studies', 'easy', 'What does "democracy" mean?', ['Rule by the military', 'Government by the people, where citizens have a say in decisions', 'Rule by one person', 'No government at all'], 1, 'The word comes from Greek: "demos" (people) + "kratos" (power or rule).', {
+    tags: ['democracy', 'government', 'civics'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is the European Union?', ['A country', 'A political and economic union of 27 European countries', 'A sports league', 'A military alliance'], 1, 'The EU allows free movement of people, goods, and money between member states and uses the euro as a shared currency.', {
+    tags: ['international-organizations', 'europe', 'EU'],
+  }),
+
+  // Medium
+  createQuestion('social_studies', 'medium', 'What is a "megacity"?', ['A very clean city', 'A city with a population of over 10 million people', 'A city with tall buildings', 'A capital city'], 1, 'Tokyo, Delhi, Shanghai, and Sao Paulo are among the world\'s largest megacities.', {
+    tags: ['urbanization', 'megacities', 'demographics'],
+  }),
+  createQuestion('social_studies', 'medium', 'What are "remittances" in the context of migration?', ['Return tickets', 'Money sent by migrants back to their families in their home countries', 'Government payments', 'Bank interest'], 1, 'Global remittances exceeded $650 billion in 2022, surpassing foreign aid to many developing countries.', {
+    theme_connection: 'Remittances show how individual migration journeys can fuel economic progress back home.',
+    deep_explanation: 'For countries like the Philippines, India, and Mexico, remittances are a vital source of income, funding education, healthcare, and housing for millions of families.',
+    tags: ['migration', 'economics', 'remittances', 'development'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is "soft power" in international relations?', ['Physical strength', 'A country\'s ability to influence others through culture, values, and diplomacy rather than force', 'Weak military', 'Quiet diplomacy only'], 1, 'Countries like Japan use anime and cuisine, while South Korea uses K-pop and film, to build global influence.', {
+    tags: ['international-relations', 'soft-power', 'culture', 'diplomacy'],
+  }),
+
+  // Hard
+  createQuestion('social_studies', 'hard', 'What is the "resource curse" or "paradox of plenty"?', ['Too many resources', 'When countries rich in natural resources often have slower economic growth and more conflict', 'Resource recycling', 'Environmental protection'], 1, 'Countries like Nigeria and Venezuela have vast oil wealth but face corruption, inequality, and underdevelopment.', {
+    theme_connection: 'The resource curse shows that having the ingredients for success doesn\'t mean you\'ve arrived at prosperity.',
+    deep_explanation: 'Resource wealth can fuel corruption, weaken institutions, and make economies dependent on a single export. Norway is a notable exception, using its oil fund to benefit future generations.',
+    tags: ['economics', 'resource-curse', 'development', 'governance'],
+  }),
+  createQuestion('social_studies', 'hard', 'What was the "Arab Spring"?', ['A weather pattern', 'A wave of pro-democracy protests across the Middle East and North Africa beginning in 2010-2011', 'A cultural festival', 'A trade agreement'], 1, 'Starting in Tunisia, protests spread to Egypt, Libya, Syria, and other nations, with varying outcomes from reform to civil war.', {
+    tags: ['democracy', 'middle-east', 'protests', 'modern-history'],
+  }),
+  createQuestion('social_studies', 'hard', 'What is "intersectionality" in social studies?', ['A road crossing', 'The concept that different aspects of identity (race, gender, class) overlap and create unique experiences of discrimination', 'A math term', 'An internet concept'], 1, 'Coined by Kimberle Crenshaw in 1989, intersectionality helps explain how multiple forms of inequality interact and compound.', {
+    tags: ['social-justice', 'identity', 'inequality', 'sociology'],
+  }),
+
+  // ==========================================================================
+  // ADDITIONAL SOCIAL STUDIES: GLOBAL GOVERNANCE & CULTURAL HERITAGE
+  // ==========================================================================
+  // Easy
+  createQuestion('social_studies', 'easy', 'What is UNESCO?', ['A type of currency', 'A United Nations agency that protects world heritage sites and promotes education and culture', 'A military alliance', 'A tech company'], 1, 'UNESCO has designated over 1,150 World Heritage Sites, from the Great Wall of China to Machu Picchu.', {
+    tags: ['international-organizations', 'UNESCO', 'culture', 'heritage'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is a "World Heritage Site"?', ['Any famous tourist spot', 'A place of outstanding cultural or natural value recognized by UNESCO', 'A capital city', 'A national park only'], 1, 'Sites include the Pyramids of Giza, the Galapagos Islands, and Angkor Wat.', {
+    theme_connection: 'World Heritage Sites represent the destinations of past human journeys that we work to preserve for the future.',
+    deep_explanation: 'The 1972 World Heritage Convention is based on the idea that some places belong to all of humanity and deserve international protection regardless of where they are located.',
+    tags: ['heritage', 'UNESCO', 'culture', 'conservation'],
+  }),
+  createQuestion('social_studies', 'easy', 'What continent has the most countries?', ['Europe', 'Asia', 'Africa', 'South America'], 2, 'Africa has 54 recognized countries, making it the continent with the most sovereign nations.', {
+    tags: ['geography', 'africa', 'continents'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is "fair trade"?', ['Free shopping', 'A movement ensuring producers in developing countries get fair prices for their goods', 'A stock market term', 'A type of barter'], 1, 'Fair trade certifies products like coffee, chocolate, and bananas, helping farmers earn sustainable incomes.', {
+    tags: ['economics', 'fair-trade', 'development', 'trade'],
+  }),
+
+  // Medium
+  createQuestion('social_studies', 'medium', 'What is the "Universal Declaration of Human Rights"?', ['A national law', 'A 1948 UN document proclaiming fundamental rights that all humans should enjoy', 'A religious text', 'A trade agreement'], 1, 'Drafted after WWII horrors, it established 30 articles covering rights from freedom of speech to education and shelter.', {
+    theme_connection: 'The UDHR set a destination for human dignity. Are we "there yet" nearly 80 years later?',
+    deep_explanation: 'Though not legally binding, the UDHR inspired over 80 international treaties and conventions. Many of its ideals remain unrealized in practice across the globe.',
+    tags: ['human-rights', 'UN', 'UDHR', 'international-law', 'governance'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is "apartheid" and where did it occur?', ['A type of apartment', 'A system of racial segregation enforced by law in South Africa from 1948 to 1994', 'A European tradition', 'A type of government'], 1, 'Nelson Mandela spent 27 years in prison fighting apartheid before becoming South Africa\'s first Black president in 1994.', {
+    tags: ['history', 'south-africa', 'apartheid', 'human-rights', 'racial-justice'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is "gentrification"?', ['General fitness', 'When wealthier people move into a neighborhood, raising costs and often displacing longtime residents', 'Building new cities', 'A gardening technique'], 1, 'Gentrification can improve infrastructure but often pushes out lower-income communities who made the neighborhood vibrant.', {
+    tags: ['urbanization', 'gentrification', 'inequality', 'housing'],
+  }),
+  createQuestion('social_studies', 'medium', 'What are the "BRICS" nations?', ['A construction term', 'Brazil, Russia, India, China, and South Africa, an alliance of major emerging economies', 'European countries', 'Island nations'], 1, 'BRICS nations represent over 40% of the world\'s population and about 25% of global GDP. The group expanded in 2024.', {
+    tags: ['international-relations', 'BRICS', 'economics', 'geopolitics'],
+  }),
+
+  // Hard
+  createQuestion('social_studies', 'hard', 'What is "sovereignty" in international relations?', ['Military power', 'The principle that each state has supreme authority within its territory without external interference', 'Economic wealth', 'Cultural influence'], 1, 'The concept of state sovereignty dates to the 1648 Peace of Westphalia and remains foundational to international law.', {
+    tags: ['governance', 'sovereignty', 'international-law', 'political-science'],
+  }),
+  createQuestion('social_studies', 'hard', 'What was the "Rwandan genocide" and when did it occur?', ['A natural disaster', 'The mass killing of approximately 800,000 Tutsi people in Rwanda in 1994 over about 100 days', 'A colonial war', 'An economic crisis'], 1, 'The international community\'s failure to intervene led to reforms in how the UN addresses genocide prevention.', {
+    theme_connection: 'The Rwandan genocide is a devastating reminder that human progress is not guaranteed and that "never again" remains an unfinished journey.',
+    deep_explanation: 'Rwanda has since made remarkable progress in reconciliation and development, becoming one of Africa\'s fastest-growing economies, but the scars remain deep.',
+    tags: ['history', 'genocide', 'rwanda', 'human-rights', 'africa'],
+  }),
+  createQuestion('social_studies', 'hard', 'What is "populism" as a political phenomenon?', ['Popular music', 'A political approach that claims to represent "ordinary people" against a corrupt elite', 'Popularity contests', 'Opinion polls'], 1, 'Populist movements have emerged across democracies worldwide, from both left and right of the political spectrum.', {
+    tags: ['politics', 'populism', 'democracy', 'governance'],
+  }),
+  createQuestion('social_studies', 'easy', 'What is an "ambassador"?', ['A luxury car', 'An official representative sent by a country to another country', 'A type of passport', 'A translator'], 1, 'Ambassadors serve as their country\'s top diplomats abroad and work in buildings called embassies.', {
+    tags: ['diplomacy', 'international-relations', 'government'],
+  }),
+  createQuestion('social_studies', 'medium', 'What is "diaspora"?', ['A type of diamond', 'The spreading of a people from their original homeland to other places', 'A disease', 'A festival'], 1, 'The African diaspora, Jewish diaspora, and Indian diaspora have shaped cultures around the world through centuries of migration.', {
+    theme_connection: 'Diaspora communities embody the "Are We There Yet?" theme, as they navigate between the homeland they left and the new places they call home.',
+    deep_explanation: 'Diasporic identity often involves maintaining ties to an ancestral homeland while building new lives elsewhere. This dual belonging enriches both origin and destination cultures.',
+    tags: ['migration', 'diaspora', 'culture', 'identity', 'globalization'],
+  }),
+  createQuestion('social_studies', 'hard', 'What is "neocolonialism"?', ['A new colony on Mars', 'The practice of using economic, political, or cultural pressure to control other countries, especially former colonies', 'An architectural style', 'A type of museum'], 1, 'Critics argue that debt structures, trade agreements, and cultural dominance by wealthy nations continue patterns of colonial exploitation.', {
+    tags: ['colonialism', 'economics', 'international-relations', 'politics', 'development'],
+  }),
 ];
 
 // ============================================================================
@@ -253,6 +667,191 @@ export const artsQuestions: Question[] = [
   createQuestion('arts', 'hard', 'What Renaissance technique creates the illusion of depth on a flat surface?', ['Foreshortening', 'Linear perspective', 'Aerial perspective', 'Trompe l\'oeil'], 1, 'Brunelleschi formalized linear perspective in the early 1400s.'),
   createQuestion('arts', 'hard', 'Who painted "Guernica" depicting the horrors of war?', ['Salvador Dalí', 'Pablo Picasso', 'Joan Miró', 'Diego Rivera'], 1, 'Picasso painted it in 1937 in response to the bombing of Guernica.'),
   createQuestion('arts', 'hard', 'What is the golden ratio approximately equal to?', ['1.414', '1.618', '2.718', '3.142'], 1, 'The golden ratio (phi) appears frequently in art and nature.'),
+
+  // ==========================================================================
+  // DIGITAL ART & STREET ART (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('arts', 'easy', 'What is digital art?', ['Art using only pencils', 'Art created or presented using digital technology', 'Art displayed in museums only', 'Art made with clay'], 1, 'Digital art includes everything from computer-generated images to AI-assisted creations and interactive installations.', {
+    theme_connection: 'Digital art represents the journey of artistic expression into new technological frontiers.',
+    deep_explanation: 'Tools like Photoshop, Procreate, and Blender have democratized art creation, allowing anyone with a device to create professional-quality work.',
+    tags: ['digital-art', 'technology', 'modern-art'],
+  }),
+  createQuestion('arts', 'easy', 'What is a mural?', ['A small painting', 'A large artwork painted directly on a wall or ceiling', 'A type of sculpture', 'A musical instrument'], 1, 'Murals have been created since prehistoric cave paintings and continue today as public art worldwide.', {
+    theme_connection: 'Murals transform blank walls into destinations, turning ordinary neighborhoods into open-air galleries.',
+    deep_explanation: 'Diego Rivera\'s murals in Mexico told stories of workers and revolution. Today, cities like Berlin, Sao Paulo, and Melbourne are celebrated for their vibrant mural scenes.',
+    tags: ['street-art', 'murals', 'public-art'],
+  }),
+  createQuestion('arts', 'easy', 'Who is Banksy?', ['A classical composer', 'An anonymous British street artist known for satirical public works', 'A Renaissance painter', 'A famous architect'], 1, 'Banksy\'s true identity remains unknown despite being one of the world\'s most famous artists.', {
+    theme_connection: 'Banksy\'s anonymity challenges the art world\'s journey: can we appreciate art without knowing who made it?',
+    deep_explanation: 'Banksy\'s "Girl with Balloon" famously shredded itself moments after selling at auction for over $1 million, questioning art\'s commercial value.',
+    tags: ['street-art', 'banksy', 'contemporary-art'],
+  }),
+  createQuestion('arts', 'easy', 'What is animation?', ['Still photography', 'The technique of creating the illusion of movement from a series of images', 'Sculpture', 'A musical style'], 1, 'Animation ranges from hand-drawn cartoons to computer-generated films like those by Pixar and Studio Ghibli.', {
+    theme_connection: 'Animation\'s journey from flipbooks to CGI shows how technology continually expands the possibilities of visual storytelling.',
+    deep_explanation: 'Traditional animation requires 24 drawings per second of film. Modern CGI uses mathematical models and physics simulations to create photorealistic worlds.',
+    tags: ['animation', 'film', 'visual-arts'],
+  }),
+
+  // Medium
+  createQuestion('arts', 'medium', 'What is an NFT in the art world?', ['A type of paint', 'A non-fungible token, a digital certificate of ownership for digital art', 'A film technique', 'A gallery name'], 1, 'NFTs use blockchain technology and sparked debate about art ownership and value in the digital age.', {
+    theme_connection: 'NFTs raised the question: has art "arrived" in the digital age, or is digital ownership an incomplete journey?',
+    deep_explanation: 'Beeple\'s NFT artwork sold for $69 million in 2021, but the market has since cooled significantly. The technology raised important questions about value, authenticity, and environmental impact.',
+    tags: ['digital-art', 'NFT', 'blockchain', 'art-market'],
+  }),
+  createQuestion('arts', 'medium', 'What is Bollywood?', ['A theme park', 'The Hindi-language film industry based in Mumbai, India', 'A type of dance', 'A music genre'], 1, 'Bollywood produces over 1,500 films annually and is the largest film industry by number of films, bigger than Hollywood.', {
+    tags: ['cinema', 'bollywood', 'india', 'film'],
+  }),
+  createQuestion('arts', 'medium', 'What is "hip-hop" as a cultural movement?', ['Only a music genre', 'A culture encompassing rap music, DJing, breakdancing, and graffiti art', 'A type of dance only', 'A fashion brand'], 1, 'Hip-hop originated in the Bronx, New York, in the 1970s and has become one of the most influential cultural movements worldwide.', {
+    theme_connection: 'Hip-hop\'s journey from block parties in the Bronx to global dominance mirrors how grassroots movements can transform culture.',
+    deep_explanation: 'The four pillars of hip-hop are MCing (rapping), DJing, B-boying (breakdancing), and graffiti art. Each element has evolved into sophisticated art forms with global practitioners.',
+    tags: ['music', 'hip-hop', 'culture', 'dance'],
+  }),
+  createQuestion('arts', 'medium', 'What is Nollywood?', ['A toy brand', 'Nigeria\'s film industry, the second largest in the world by number of films', 'A Hollywood studio', 'A TV network'], 1, 'Nollywood produces over 1,000 films annually and has become a major cultural export for Africa.', {
+    theme_connection: 'Nollywood\'s rapid growth shows that the journey of global cinema is no longer a one-way street from Hollywood to the world.',
+    deep_explanation: 'Nollywood began in the 1990s with low-budget straight-to-video films. It now generates $6+ billion annually and streams globally on platforms like Netflix.',
+    tags: ['cinema', 'nollywood', 'nigeria', 'africa', 'film'],
+  }),
+  createQuestion('arts', 'medium', 'What is the art form of "calligraphy"?', ['Drawing animals', 'The art of beautiful handwriting, practiced across many cultures', 'A type of sculpture', 'Painting with fingers'], 1, 'Arabic, Chinese, and Japanese calligraphy are celebrated art forms with centuries of tradition and distinct aesthetic philosophies.', {
+    theme_connection: 'In an age of keyboards and touchscreens, calligraphy asks whether the journey of handwriting has reached its destination or still has a future.',
+    deep_explanation: 'Chinese calligraphy is considered the highest visual art form in East Asian culture. Arabic calligraphy developed because Islamic art traditionally avoided depicting human figures.',
+    tags: ['calligraphy', 'writing', 'traditional-art', 'culture'],
+  }),
+  createQuestion('arts', 'medium', 'What is "Brutalism" in architecture?', ['Ugly buildings', 'An architectural style using raw concrete and bold geometric forms, popular in the 1950s-70s', 'Ancient Roman style', 'Glass buildings only'], 1, 'Named from the French "beton brut" (raw concrete), Brutalist buildings are now gaining appreciation and protection status.', {
+    tags: ['architecture', 'brutalism', 'design', 'modernism'],
+  }),
+
+  // Hard
+  createQuestion('arts', 'hard', 'What is "generative art"?', ['Art made by generals', 'Art created through autonomous systems, algorithms, or AI that follow rules set by the artist', 'Oil painting', 'Pottery'], 1, 'Generative art raises questions about authorship: is the artist the person, the algorithm, or both?', {
+    theme_connection: 'AI-generated art asks whether creativity has a destination or is an ever-evolving journey between humans and machines.',
+    deep_explanation: 'From early computer art by Vera Molnar in the 1960s to modern AI tools like DALL-E and Midjourney, generative art challenges our understanding of creativity and authorship.',
+    tags: ['digital-art', 'AI-art', 'generative', 'technology'],
+  }),
+  createQuestion('arts', 'hard', 'What is the "Bauhaus" movement?', ['A type of house', 'A German art school and movement (1919-1933) that unified art, craft, and technology', 'A cooking style', 'A music genre'], 1, 'Bauhaus principles of functional design influenced everything from architecture to typography to furniture.', {
+    theme_connection: 'Bauhaus sought to merge art and industry, a journey that continues in modern design thinking.',
+    deep_explanation: 'Founded by Walter Gropius, Bauhaus teachers included Kandinsky and Klee. The Nazis closed it, but its ideas spread globally as members emigrated. Modern IKEA and Apple design owe debts to Bauhaus.',
+    tags: ['architecture', 'bauhaus', 'design', 'art-history'],
+  }),
+  createQuestion('arts', 'hard', 'What is "Kathakali" in Indian performing arts?', ['A cooking technique', 'A classical dance-drama from Kerala combining dance, music, and elaborate costumes and makeup', 'A type of yoga', 'A meditation practice'], 1, 'Performers train for years to master the complex facial expressions and hand gestures that tell mythological stories.', {
+    tags: ['dance', 'india', 'theater', 'traditional-art'],
+  }),
+
+  // ==========================================================================
+  // WORLD CINEMA, MUSIC & PHOTOGRAPHY
+  // ==========================================================================
+  // Easy
+  createQuestion('arts', 'easy', 'What is Studio Ghibli famous for?', ['Video games', 'Japanese animated films like "Spirited Away" and "My Neighbor Totoro"', 'Live-action movies', 'Music production'], 1, 'Founded by Hayao Miyazaki and Isao Takahata, Ghibli films are celebrated for their artistry and storytelling.', {
+    tags: ['animation', 'ghibli', 'japan', 'film'],
+  }),
+  createQuestion('arts', 'easy', 'What does a photographer use to create images?', ['Paint', 'A camera that captures light', 'Clay', 'A pen'], 1, 'The word "photography" comes from Greek words meaning "drawing with light."', {
+    tags: ['photography', 'visual-arts', 'light'],
+  }),
+
+  // Medium
+  createQuestion('arts', 'medium', 'What is K-pop and where does it originate?', ['Classical Korean music', 'A genre of popular music from South Korea known for choreographed performances and global fandoms', 'A cooking style', 'A martial art'], 1, 'Groups like BTS and BLACKPINK have billions of streams and massive global followings.', {
+    tags: ['music', 'k-pop', 'south-korea', 'pop-culture'],
+  }),
+  createQuestion('arts', 'medium', 'What is the "rule of thirds" in photography?', ['Taking three photos', 'A composition guideline that divides the frame into a 3x3 grid for more dynamic images', 'Using three cameras', 'A pricing rule'], 1, 'Placing subjects along the grid lines or intersections tends to create more visually interesting and balanced photographs.', {
+    tags: ['photography', 'composition', 'visual-arts'],
+  }),
+  createQuestion('arts', 'medium', 'What is "Art Deco" as an architectural and design style?', ['Ancient Egyptian art', 'A decorative style from the 1920s-30s characterized by geometric patterns and bold colors', 'A type of painting', 'A music genre'], 1, 'The Chrysler Building in New York and the architecture of Miami\'s South Beach are famous Art Deco examples.', {
+    tags: ['architecture', 'art-deco', 'design', 'history'],
+  }),
+
+  // Hard
+  createQuestion('arts', 'hard', 'What is "neorealism" in cinema?', ['CGI-heavy films', 'An Italian film movement using non-professional actors and real locations to depict everyday life', 'Hollywood blockbusters', 'Silent films'], 1, 'Films like "Bicycle Thieves" (1948) portrayed post-war poverty with raw authenticity and influenced cinema worldwide.', {
+    theme_connection: 'Italian neorealism showed that art could document the real journey of ordinary people struggling through adversity.',
+    deep_explanation: 'Emerging after WWII, directors like De Sica and Rossellini rejected Hollywood glamour to show the reality of reconstruction-era Italy. The movement influenced French New Wave and modern independent cinema.',
+    tags: ['cinema', 'neorealism', 'italy', 'film-history'],
+  }),
+  createQuestion('arts', 'hard', 'What is "polyrhythm" in African music?', ['A single drum beat', 'The simultaneous use of two or more conflicting rhythmic patterns', 'Playing one instrument', 'A type of melody'], 1, 'West African drumming traditions feature complex layered rhythms that influenced jazz, funk, and virtually all modern popular music.', {
+    tags: ['music', 'african-music', 'rhythm', 'world-music'],
+  }),
+  createQuestion('arts', 'hard', 'What is "Deconstructivism" in architecture?', ['Tearing down buildings', 'An architectural style that fragments and distorts conventional forms to create dynamic, unpredictable structures', 'Classical building restoration', 'Log cabin construction'], 1, 'Architects like Frank Gehry, Zaha Hadid, and Daniel Libeskind created buildings that appear to defy structural logic.', {
+    theme_connection: 'Deconstructivist buildings challenge our sense of arrival: they appear mid-journey, unfinished, questioning the very idea of a fixed destination.',
+    deep_explanation: 'Gehry\'s Guggenheim Bilbao and Hadid\'s fluid designs reject right angles and predictability. The movement draws on Derrida\'s philosophy of questioning fixed meanings.',
+    tags: ['architecture', 'deconstructivism', 'modern-art', 'design'],
+  }),
+
+  // ==========================================================================
+  // DANCE FORMS & THEATER TRADITIONS
+  // ==========================================================================
+  // Easy
+  createQuestion('arts', 'easy', 'What is "breakdancing" (breaking)?', ['Breaking plates', 'An athletic street dance style featuring acrobatic moves, spins, and freezes', 'A martial art', 'A type of gymnastics'], 1, 'Breaking became an Olympic sport at the 2024 Paris Olympics, originating from 1970s New York City.', {
+    tags: ['dance', 'breaking', 'hip-hop', 'olympics'],
+  }),
+
+  // Medium
+  createQuestion('arts', 'medium', 'What is a "leitmotif" in film music?', ['Background noise', 'A recurring musical theme associated with a specific character, place, or idea', 'An opening song', 'Closing credits music'], 1, 'John Williams uses leitmotifs extensively: think of Darth Vader\'s "Imperial March" or Hedwig\'s Theme in Harry Potter.', {
+    tags: ['music', 'film-music', 'leitmotif', 'composition'],
+  }),
+
+  // Hard
+  createQuestion('arts', 'hard', 'What is "Butoh" in Japanese performing arts?', ['A martial art', 'An avant-garde dance form born in 1950s Japan characterized by slow, controlled movements and white body paint', 'A cooking style', 'A form of calligraphy'], 1, 'Created by Tatsumi Hijikata and Kazuo Ohno as a rejection of Western dance forms, Butoh explores darkness, transformation, and the grotesque.', {
+    tags: ['dance', 'butoh', 'japan', 'avant-garde', 'performing-arts'],
+  }),
+  createQuestion('arts', 'hard', 'What was the "Harlem Renaissance"?', ['A building renovation', 'A cultural explosion of African American art, literature, and music in 1920s-30s New York', 'A European movement', 'A political party'], 1, 'Writers like Langston Hughes, musicians like Duke Ellington, and artists like Aaron Douglas redefined American culture.', {
+    theme_connection: 'The Harlem Renaissance was a journey of cultural self-definition that asked: have Black Americans arrived at full artistic recognition?',
+    deep_explanation: 'Beyond individual achievements, the movement created a new Black cultural identity that challenged racial stereotypes and laid groundwork for the Civil Rights Movement.',
+    tags: ['art-history', 'harlem-renaissance', 'african-american', 'culture', 'literature'],
+  }),
+
+  // ==========================================================================
+  // ADDITIONAL ARTS: WORLD TRADITIONS & CONTEMPORARY FORMS
+  // ==========================================================================
+  // Easy
+  createQuestion('arts', 'easy', 'What is a "mosaic" in art?', ['A type of painting', 'An artwork made from small pieces of colored glass, stone, or tile arranged in patterns', 'A photograph', 'A wooden sculpture'], 1, 'Mosaics date back over 4,000 years. Ancient Roman mosaics are still being discovered today at archaeological sites.', {
+    tags: ['visual-arts', 'mosaic', 'ancient-art', 'technique'],
+  }),
+  createQuestion('arts', 'easy', 'What instrument family does the violin belong to?', ['Percussion', 'Brass', 'String', 'Woodwind'], 2, 'The violin is the highest-pitched member of the string family, which also includes viola, cello, and double bass.', {
+    tags: ['music', 'instruments', 'strings', 'orchestra'],
+  }),
+  createQuestion('arts', 'easy', 'What is a "selfie" considered in the context of photography?', ['Professional photography', 'A self-portrait photograph typically taken with a smartphone', 'A landscape photo', 'A painting'], 1, 'Self-portraiture has a long history in art; Rembrandt painted about 80 self-portraits over his career.', {
+    tags: ['photography', 'self-portrait', 'modern-culture', 'digital'],
+  }),
+  createQuestion('arts', 'easy', 'What is "manga"?', ['A tropical fruit', 'Japanese comic books and graphic novels with a distinctive art style', 'A martial art', 'A cooking technique'], 1, 'Manga is read right-to-left and covers every genre from action to romance. It generates billions of dollars annually.', {
+    tags: ['manga', 'japan', 'comics', 'visual-arts', 'pop-culture'],
+  }),
+
+  // Medium
+  createQuestion('arts', 'medium', 'What is "Afrobeat" music?', ['African classical music', 'A genre blending West African music, jazz, and funk, pioneered by Fela Kuti in Nigeria', 'A type of drumming only', 'Electronic dance music'], 1, 'Fela Kuti created Afrobeat in the 1970s as both music and political protest. Its influence extends to modern Afrobeats (with an "s"), a distinct but related genre.', {
+    theme_connection: 'Afrobeat\'s journey from Lagos to global influence shows how music travels and transforms across borders.',
+    deep_explanation: 'Fela Kuti used music to criticize Nigeria\'s military government, making Afrobeat a vehicle for social change. Today, Afrobeats artists like Burna Boy carry Nigerian music worldwide.',
+    tags: ['music', 'afrobeat', 'nigeria', 'africa', 'world-music'],
+  }),
+  createQuestion('arts', 'medium', 'What is "capoeira"?', ['A coffee drink', 'A Brazilian art form combining martial arts, dance, acrobatics, and music', 'A card game', 'A type of hat'], 1, 'Developed by enslaved Africans in Brazil, capoeira disguised combat training as dance to evade colonial authorities.', {
+    tags: ['dance', 'capoeira', 'brazil', 'martial-arts', 'culture'],
+  }),
+  createQuestion('arts', 'medium', 'What is "chiaroscuro" used for in visual art?', ['Adding color', 'Creating dramatic contrast between light and dark to add depth and atmosphere', 'Making art smaller', 'Framing pictures'], 1, 'Caravaggio and Rembrandt were masters of chiaroscuro, using strong light-dark contrasts to create emotional intensity.', {
+    tags: ['visual-arts', 'technique', 'chiaroscuro', 'painting'],
+  }),
+  createQuestion('arts', 'medium', 'What is a "graphic novel"?', ['A textbook with graphs', 'A book-length narrative told through sequential art (comics) with mature themes', 'A photography book', 'A coloring book'], 1, 'Art Spiegelman\'s "Maus" became the first graphic novel to win a Pulitzer Prize in 1992, depicting the Holocaust.', {
+    tags: ['literature', 'graphic-novel', 'comics', 'visual-storytelling'],
+  }),
+
+  // Hard
+  createQuestion('arts', 'hard', 'What is "wabi-sabi" in Japanese aesthetics?', ['A type of food', 'A worldview that finds beauty in imperfection, transience, and incompleteness', 'A cleaning technique', 'A type of pottery only'], 1, 'Wabi-sabi values cracked pottery, weathered wood, and asymmetry. It influenced art, architecture, and design worldwide.', {
+    theme_connection: 'Wabi-sabi suggests that perfection is not the destination; beauty exists in the imperfect, unfinished journey itself.',
+    deep_explanation: 'Rooted in Zen Buddhism, wabi-sabi stands in contrast to Western ideals of perfection and symmetry. The practice of kintsugi (repairing pottery with gold) embodies this philosophy.',
+    tags: ['aesthetics', 'wabi-sabi', 'japan', 'philosophy', 'design'],
+  }),
+  createQuestion('arts', 'hard', 'What is "Dadaism" in art history?', ['A children\'s movement', 'An avant-garde art movement that rejected logic and reason to protest World War I', 'A dance style', 'A musical genre'], 1, 'Dadaists like Marcel Duchamp created deliberately absurd works. His urinal titled "Fountain" challenged the definition of art itself.', {
+    tags: ['art-history', 'dadaism', 'avant-garde', 'modern-art', 'protest'],
+  }),
+  createQuestion('arts', 'hard', 'What is "synesthesia" and how has it influenced art?', ['A disease', 'A neurological condition where one sense triggers another, inspiring artists who "see" sounds or "hear" colors', 'A painting technique', 'A type of camera'], 1, 'Kandinsky reportedly experienced synesthesia, which influenced his abstract paintings. Composers like Scriabin associated specific colors with musical keys.', {
+    tags: ['neuroscience', 'synesthesia', 'art', 'music', 'creativity'],
+  }),
+  createQuestion('arts', 'easy', 'What is a "duet" in music?', ['A solo performance', 'A musical piece performed by two musicians or singers', 'A three-person group', 'An audience participation song'], 1, 'Duets appear across all music genres, from classical violin duets to pop collaborations between artists.', {
+    tags: ['music', 'performance', 'vocabulary', 'musical-forms'],
+  }),
+  createQuestion('arts', 'medium', 'What is "sgraffito" as an art technique?', ['Scratching lottery tickets', 'A technique where a top layer of color is scratched away to reveal a different color beneath', 'A type of graffiti', 'A musical instrument'], 1, 'Sgraffito has been used in pottery, painting, and architecture for centuries, creating intricate patterns through removal rather than addition.', {
+    tags: ['visual-arts', 'technique', 'sgraffito', 'ceramics'],
+  }),
+  createQuestion('arts', 'medium', 'What is "gamelan" music?', ['Video game soundtracks', 'Traditional Indonesian ensemble music played primarily on percussion instruments like metallophones and gongs', 'A type of guitar music', 'Electronic dance music'], 1, 'Gamelan has influenced Western composers like Claude Debussy, who encountered it at the 1889 Paris Exposition.', {
+    theme_connection: 'Gamelan\'s influence on Western music shows how cultural exchange creates unexpected journeys of artistic inspiration.',
+    deep_explanation: 'Each gamelan set is tuned uniquely and considered to have its own spirit. The interlocking patterns of gamelan percussion create a shimmering, hypnotic sound unlike anything in Western music.',
+    tags: ['music', 'gamelan', 'indonesia', 'world-music', 'percussion'],
+  }),
 ];
 
 // ============================================================================
@@ -379,6 +978,188 @@ export const literatureQuestions: Question[] = [
   // Hard
   createQuestion('literature', 'hard', 'What does the drowned man symbolize in the story?', ['Death', 'The power of imagination and beauty to transform ordinary lives', 'Evil', 'The ocean'], 1, 'A stranger\'s body becomes a catalyst for the village\'s spiritual renewal.'),
   createQuestion('literature', 'hard', 'How does this story connect to the theme of "Reigniting the Future"?', ['It doesn\'t', 'An unexpected event inspires a community to reimagine and rebuild their world', 'Through technology', 'Through war'], 1, 'The villagers reignite their aspirations through encountering something extraordinary.'),
+
+  // ==========================================================================
+  // CLASSIC FAIRY TALES & MYTHOLOGY (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('literature', 'easy', 'In Greek mythology, who flew too close to the Sun with wax wings?', ['Hercules', 'Icarus', 'Perseus', 'Odysseus'], 1, 'Icarus ignored his father Daedalus\'s warning, and the sun melted his wings, causing him to fall into the sea.', {
+    theme_connection: 'The myth of Icarus warns about the dangers of overreaching on our journey toward ambitious goals.',
+    deep_explanation: 'Daedalus crafted wings of feathers and wax to escape King Minos\'s labyrinth in Crete. The story is often read as a cautionary tale about hubris and the limits of ambition.',
+    tags: ['mythology', 'greek', 'icarus', 'hubris'],
+  }),
+  createQuestion('literature', 'easy', 'What is a "fable"?', ['A true story', 'A short story with animal characters that teaches a moral lesson', 'A type of poem', 'A news report'], 1, 'Aesop\'s Fables, like "The Tortoise and the Hare," have been told for over 2,500 years.', {
+    theme_connection: 'Fables compress life\'s journey into short tales with clear lessons, making wisdom accessible across ages and cultures.',
+    deep_explanation: 'Fables exist in nearly every culture. India\'s Panchatantra, Africa\'s Anansi stories, and La Fontaine\'s French fables all use animals to teach human truths.',
+    tags: ['literary-devices', 'fables', 'storytelling'],
+  }),
+  createQuestion('literature', 'easy', 'In the fairy tale "Cinderella," what does she leave behind at the ball?', ['Her crown', 'A glass slipper', 'Her necklace', 'Her gloves'], 1, 'Versions of the Cinderella story exist in cultures worldwide, from Chinese "Ye Xian" to Egyptian "Rhodopis."', {
+    theme_connection: 'Cinderella\'s story of transformation through a journey is so universal that over 500 versions exist across world cultures.',
+    deep_explanation: 'The earliest known version, "Rhodopis," dates to ancient Egypt. Charles Perrault wrote the French version in 1697, and the Brothers Grimm published a darker German version in 1812.',
+    tags: ['fairy-tales', 'cinderella', 'folklore'],
+  }),
+  createQuestion('literature', 'easy', 'Who is the Norse god of thunder?', ['Odin', 'Loki', 'Thor', 'Freya'], 2, 'Thor wields the hammer Mjolnir and is one of the most popular figures in Norse mythology.', {
+    theme_connection: 'Norse myths about journeys between worlds (the nine realms connected by Yggdrasil) mirror humanity\'s own exploration of the unknown.',
+    deep_explanation: 'Norse mythology influenced Tolkien\'s Middle-earth, Marvel Comics, and countless fantasy works. The myths were preserved in the Prose Edda and Poetic Edda.',
+    tags: ['mythology', 'norse', 'thor'],
+  }),
+  createQuestion('literature', 'easy', 'What is an "allegory" in literature?', ['A happy story', 'A story where characters and events represent deeper meanings or ideas', 'A scary story', 'A short poem'], 1, 'George Orwell\'s "Animal Farm" is an allegory for the Russian Revolution and totalitarianism.', {
+    theme_connection: 'Allegories let authors comment on real journeys of society while telling an engaging surface story.',
+    deep_explanation: 'Plato\'s "Allegory of the Cave," Bunyan\'s "The Pilgrim\'s Progress," and C.S. Lewis\'s Narnia are all allegories operating on multiple levels of meaning.',
+    tags: ['literary-devices', 'allegory', 'storytelling'],
+  }),
+
+  // Medium
+  createQuestion('literature', 'medium', 'What is the significance of the Odyssey by Homer?', ['It\'s a cookbook', 'It\'s one of the oldest works of Western literature, telling of Odysseus\'s 10-year journey home', 'It\'s a math textbook', 'It\'s a religious text'], 1, 'Written around the 8th century BCE, the Odyssey established the "journey home" as a fundamental literary archetype.', {
+    theme_connection: 'The Odyssey is the original "Are We There Yet?" story, as Odysseus faces endless obstacles on his journey home to Ithaca.',
+    deep_explanation: 'Odysseus encounters the Cyclops, the Sirens, and Scylla and Charybdis. His 10-year voyage home after the Trojan War has inspired countless works about the difficulty and meaning of journeys.',
+    tags: ['mythology', 'greek', 'odyssey', 'homer', 'epic-poetry'],
+  }),
+  createQuestion('literature', 'medium', 'What is "magical realism" as a literary style?', ['Fantasy with wizards', 'A genre where magical elements appear naturally in an otherwise realistic setting', 'Science fiction', 'Horror fiction'], 1, 'Gabriel Garcia Marquez\'s "One Hundred Years of Solitude" is a landmark of magical realism, blending the extraordinary with the everyday.', {
+    theme_connection: 'Magical realism suggests that the journey of human experience includes wonders that rational thinking alone cannot capture.',
+    deep_explanation: 'Unlike fantasy, magical realism treats impossible events as normal within a realistic setting. It emerged primarily in Latin American literature, reflecting cultures where myth and daily life intertwine.',
+    tags: ['literary-devices', 'magical-realism', 'genre', 'latin-american-literature'],
+  }),
+  createQuestion('literature', 'medium', 'What is a "haiku"?', ['A long novel', 'A Japanese poem form with three lines of 5, 7, and 5 syllables', 'A Greek epic', 'A type of essay'], 1, 'Matsuo Basho is considered the greatest haiku master. His famous frog poem: "Old pond / a frog jumps in / sound of water."', {
+    tags: ['poetry', 'haiku', 'japan', 'literary-forms'],
+  }),
+  createQuestion('literature', 'medium', 'What is the "hero\'s journey" in storytelling?', ['A travel guide', 'A common narrative pattern where a hero ventures out, faces challenges, and returns transformed', 'A sports movie', 'A fairy tale only'], 1, 'Joseph Campbell identified this pattern in myths worldwide. It appears in Star Wars, Harry Potter, and The Lord of the Rings.', {
+    theme_connection: 'The hero\'s journey is literally about "getting there" and asking whether the destination or the transformation along the way matters more.',
+    deep_explanation: 'Campbell\'s "monomyth" includes stages like the Call to Adventure, Crossing the Threshold, the Ordeal, and the Return. It reflects a universal human experience of growth through challenge.',
+    tags: ['storytelling', 'heros-journey', 'campbell', 'narrative'],
+  }),
+  createQuestion('literature', 'medium', 'In African oral tradition, what role does a "griot" play?', ['A farmer', 'A storyteller, historian, and keeper of cultural memory in West African societies', 'A warrior', 'A trader'], 1, 'Griots have preserved centuries of history, genealogy, and wisdom through oral performance, often accompanied by the kora instrument.', {
+    tags: ['storytelling', 'oral-tradition', 'africa', 'griot', 'culture'],
+  }),
+  createQuestion('literature', 'medium', 'What is "dystopian" fiction?', ['Happy stories', 'Stories set in imagined societies where life is oppressive, often as warnings about real trends', 'Detective stories', 'Romance novels'], 1, 'Books like "1984," "The Hunger Games," and "Brave New World" explore what happens when societies go wrong.', {
+    tags: ['genre', 'dystopia', 'fiction', 'social-commentary'],
+  }),
+  createQuestion('literature', 'medium', 'What is the Mahabharata?', ['A type of food', 'One of the longest epic poems ever written, a foundational text of Hindu literature', 'A European novel', 'A scientific paper'], 1, 'At roughly 1.8 million words, the Mahabharata is about ten times longer than the Iliad and Odyssey combined.', {
+    tags: ['epic-poetry', 'india', 'hinduism', 'mythology'],
+  }),
+
+  // Hard
+  createQuestion('literature', 'hard', 'What is "unreliable narrator" as a literary device?', ['A bad storyteller', 'A narrator whose credibility is compromised, making the reader question the truth of the story', 'A narrator who forgets things', 'A narrator who speaks quietly'], 1, 'In "Flowers for Algernon," Charlie is an unreliable narrator because his cognitive limitations affect what he perceives and reports.', {
+    tags: ['literary-devices', 'unreliable-narrator', 'narrative-technique'],
+  }),
+  createQuestion('literature', 'hard', 'What is "stream of consciousness" in literature?', ['A river description', 'A narrative technique that presents a character\'s continuous flow of thoughts and feelings', 'A water poem', 'A type of diary entry'], 1, 'Virginia Woolf\'s "Mrs Dalloway" and James Joyce\'s "Ulysses" are masterpieces of stream of consciousness writing.', {
+    theme_connection: 'Stream of consciousness captures the inner journey of the mind, showing that human thought never truly "arrives" but flows endlessly.',
+    deep_explanation: 'This technique attempts to replicate how the mind actually works: jumping between memories, sensations, and ideas without logical transitions. It revolutionized 20th-century literature.',
+    tags: ['literary-devices', 'stream-of-consciousness', 'modernism', 'narrative-technique'],
+  }),
+  createQuestion('literature', 'hard', 'What is the difference between "simile" and "metaphor"?', ['They are the same', 'A simile uses "like" or "as" to compare; a metaphor states one thing IS another', 'Simile is longer', 'Metaphor is only in poetry'], 1, '"Her smile was like sunshine" is a simile; "her smile was sunshine" is a metaphor. Metaphors create more direct, powerful comparisons.', {
+    tags: ['literary-devices', 'simile', 'metaphor', 'figurative-language'],
+  }),
+  createQuestion('literature', 'hard', 'What is "Anansi" in West African and Caribbean storytelling?', ['A type of food', 'A trickster spider figure who uses cunning to outsmart more powerful opponents', 'A hero warrior', 'A wise king'], 1, 'Anansi stories traveled from West Africa to the Caribbean through the slave trade and became symbols of resistance and resilience.', {
+    theme_connection: 'Anansi represents the journey of African cultural traditions surviving displacement, adapting, and thriving in new contexts.',
+    deep_explanation: 'Anansi stories teach that intelligence and wit can overcome brute force. These tales influenced "Brer Rabbit" stories in the American South and remain beloved across the diaspora.',
+    tags: ['mythology', 'anansi', 'west-africa', 'caribbean', 'trickster'],
+  }),
+
+  // ==========================================================================
+  // MODERN YA LITERATURE & POETRY
+  // ==========================================================================
+  // Easy
+  createQuestion('literature', 'easy', 'What is "young adult" (YA) literature?', ['Children\'s picture books', 'Books written for readers roughly ages 12-18, often featuring teenage protagonists', 'Adult mystery novels', 'Academic textbooks'], 1, 'YA literature has exploded in popularity, with series like "The Hunger Games" and "Divergent" becoming global phenomena.', {
+    tags: ['YA-literature', 'genre', 'modern-literature'],
+  }),
+  createQuestion('literature', 'easy', 'What is a "sonnet"?', ['A long story', 'A 14-line poem with a specific rhyme scheme', 'A type of song', 'A short essay'], 1, 'Shakespeare wrote 154 sonnets. The Shakespearean sonnet has three quatrains and a closing couplet.', {
+    tags: ['poetry', 'sonnet', 'literary-forms', 'shakespeare'],
+  }),
+  createQuestion('literature', 'easy', 'Who wrote "Percy Jackson and the Olympians"?', ['J.K. Rowling', 'Rick Riordan', 'Suzanne Collins', 'Philip Pullman'], 1, 'Riordan\'s series introduces Greek mythology to young readers through modern-day adventures of a demigod.', {
+    tags: ['YA-literature', 'percy-jackson', 'mythology', 'modern-literature'],
+  }),
+
+  // Medium
+  createQuestion('literature', 'medium', 'What is "spoken word poetry"?', ['Reading quietly', 'A performance art form where poetry is written to be performed aloud, emphasizing rhythm and emotion', 'Whispering poems', 'Singing lyrics'], 1, 'Spoken word has roots in oral traditions worldwide and has surged through events like poetry slams and platforms like YouTube.', {
+    tags: ['poetry', 'spoken-word', 'performance', 'oral-tradition'],
+  }),
+  createQuestion('literature', 'medium', 'What is an "epistolary novel"?', ['A mystery novel', 'A novel written as a series of letters, diary entries, or documents', 'A fantasy novel', 'A poetry collection'], 1, '"Flowers for Algernon" uses progress reports, and "Dracula" uses letters and journal entries, both examples of epistolary form.', {
+    tags: ['literary-forms', 'epistolary', 'narrative-technique'],
+  }),
+  createQuestion('literature', 'medium', 'What is "personification" in literature?', ['Writing biographies', 'Giving human qualities to non-human things or abstract ideas', 'Describing a person', 'Writing in first person'], 1, 'In "There Will Come Soft Rains," the automated house is personified as it continues human-like routines after humanity is gone.', {
+    tags: ['literary-devices', 'personification', 'figurative-language'],
+  }),
+  createQuestion('literature', 'medium', 'What is the Japanese literary concept of "mono no aware"?', ['A horror story', 'The bittersweet awareness of the impermanence of things', 'A type of manga', 'A comedy style'], 1, 'This concept pervades Japanese literature and art, reflected in the appreciation of cherry blossoms that bloom briefly and fall.', {
+    theme_connection: 'Mono no aware captures the beauty of journeys precisely because they end, connecting to the question of whether we ever truly "arrive."',
+    deep_explanation: 'The phrase translates roughly as "the pathos of things." It suggests that beauty and sadness are intertwined because everything is temporary. Murasaki Shikibu\'s "The Tale of Genji" embodies this.',
+    tags: ['japanese-literature', 'philosophy', 'aesthetics', 'culture'],
+  }),
+
+  // Hard
+  createQuestion('literature', 'hard', 'What is "intertextuality" in literary analysis?', ['Texting about books', 'The way a text\'s meaning is shaped by references to other texts', 'Reading between the lines', 'Writing footnotes'], 1, 'When "The Hunger Games" echoes the myth of Theseus and the Minotaur, that\'s intertextuality creating deeper meaning.', {
+    tags: ['literary-devices', 'intertextuality', 'analysis', 'literary-theory'],
+  }),
+  createQuestion('literature', 'hard', 'What is "post-colonial literature"?', ['Books about mail delivery', 'Literature that explores the effects of colonization on peoples and cultures', 'Ancient Roman texts', 'European travel writing'], 1, 'Writers like Chinua Achebe ("Things Fall Apart") and Chimamanda Ngozi Adichie challenge colonial narratives and reclaim cultural identity.', {
+    theme_connection: 'Post-colonial literature asks whose version of the journey gets told, and whether formerly colonized peoples have "arrived" at self-determination.',
+    deep_explanation: 'Achebe wrote "Things Fall Apart" partly in response to Joseph Conrad\'s "Heart of Darkness," which portrayed Africa through a European lens. Post-colonial writers recenter indigenous perspectives.',
+    tags: ['post-colonial', 'literature', 'identity', 'culture', 'decolonization'],
+  }),
+  createQuestion('literature', 'hard', 'What is "dramatic irony"?', ['Acting in a play', 'When the audience knows something that the characters do not', 'A dramatic reading', 'An ironic ending'], 1, 'In "Ender\'s Game," readers may suspect the final simulation is real before Ender does, creating powerful dramatic irony.', {
+    tags: ['literary-devices', 'dramatic-irony', 'narrative-technique'],
+  }),
+  createQuestion('literature', 'hard', 'What is the "One Thousand and One Nights" and why is it significant?', ['A sleep study', 'A collection of Middle Eastern folk tales framed by Scheherazade\'s storytelling to survive', 'A history book', 'A religious text'], 1, 'Scheherazade tells stories each night to delay her execution, using narrative as a tool of survival. The collection includes Aladdin and Sinbad.', {
+    theme_connection: 'Scheherazade\'s survival depends on the journey never ending: she must never "arrive" at the conclusion, or she dies.',
+    deep_explanation: 'The frame narrative of stories within stories influenced European literature after translation in the 18th century. It demonstrates storytelling as both entertainment and a matter of life and death.',
+    tags: ['folklore', 'middle-east', 'frame-narrative', 'scheherazade', 'storytelling'],
+  }),
+
+  // ==========================================================================
+  // ADDITIONAL LITERATURE: GLOBAL STORYTELLING & LITERARY CONCEPTS
+  // ==========================================================================
+  // Easy
+  createQuestion('literature', 'easy', 'What is a "protagonist" in a story?', ['The villain', 'The main character around whom the story revolves', 'A side character', 'The narrator always'], 1, 'In "Ender\'s Game," Ender Wiggin is the protagonist. The word comes from Greek meaning "first contestant."', {
+    tags: ['literary-devices', 'protagonist', 'narrative', 'vocabulary'],
+  }),
+  createQuestion('literature', 'easy', 'What is "fiction"?', ['A true account', 'Literature that describes imaginary events and people', 'A news article', 'A biography'], 1, 'Fiction includes novels, short stories, and plays. It can contain truths about human experience even though events are invented.', {
+    tags: ['genre', 'fiction', 'literary-forms', 'vocabulary'],
+  }),
+  createQuestion('literature', 'easy', 'What is a "cliffhanger" in storytelling?', ['A mountain climbing scene', 'An ending that leaves the audience in suspense, wanting to know what happens next', 'A fall from a cliff', 'A type of bookmark'], 1, 'The term originated from serialized stories where characters were literally left hanging from cliffs between installments.', {
+    tags: ['literary-devices', 'cliffhanger', 'narrative-technique', 'suspense'],
+  }),
+  createQuestion('literature', 'easy', 'Who wrote "Charlotte\'s Web"?', ['Roald Dahl', 'E.B. White', 'Dr. Seuss', 'Beatrix Potter'], 1, 'Published in 1952, "Charlotte\'s Web" explores themes of friendship, mortality, and the power of words.', {
+    tags: ['childrens-literature', 'classics', 'american-literature'],
+  }),
+
+  // Medium
+  createQuestion('literature', 'medium', 'What is "satire" in literature?', ['A type of comedy', 'The use of humor, irony, or exaggeration to criticize people, institutions, or society', 'A sad story', 'A type of poem'], 1, 'Jonathan Swift\'s "A Modest Proposal" satirically suggested eating children to solve poverty, shocking readers into awareness.', {
+    theme_connection: 'Satire questions whether society has truly progressed or just become better at ignoring its problems.',
+    deep_explanation: 'Satire works by exposing the gap between how things are and how they should be. From Voltaire to modern shows like South Park, satire forces audiences to reconsider assumptions.',
+    tags: ['literary-devices', 'satire', 'humor', 'social-commentary'],
+  }),
+  createQuestion('literature', 'medium', 'What is a "bildungsroman"?', ['A German city', 'A coming-of-age novel that follows a character\'s growth from youth to maturity', 'A type of poetry', 'A historical document'], 1, 'Classic examples include "Jane Eyre," "The Catcher in the Rye," and "To Kill a Mockingbird."', {
+    tags: ['genre', 'bildungsroman', 'coming-of-age', 'literary-forms'],
+  }),
+  createQuestion('literature', 'medium', 'What is "oral literature"?', ['Reading aloud from books', 'Stories, poems, and histories passed down through spoken word rather than writing', 'Dentist stories', 'Audio books'], 1, 'Before writing systems existed, all literature was oral. Many cultures, including Australian Aboriginal and West African, have rich oral traditions.', {
+    tags: ['oral-tradition', 'storytelling', 'culture', 'history'],
+  }),
+  createQuestion('literature', 'medium', 'What is "foreshadowing" in literature?', ['A shadow puppet show', 'Hints or clues about events that will happen later in the story', 'A type of setting', 'The story\'s conclusion'], 1, 'In "Flowers for Algernon," Algernon\'s decline foreshadows Charlie\'s eventual regression, creating dramatic tension.', {
+    tags: ['literary-devices', 'foreshadowing', 'narrative-technique'],
+  }),
+
+  // Hard
+  createQuestion('literature', 'hard', 'What is "magical negro" as a literary criticism term?', ['A type of magic', 'A trope where a Black character exists primarily to help white protagonists through mystical abilities', 'A genre of fantasy', 'An African folktale type'], 1, 'Spike Lee coined the term to critique how Hollywood and literature often reduce Black characters to supporting roles for white stories.', {
+    theme_connection: 'This trope asks whose journey is centered in storytelling, and whether literature has "arrived" at truly equitable representation.',
+    deep_explanation: 'Examples include the "Green Mile" and "The Legend of Bagger Vance." Modern writers actively challenge this trope by centering Black characters in their own complex narratives.',
+    tags: ['literary-criticism', 'representation', 'tropes', 'race', 'storytelling'],
+  }),
+  createQuestion('literature', 'hard', 'What is the "Bechdel Test" applied to fiction?', ['A spelling test', 'A measure asking whether a work features at least two women who talk to each other about something besides men', 'A reading comprehension test', 'A vocabulary assessment'], 1, 'Created by Alison Bechdel in 1985, this simple test reveals how often female characters exist only in relation to male characters.', {
+    tags: ['literary-criticism', 'gender', 'representation', 'feminism'],
+  }),
+  createQuestion('literature', 'hard', 'What is the literary concept of "the sublime"?', ['Something good', 'An experience of overwhelming awe, often mixing beauty and terror, that exceeds rational understanding', 'A type of dessert', 'A musical term'], 1, 'In Asimov\'s "Nightfall," the sight of 30,000 stars creates a sublime experience that shatters the characters\' sanity.', {
+    tags: ['literary-theory', 'sublime', 'aesthetics', 'philosophy', 'romanticism'],
+  }),
+  createQuestion('literature', 'easy', 'What is an "antagonist" in a story?', ['The hero', 'A character or force that opposes the main character', 'The narrator', 'A side character'], 1, 'In "Ender\'s Game," the Formics serve as antagonists, though the true antagonists may be the adults who manipulate Ender.', {
+    tags: ['literary-devices', 'antagonist', 'narrative', 'vocabulary'],
+  }),
+  createQuestion('literature', 'medium', 'What is a "frame narrative"?', ['A picture frame', 'A story within a story, where an outer narrative sets up or contextualizes an inner narrative', 'A type of essay', 'A newspaper column'], 1, '"The Canterbury Tales" uses a frame narrative: pilgrims traveling together each tell a story. "One Thousand and One Nights" uses Scheherazade as the frame.', {
+    tags: ['literary-devices', 'frame-narrative', 'narrative-technique', 'storytelling'],
+  }),
+  createQuestion('literature', 'hard', 'What is "Afrofuturism" in literature and art?', ['African history books', 'A cultural aesthetic that combines elements of science fiction, African history, and technology to imagine Black futures', 'A science textbook', 'A music genre only'], 1, 'Octavia Butler\'s novels and the "Black Panther" films are prominent examples. Afrofuturism envisions futures where African cultures shape technology and society.', {
+    theme_connection: 'Afrofuturism reimagines who gets to define the destination and whose journey into the future is centered in storytelling.',
+    deep_explanation: 'Rooted in the work of Sun Ra and Samuel Delany, Afrofuturism challenges the predominantly white vision of the future in mainstream science fiction, creating space for diverse imaginations.',
+    tags: ['genre', 'afrofuturism', 'science-fiction', 'culture', 'representation'],
+  }),
 ];
 
 // ============================================================================
@@ -558,6 +1339,215 @@ export const specialAreaQuestions: Question[] = [
   createQuestion('special_area', 'hard', 'What is the "post-truth" era?', ['After testing', 'When emotions and beliefs matter more than facts in public discourse', 'Honesty period', 'Lie detection'], 1, '"Post-truth" was Oxford Dictionary\'s 2016 word of the year.'),
   createQuestion('special_area', 'hard', 'What is "epistemic humility"?', ['Being quiet', 'Recognizing the limits of one\'s knowledge', 'Academic degree', 'Meditation'], 1, 'In complex issues, acknowledging uncertainty is intellectually honest.'),
   createQuestion('special_area', 'hard', 'What is the "attention economy"?', ['Watching TV', 'Competition for human attention as a scarce resource', 'Eye exams', 'Focus tests'], 1, 'Tech companies profit by capturing and holding our attention.'),
+
+  // ==========================================================================
+  // FUTURE OF WORK & SPACE ECONOMY (WSC 2026 Theme)
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is "remote work"?', ['Working outdoors', 'Working from a location other than a traditional office, often from home', 'Working at night', 'Working in a factory'], 1, 'The COVID-19 pandemic dramatically accelerated remote work adoption, with many companies now offering hybrid arrangements.', {
+    theme_connection: 'Remote work asks if the traditional office was ever the destination, or just one stop on the journey of how we work.',
+    deep_explanation: 'Studies show remote workers can be equally or more productive, but isolation and blurred work-life boundaries are real challenges. The future of work is still being defined.',
+    tags: ['future-of-work', 'remote-work', 'technology', 'society'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "space tourism"?', ['Watching movies about space', 'Paying to travel to space as a private citizen for recreation', 'Visiting a planetarium', 'Playing space video games'], 1, 'Companies like Blue Origin and Virgin Galactic have sent paying customers on brief suborbital flights.', {
+    tags: ['space-economy', 'tourism', 'technology', 'innovation'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "automation"?', ['Driving a car', 'Using machines or computers to perform tasks previously done by humans', 'Riding a bicycle', 'Writing by hand'], 1, 'From factory robots to self-checkout kiosks, automation is changing how work gets done across many industries.', {
+    tags: ['future-of-work', 'automation', 'technology'],
+  }),
+  createQuestion('special_area', 'easy', 'What is the "gig economy"?', ['Live music concerts', 'A labor market characterized by short-term, freelance, or contract work instead of permanent jobs', 'A dance competition', 'A type of economy in video games'], 1, 'Platforms like Uber, Fiverr, and DoorDash connect workers with short-term tasks, offering flexibility but often less job security.', {
+    tags: ['future-of-work', 'gig-economy', 'labor', 'economics'],
+  }),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "universal basic income" (UBI)?', ['A university degree', 'A regular cash payment given to all citizens regardless of employment status', 'A bank account', 'A tax return'], 1, 'Finland, Kenya, and several US cities have tested UBI programs. Supporters say it could address automation-driven job loss.', {
+    theme_connection: 'UBI is proposed as a safety net for the journey into an automated future where traditional employment may not be the destination for everyone.',
+    deep_explanation: 'Arguments for UBI include reducing poverty and enabling creativity; arguments against include cost and potential work disincentive. Evidence from pilots has been mixed but promising.',
+    tags: ['future-of-work', 'UBI', 'economics', 'policy', 'automation'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "space mining" or "asteroid mining"?', ['Mining on Earth', 'Extracting valuable resources like metals and water from asteroids or other celestial bodies', 'An arcade game', 'Deep-sea mining'], 1, 'A single metallic asteroid could contain more platinum than has ever been mined on Earth, potentially worth trillions of dollars.', {
+    tags: ['space-economy', 'mining', 'resources', 'technology'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "upskilling" in the context of the future of work?', ['Moving upstairs', 'Learning new skills to adapt to changing job requirements', 'Getting promoted', 'Working longer hours'], 1, 'As AI and automation transform industries, workers increasingly need to learn new technical and creative skills throughout their careers.', {
+    tags: ['future-of-work', 'education', 'skills', 'careers'],
+  }),
+  createQuestion('special_area', 'medium', 'What are "satellite mega-constellations"?', ['Star patterns', 'Networks of thousands of satellites working together to provide global services', 'Satellite TV channels', 'Space debris'], 1, 'SpaceX\'s Starlink and Amazon\'s Project Kuiper aim to deploy tens of thousands of satellites for global internet coverage.', {
+    theme_connection: 'Mega-constellations represent the journey to connect every person on Earth, asking whether global connectivity means we have truly "arrived."',
+    deep_explanation: 'While these constellations could bridge the digital divide, astronomers worry about light pollution and space debris. Balancing connectivity with other concerns is an ongoing challenge.',
+    tags: ['space-economy', 'satellites', 'connectivity', 'technology'],
+  }),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is the "Outer Space Treaty" of 1967?', ['A movie title', 'An international agreement that prohibits nations from claiming sovereignty over celestial bodies', 'A science fiction novel', 'A rocket design plan'], 1, 'The treaty states that space exploration should benefit all nations and that no country can place weapons of mass destruction in orbit.', {
+    tags: ['space-economy', 'law', 'international-relations', 'governance'],
+  }),
+  createQuestion('special_area', 'hard', 'What is "technological unemployment"?', ['Computers breaking', 'Job losses caused by technology replacing human workers faster than new jobs are created', 'IT department layoffs', 'Internet outages'], 1, 'While technology has historically created more jobs than it destroyed, the speed of AI advancement raises new concerns about this pattern continuing.', {
+    theme_connection: 'Technological unemployment asks whether the journey of progress always creates winners, or whether some are left behind.',
+    deep_explanation: 'Economists debate whether this time is different: unlike past automation which replaced physical labor, AI may replace cognitive work. The transition period matters as much as the destination.',
+    tags: ['future-of-work', 'AI', 'unemployment', 'economics', 'technology'],
+  }),
+
+  // ==========================================================================
+  // OCEAN EXPLORATION & FOOD SECURITY
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is "food security"?', ['Locked refrigerators', 'Having reliable access to sufficient, nutritious, and affordable food', 'Food safety labels', 'Restaurant security guards'], 1, 'About 735 million people worldwide face chronic hunger, despite the world producing enough food to feed everyone.', {
+    tags: ['food-security', 'hunger', 'global-issues', 'development'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "aquaculture"?', ['An aquarium hobby', 'The farming of fish, shellfish, and aquatic plants', 'A water sport', 'Underwater photography'], 1, 'Aquaculture now produces more fish for human consumption than wild-caught fishing.', {
+    tags: ['food-security', 'aquaculture', 'ocean', 'agriculture'],
+  }),
+  createQuestion('special_area', 'easy', 'What is the "deep sea" generally defined as?', ['Below 10 meters', 'Ocean zones deeper than 200 meters where sunlight cannot reach', 'The bottom of swimming pools', 'The deepest lake'], 1, 'The deep sea is the largest habitat on Earth, yet we have explored less of it than the surface of Mars.', {
+    theme_connection: 'The deep sea is Earth\'s final frontier, reminding us how far we still have to go in understanding our own planet.',
+    deep_explanation: 'Deep-sea exploration requires specialized submersibles that can withstand immense pressure. New species are discovered on nearly every deep-sea expedition.',
+    tags: ['ocean-exploration', 'deep-sea', 'biodiversity', 'exploration'],
+  }),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "vertical farming"?', ['Planting on hills', 'Growing crops in stacked indoor layers using controlled environments and artificial light', 'Hanging plant pots', 'Rooftop gardens only'], 1, 'Vertical farms use up to 95% less water than traditional agriculture and can produce food year-round in urban areas.', {
+    theme_connection: 'Vertical farming asks if we can reimagine agriculture to "arrive" at food security without destroying more land.',
+    deep_explanation: 'While promising, vertical farms currently have high energy costs and are mainly viable for leafy greens and herbs. Staple crops like wheat and rice remain impractical for vertical farming.',
+    tags: ['food-security', 'agriculture', 'technology', 'urban-farming', 'sustainability'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "food waste" and why is it a global problem?', ['Expired food labels', 'About one-third of all food produced globally is lost or wasted, contributing to hunger and emissions', 'A cooking technique', 'Leftover containers'], 1, 'If food waste were a country, it would be the third-largest emitter of greenhouse gases after the US and China.', {
+    tags: ['food-security', 'waste', 'climate', 'sustainability'],
+  }),
+  createQuestion('special_area', 'medium', 'What is a "submersible" used for in ocean exploration?', ['Surface sailing', 'A small underwater vehicle designed to dive to extreme depths for research', 'Submarine warfare', 'Snorkeling'], 1, 'The DSV Alvin and the Deepsea Challenger have made groundbreaking discoveries at hydrothermal vents and deep trenches.', {
+    tags: ['ocean-exploration', 'submersible', 'technology', 'deep-sea'],
+  }),
+  createQuestion('special_area', 'medium', 'What are "lab-grown" or "cultivated" meats?', ['Fake plastic food', 'Real meat produced by culturing animal cells without raising and slaughtering animals', 'Plant-based alternatives', 'Genetically modified animals'], 1, 'Singapore became the first country to approve cultured meat for sale in 2020. Production costs are falling rapidly.', {
+    tags: ['food-security', 'lab-grown-meat', 'technology', 'sustainability'],
+  }),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is the "Blue Economy"?', ['Painting things blue', 'The sustainable use of ocean resources for economic growth, jobs, and ecosystem health', 'A banking system', 'A type of currency'], 1, 'The ocean economy is estimated at $1.5 trillion annually, including fishing, tourism, energy, and biotechnology.', {
+    theme_connection: 'The Blue Economy asks whether we can reach prosperity from the ocean without repeating the mistakes we made on land.',
+    deep_explanation: 'Sustainable ocean industries include renewable energy from waves and tides, marine biotechnology for medicine, and responsible aquaculture. The challenge is balancing economic use with conservation.',
+    tags: ['ocean-exploration', 'blue-economy', 'sustainability', 'economics'],
+  }),
+
+  // ==========================================================================
+  // MENTAL HEALTH AWARENESS & DIGITAL CITIZENSHIP
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is "mental health"?', ['Physical fitness only', 'Our emotional, psychological, and social well-being that affects how we think, feel, and act', 'Being smart', 'Never feeling sad'], 1, 'Mental health is just as important as physical health. About 1 in 5 young people experience a mental health condition each year.', {
+    tags: ['mental-health', 'well-being', 'health', 'youth'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "digital citizenship"?', ['Having a computer', 'Using technology and the internet responsibly, ethically, and safely', 'Living in a smart city', 'Having a social media account'], 1, 'Good digital citizens think critically about what they share online, respect others, and protect their privacy.', {
+    tags: ['digital-citizenship', 'technology', 'ethics', 'safety'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "cyberbullying"?', ['A computer game', 'Using digital devices to harass, threaten, or embarrass someone', 'Building robots', 'Online shopping'], 1, 'About 37% of young people between ages 12-17 have experienced cyberbullying. It can have serious effects on mental health.', {
+    tags: ['digital-citizenship', 'cyberbullying', 'mental-health', 'safety'],
+  }),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "screen time" and why do experts discuss it?', ['Watching movies', 'Time spent using screens; excessive use is linked to sleep problems, anxiety, and reduced physical activity', 'Cleaning screens', 'Screen protectors'], 1, 'The American Academy of Pediatrics recommends balanced screen use with breaks for physical activity and face-to-face interaction.', {
+    theme_connection: 'The screen time debate asks whether our digital journey has taken us to a good place, or whether we\'ve gone too far.',
+    deep_explanation: 'Research is nuanced: not all screen time is equal. Creative or educational use differs from passive scrolling. Context, content, and duration all matter for health outcomes.',
+    tags: ['mental-health', 'digital-citizenship', 'screen-time', 'health', 'technology'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "digital footprint"?', ['Computer mouse marks', 'The trail of data you leave behind when using the internet', 'A shoe brand', 'A step counter app'], 1, 'Everything you post, like, search for, or share online contributes to your digital footprint, which can be permanent.', {
+    tags: ['digital-citizenship', 'privacy', 'data', 'internet-safety'],
+  }),
+  createQuestion('special_area', 'medium', 'What is the "stigma" around mental health?', ['A medical tool', 'Negative attitudes and discrimination toward people with mental health conditions', 'A type of therapy', 'A hospital department'], 1, 'Stigma prevents many people from seeking help. Education and open conversation are key to reducing it.', {
+    tags: ['mental-health', 'stigma', 'society', 'awareness'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "media literacy"?', ['Reading newspapers', 'The ability to critically analyze and evaluate information from all types of media', 'Writing articles', 'Taking photos'], 1, 'Media literacy helps people identify misinformation, understand bias, and make informed decisions about what they consume and share.', {
+    tags: ['digital-citizenship', 'media-literacy', 'critical-thinking', 'education'],
+  }),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is "doom scrolling" and what are its effects?', ['Reading comics', 'Compulsively consuming negative news on social media, which increases anxiety and helplessness', 'A video game', 'Fast reading technique'], 1, 'Research shows that excessive consumption of negative news activates stress responses and can lead to feelings of despair.', {
+    theme_connection: 'Doom scrolling illustrates how our digital journey can trap us in cycles rather than moving us forward.',
+    deep_explanation: 'Algorithms promote engaging content, and negative news triggers strong emotional reactions that keep us scrolling. Breaking the cycle requires conscious awareness and setting boundaries.',
+    tags: ['mental-health', 'digital-citizenship', 'social-media', 'well-being'],
+  }),
+  createQuestion('special_area', 'hard', 'What is the "right to be forgotten" in digital law?', ['Amnesia treatment', 'The legal right to have personal information removed from internet searches and databases', 'Forgetting passwords', 'Deleting apps'], 1, 'The EU established this right in 2014. It balances privacy with the public\'s right to information and raises complex ethical questions.', {
+    tags: ['digital-citizenship', 'privacy', 'law', 'ethics', 'EU'],
+  }),
+
+  // ==========================================================================
+  // SUSTAINABLE CITIES & GLOBAL PROGRESS
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is a "smart city"?', ['A city with smart people', 'A city that uses technology and data to improve services, infrastructure, and quality of life', 'A city with good schools only', 'A small town'], 1, 'Smart cities use sensors, IoT devices, and data analytics to manage traffic, energy, waste, and public safety more efficiently.', {
+    tags: ['sustainable-cities', 'technology', 'urbanization', 'innovation'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "public transportation" and why is it important?', ['Private cars', 'Shared transit systems like buses, trains, and subways that reduce traffic and emissions', 'Walking only', 'Bicycle lanes only'], 1, 'Cities with good public transit tend to have lower carbon emissions and less traffic congestion per capita.', {
+    tags: ['sustainable-cities', 'transportation', 'climate', 'urbanization'],
+  }),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "15-minute city" concept?', ['A very small city', 'An urban planning idea where everything residents need is within a 15-minute walk or bike ride', 'A speed limit zone', 'A delivery service area'], 1, 'Paris, Melbourne, and other cities are adopting this concept to reduce car dependence and improve quality of life.', {
+    theme_connection: 'The 15-minute city redefines "being there" as having everything you need within reach, rather than traveling far to reach distant destinations.',
+    deep_explanation: 'Proposed by Carlos Moreno, this concept challenges car-centric urban design. Critics argue it could limit freedom of movement, while supporters say it prioritizes walkability and community.',
+    tags: ['sustainable-cities', 'urban-planning', 'design', 'community'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "circular economy"?', ['A round marketplace', 'An economic system that eliminates waste by reusing, repairing, and recycling materials', 'A currency system', 'A farming technique'], 1, 'Unlike the traditional "take-make-dispose" model, a circular economy designs products for reuse and recycling from the start.', {
+    tags: ['sustainability', 'circular-economy', 'waste', 'economics'],
+  }),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is "solastalgia"?', ['A medicine', 'The distress caused by environmental change in one\'s home environment', 'A type of solar panel', 'A constellation'], 1, 'Coined by philosopher Glenn Albrecht, solastalgia describes the homesickness you feel while still at home because the environment has changed.', {
+    theme_connection: 'Solastalgia captures the feeling of never "arriving" because the destination itself keeps changing due to environmental degradation.',
+    deep_explanation: 'As climate change transforms landscapes, many Indigenous communities and long-term residents experience grief for the environment they knew. It\'s increasingly recognized in environmental psychology.',
+    tags: ['mental-health', 'climate', 'environment', 'psychology', 'philosophy'],
+  }),
+  createQuestion('special_area', 'hard', 'What is "rewilding" as a conservation strategy?', ['Building more cities', 'Restoring ecosystems by reintroducing native species and allowing natural processes to resume', 'Domesticating wild animals', 'Planting only one tree species'], 1, 'The reintroduction of wolves to Yellowstone in 1995 triggered a "trophic cascade" that restored rivers and biodiversity.', {
+    tags: ['sustainability', 'conservation', 'biodiversity', 'ecosystem'],
+  }),
+  createQuestion('special_area', 'hard', 'What is "climate justice"?', ['Weather forecasting', 'The principle that those least responsible for climate change often suffer its worst effects', 'A court for weather crimes', 'Temperature regulation'], 1, 'Small island nations and developing countries contribute least to emissions but face the most severe consequences like sea-level rise.', {
+    theme_connection: 'Climate justice asks whether we can "get there" on climate goals without addressing the unequal burden of climate impacts.',
+    deep_explanation: 'The concept connects environmental policy with human rights, arguing that climate solutions must address historical inequities between the Global North and Global South.',
+    tags: ['climate', 'justice', 'inequality', 'global-issues', 'ethics'],
+  }),
+
+  // ==========================================================================
+  // ADDITIONAL SPECIAL AREA: ETHICS, INNOVATION & GLOBAL SYSTEMS
+  // ==========================================================================
+  // Easy
+  createQuestion('special_area', 'easy', 'What is "biodiversity"?', ['One type of animal', 'The variety of all living things on Earth, from genes to ecosystems', 'A type of fuel', 'A science experiment'], 1, 'Earth is home to an estimated 8.7 million species, but scientists have only identified about 1.2 million of them.', {
+    tags: ['biodiversity', 'ecology', 'environment', 'conservation'],
+  }),
+  createQuestion('special_area', 'easy', 'What is the "International Space Station" used for?', ['A hotel', 'A laboratory for scientific research in microgravity orbiting Earth', 'A military base', 'A satellite dish'], 1, 'The ISS has been continuously occupied since 2000 and has hosted over 270 astronauts from 21 countries.', {
+    tags: ['space', 'ISS', 'science', 'international-cooperation'],
+  }),
+  createQuestion('special_area', 'easy', 'What does "sustainable" mean?', ['Fast and cheap', 'Able to continue or be maintained without depleting resources or harming the environment', 'Very large', 'Technologically advanced'], 1, 'Sustainability considers whether our current actions can continue without compromising future generations\' needs.', {
+    theme_connection: 'Sustainability is fundamentally about the journey: can we keep going, or will we run out of road before we get "there"?',
+    deep_explanation: 'The concept was defined in the 1987 Brundtland Report as "meeting the needs of the present without compromising the ability of future generations to meet their own needs."',
+    tags: ['sustainability', 'environment', 'future', 'development'],
+  }),
+  createQuestion('special_area', 'easy', 'What is "volunteering"?', ['Paid work', 'Giving your time and skills to help others or a cause without expecting payment', 'Mandatory community service', 'A school subject'], 1, 'Approximately 1 billion people volunteer globally each year, contributing trillions of dollars in economic value.', {
+    tags: ['community', 'volunteering', 'society', 'civic-engagement'],
+  }),
+
+  // Medium
+  createQuestion('special_area', 'medium', 'What is "planned obsolescence"?', ['Good engineering', 'Designing products to become outdated or break after a set period to encourage new purchases', 'Product quality testing', 'Building permits'], 1, 'Lightbulbs in the 1920s lasted decades; manufacturers agreed to limit lifespan to increase sales. Smartphones face similar criticism today.', {
+    theme_connection: 'Planned obsolescence ensures we never truly "arrive" at a finished product, always pushed toward the next purchase.',
+    deep_explanation: 'The EU has introduced "right to repair" laws requiring manufacturers to make products repairable. France requires a repairability score on electronics sold in the country.',
+    tags: ['economics', 'technology', 'sustainability', 'consumer-rights', 'waste'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "emotional intelligence" (EQ)?', ['IQ score', 'The ability to recognize, understand, and manage your own and others\' emotions', 'A type of therapy', 'A school grade'], 1, 'Research suggests EQ is often more important than IQ for success in leadership, relationships, and well-being.', {
+    tags: ['psychology', 'emotional-intelligence', 'social-skills', 'well-being'],
+  }),
+  createQuestion('special_area', 'medium', 'What is "data privacy" and why does it matter?', ['Keeping computers clean', 'The right to control how your personal information is collected, used, and shared', 'Deleting files', 'Computer speed'], 1, 'The EU\'s General Data Protection Regulation (GDPR) gives citizens significant control over their personal data.', {
+    tags: ['digital-citizenship', 'privacy', 'data', 'rights', 'technology'],
+  }),
+
+  // Hard
+  createQuestion('special_area', 'hard', 'What is "surveillance capitalism"?', ['Security cameras', 'An economic system based on monetizing personal data collected from people\'s online behavior', 'A type of investment', 'Government monitoring only'], 1, 'Coined by Shoshana Zuboff, the term describes how tech companies profit by predicting and influencing human behavior through data.', {
+    theme_connection: 'Surveillance capitalism questions whether the digital journey has taken us to a destination we did not choose or consent to.',
+    deep_explanation: 'Companies collect data through apps, searches, and devices to build behavioral profiles used for targeted advertising. Critics argue this undermines autonomy and democracy.',
+    tags: ['technology', 'privacy', 'economics', 'ethics', 'data'],
+  }),
+  createQuestion('special_area', 'hard', 'What is the "Doomsday Clock" and what does it measure?', ['A timepiece', 'A symbolic clock maintained by scientists showing how close humanity is to catastrophic destruction', 'An alarm clock', 'A countdown timer'], 1, 'Set at 90 seconds to midnight since 2023, the closest it has ever been. It considers nuclear risk, climate change, and disruptive technologies.', {
+    tags: ['global-issues', 'nuclear', 'existential-risk', 'science', 'peace'],
+  }),
+  createQuestion('special_area', 'hard', 'What is "degrowth" as an economic concept?', ['Economic decline', 'A deliberate reduction of economic output to achieve ecological sustainability and social equity', 'Bankruptcy', 'Recession'], 1, 'Degrowth advocates argue that infinite economic growth on a finite planet is impossible and that well-being should be measured differently.', {
+    theme_connection: 'Degrowth challenges the assumption that "getting there" means always growing bigger. Maybe the destination is having enough, not more.',
+    deep_explanation: 'While mainstream economics treats growth as essential, degrowth scholars point to evidence that beyond a certain level, GDP increases don\'t improve life satisfaction or ecological health.',
+    tags: ['economics', 'degrowth', 'sustainability', 'environment', 'philosophy'],
+  }),
 ];
 
 // ============================================================================

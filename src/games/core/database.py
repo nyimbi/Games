@@ -147,6 +147,56 @@ async def init_db() -> None:
 			)
 		""")
 
+		# Migrations: add scholar_code and avatar columns
+		await conn.execute("""
+			DO $$
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1 FROM information_schema.columns
+					WHERE table_name = 'users' AND column_name = 'scholar_code'
+				) THEN
+					ALTER TABLE users ADD COLUMN scholar_code TEXT UNIQUE;
+				END IF;
+				IF NOT EXISTS (
+					SELECT 1 FROM information_schema.columns
+					WHERE table_name = 'users' AND column_name = 'avatar'
+				) THEN
+					ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT 'fox';
+				END IF;
+			END $$;
+		""")
+		await conn.execute(
+			"CREATE UNIQUE INDEX IF NOT EXISTS idx_users_scholar_code ON users (scholar_code) WHERE scholar_code IS NOT NULL"
+		)
+
+		# Backfill: generate scholar codes for existing users without one
+		await conn.execute("""
+			DO $$
+			DECLARE
+				r RECORD;
+				animals TEXT[] := ARRAY['FOX','OWL','DOLPHIN','LION','PANDA','BUTTERFLY','TURTLE','EAGLE','OCTOPUS','PARROT','WOLF','SHARK','BEE','UNICORN','FROG','PENGUIN','LIZARD','KOALA','SEAL','TIGER'];
+				code TEXT;
+				tries INT;
+			BEGIN
+				FOR r IN SELECT id FROM users WHERE scholar_code IS NULL
+				LOOP
+					tries := 0;
+					LOOP
+						code := animals[1 + floor(random() * 20)::int] || '-' || lpad(floor(random() * 10000)::text, 4, '0');
+						BEGIN
+							UPDATE users SET scholar_code = code WHERE id = r.id;
+							EXIT;
+						EXCEPTION WHEN unique_violation THEN
+							tries := tries + 1;
+							IF tries > 10 THEN
+								RAISE EXCEPTION 'Could not generate unique scholar code for user %', r.id;
+							END IF;
+						END;
+					END LOOP;
+				END LOOP;
+			END $$;
+		""")
+
 		# Create indexes
 		await conn.execute(
 			"CREATE INDEX IF NOT EXISTS idx_users_team ON users (team_id)"

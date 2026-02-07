@@ -8,7 +8,10 @@
       "options": ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
       "correct_index": 1,
       "explanation": "William Shakespeare wrote this famous tragedy around 1594-1596.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Romeo and Juliet's tragic journey toward love raises whether some destinations are worth the cost of reaching them.",
+      "deep_explanation": "Shakespeare wrote Romeo and Juliet around 1594-1596, basing it on an Italian tale by Matteo Bandello. The play explores how the feuding Montague and Capulet families' hatred creates an impossible journey for the young lovers. The story's endurance (over 400 years) shows how universal themes of love, conflict, and the desire to 'arrive' at happiness transcend time periods. The play has been adapted into over 30 film versions, including West Side Story.",
+      "tags": ["Shakespeare", "tragedy", "drama", "Renaissance-literature"]
     },
     {
       "id": "lit-002",
@@ -17,7 +20,10 @@
       "options": ["Chamber of Secrets", "Prisoner of Azkaban", "Philosopher's Stone", "Goblet of Fire"],
       "correct_index": 2,
       "explanation": "Harry Potter and the Philosopher's Stone was published in 1997 by J.K. Rowling.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Harry's journey from an unloved orphan to the hero of the wizarding world mirrors the classic narrative of transformation through travel.",
+      "deep_explanation": "J.K. Rowling conceived the Harry Potter series on a delayed train from Manchester to London in 1990. The Philosopher's Stone was rejected by 12 publishers before Bloomsbury accepted it in 1997. The series has sold over 500 million copies worldwide, been translated into 80+ languages, and spawned a film franchise grossing $7.7 billion. The title was changed to 'Sorcerer's Stone' in the US because publishers feared American children wouldn't know what a philosopher was.",
+      "tags": ["fantasy", "children's-literature", "Rowling", "series"]
     },
     {
       "id": "lit-003",
@@ -26,7 +32,10 @@
       "options": ["Roald Dahl", "Dr. Seuss", "Shel Silverstein", "Eric Carle"],
       "correct_index": 1,
       "explanation": "Dr. Seuss (Theodor Geisel) wrote The Cat in the Hat in 1957.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Dr. Seuss's journey to make reading fun revolutionized children's literacy, showing that the path to learning matters as much as the destination.",
+      "deep_explanation": "Theodor Seuss Geisel wrote The Cat in the Hat in response to a 1954 Life magazine article by John Hersey arguing that children's books were too boring. The publisher challenged Geisel to write an entertaining book using only 225 words from a list of 348 that first-graders should know. Geisel used 236 of them. The book revolutionized early reading education by proving that learning materials could be engaging and fun, selling over 10 million copies.",
+      "tags": ["children's-literature", "Dr-Seuss", "reading", "education"]
     },
     {
       "id": "lit-004",
@@ -35,7 +44,10 @@
       "options": ["English", "French", "Spanish", "Italian"],
       "correct_index": 2,
       "explanation": "Don Quixote was written in Spanish by Miguel de Cervantes in 1605.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Don Quixote's journey toward impossible ideals asks whether the destination matters if the traveler never stops believing in it.",
+      "deep_explanation": "Miguel de Cervantes published the first part of Don Quixote in 1605 and the second in 1615. Often called the first modern novel, it tells the story of a man so influenced by chivalric romances that he sets out as a knight-errant. The novel pioneered literary techniques including unreliable narration, metafiction, and the anti-hero. The phrase 'tilting at windmills' (attacking imaginary enemies) comes directly from this novel and has entered languages worldwide.",
+      "tags": ["Spanish-literature", "Cervantes", "novel", "classic"]
     },
     {
       "id": "lit-005",
@@ -44,7 +56,10 @@
       "options": ["Emily Brontë", "Charlotte Brontë", "Jane Austen", "Virginia Woolf"],
       "correct_index": 2,
       "explanation": "Jane Austen published Pride and Prejudice in 1813.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Elizabeth Bennet's journey from prejudice to understanding mirrors how overcoming assumptions is essential to arriving at truth.",
+      "deep_explanation": "Jane Austen began writing Pride and Prejudice around 1796 under the title 'First Impressions.' It was rejected by publisher Thomas Cadell in 1797 and finally published in 1813. The novel's opening line — 'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife' — is one of the most famous in English literature. Austen used irony and social commentary to critique the marriage market of Regency England, and the novel has never gone out of print.",
+      "tags": ["British-literature", "Austen", "Regency", "novel"]
     },
     {
       "id": "lit-006",

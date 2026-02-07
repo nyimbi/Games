@@ -52,6 +52,8 @@ export interface User {
   role: 'coach' | 'player';
   team_id: number | null;
   avatar_color: string;
+  scholar_code: string | null;
+  avatar: string;
   created_at: string;
 }
 
@@ -78,8 +80,16 @@ export const authApi = {
     display_name: string;
     role: 'coach' | 'player';
     avatar_color?: string;
+    avatar?: string;
   }) =>
     fetcher<UserResponse>('/auth/join', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // Recover identity using a Scholar Code
+  recover: (data: { scholar_code: string }) =>
+    fetcher<UserResponse>('/auth/recover', {
       method: 'POST',
       body: JSON.stringify(data),
     }),

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel
 
 from games.models import (
+	ScholarCodeLookup,
 	Team,
 	TeamCreate,
 	TeamJoin,
@@ -16,10 +17,13 @@ from games.services.auth import (
 	get_team_by_id,
 	get_team_members,
 	get_user_by_id,
+	get_user_by_scholar_code,
 	join_team,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+MAX_TEAM_SIZE = 6  # 5 scholars + 1 coach
 
 
 class UserResponse(BaseModel):
@@ -52,6 +56,18 @@ async def get_current_user(
 async def join_as_user(user_data: UserCreate) -> UserResponse:
 	"""Join the platform with a name and role - returns user ID to use for future requests."""
 	user = await create_user(user_data)
+	return UserResponse(user=user)
+
+
+@router.post("/recover", response_model=UserResponse)
+async def recover_by_scholar_code(lookup: ScholarCodeLookup) -> UserResponse:
+	"""Recover identity using a Scholar Code."""
+	user = await get_user_by_scholar_code(lookup.scholar_code)
+	if user is None:
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="No scholar found with that code. Check the code and try again.",
+		)
 	return UserResponse(user=user)
 
 
@@ -115,6 +131,22 @@ async def join_existing_team(
 		raise HTTPException(
 			status_code=status.HTTP_400_BAD_REQUEST,
 			detail="You are already in a team",
+		)
+
+	# Check team size before joining
+	from games.services.auth import get_team_by_code
+	team_check = await get_team_by_code(join_data.join_code)
+	if team_check is None:
+		raise HTTPException(
+			status_code=status.HTTP_404_NOT_FOUND,
+			detail="Team not found with that code",
+		)
+
+	members = await get_team_members(team_check.id)
+	if len(members) >= MAX_TEAM_SIZE:
+		raise HTTPException(
+			status_code=status.HTTP_409_CONFLICT,
+			detail="This team is full (max 5 scholars + 1 coach)",
 		)
 
 	team = await join_team(user.id, join_data.join_code)

@@ -16,7 +16,9 @@ interface AuthContextType extends AuthState {
     display_name: string;
     role: 'coach' | 'player';
     avatar_color?: string;
-  }) => Promise<void>;
+    avatar?: string;
+  }) => Promise<User>;
+  recover: (scholarCode: string) => Promise<User>;
   logout: () => void;
   createTeam: (name: string) => Promise<Team>;
   joinTeam: (joinCode: string) => Promise<Team>;
@@ -35,6 +37,14 @@ export function useAuth() {
 
 interface AuthProviderProps {
   children: ReactNode;
+}
+
+function storeUser(user: User) {
+  localStorage.setItem('user_id', user.id.toString());
+  localStorage.setItem('user', JSON.stringify(user));
+  if (user.scholar_code) {
+    localStorage.setItem('scholar_code', user.scholar_code);
+  }
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -69,6 +79,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Invalid stored user, clear it
         localStorage.removeItem('user_id');
         localStorage.removeItem('user');
+        localStorage.removeItem('scholar_code');
         setState((prev) => ({ ...prev, isLoading: false }));
       }
     } else {
@@ -94,13 +105,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       display_name: string;
       role: 'coach' | 'player';
       avatar_color?: string;
+      avatar?: string;
     }) => {
       setState((prev) => ({ ...prev, isLoading: true }));
       try {
         const response = await authApi.join(data);
-        // Store user ID and full user object
-        localStorage.setItem('user_id', response.user.id.toString());
-        localStorage.setItem('user', JSON.stringify(response.user));
+        storeUser(response.user);
         setState({
           user: response.user,
           team: null,
@@ -108,6 +118,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isLoading: false,
           isAuthenticated: true,
         });
+        return response.user;
       } catch (error) {
         setState((prev) => ({ ...prev, isLoading: false }));
         throw error;
@@ -116,9 +127,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     []
   );
 
+  const recover = useCallback(async (scholarCode: string) => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const response = await authApi.recover({ scholar_code: scholarCode });
+      storeUser(response.user);
+      setState({
+        user: response.user,
+        team: null,
+        teamMembers: [],
+        isLoading: false,
+        isAuthenticated: true,
+      });
+
+      // Load team if user has one
+      if (response.user.team_id) {
+        loadTeam();
+      }
+
+      return response.user;
+    } catch (error) {
+      setState((prev) => ({ ...prev, isLoading: false }));
+      throw error;
+    }
+  }, [loadTeam]);
+
   const logout = useCallback(() => {
     localStorage.removeItem('user_id');
     localStorage.removeItem('user');
+    localStorage.removeItem('scholar_code');
     setState({
       user: null,
       team: null,
@@ -134,7 +171,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState((prev) => {
       const updatedUser = prev.user ? { ...prev.user, team_id: team.id } : null;
       if (updatedUser) {
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        storeUser(updatedUser);
       }
       return {
         ...prev,
@@ -154,7 +191,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState((prev) => {
       const updatedUser = prev.user ? { ...prev.user, team_id: team.id } : null;
       if (updatedUser) {
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        storeUser(updatedUser);
       }
       return {
         ...prev,
@@ -190,6 +227,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         ...state,
         join,
+        recover,
         logout,
         createTeam,
         joinTeam,

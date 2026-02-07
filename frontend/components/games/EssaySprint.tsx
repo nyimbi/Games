@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileText, Clock, Users, Target, CheckCircle, Sparkles, Trophy } from 'lucide-react';
+import { FileText, Clock, Users, Target, CheckCircle, Sparkles, Trophy, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { Button, Card, CardContent, Badge, Avatar, Textarea, Progress } from '@/components/ui';
 import { GameLayout, WaitingRoom, Countdown, GameOver } from './GameLayout';
 import { useGameState } from '@/lib/hooks/useGameState';
@@ -14,44 +14,100 @@ interface EssaySprintProps {
   mode?: 'solo' | 'multiplayer';
 }
 
+// Word count target range
+const WORD_TARGET_MIN = 500;
+const WORD_TARGET_MAX = 800;
+
 // Essay prompts for solo mode
 const ESSAY_PROMPTS = [
   {
     id: 'essay-1',
     title: 'Technology and Society',
     prompt: 'How has technology changed the way we communicate with each other?',
-    wordGoal: 150,
-    timeLimit: 300, // 5 minutes
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200, // 20 minutes for longer essays
   },
   {
     id: 'essay-2',
     title: 'Environmental Responsibility',
     prompt: 'What can young people do to help protect the environment?',
-    wordGoal: 150,
-    timeLimit: 300,
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
   },
   {
     id: 'essay-3',
     title: 'The Power of Reading',
     prompt: 'Why is reading important, and what is your favorite book?',
-    wordGoal: 150,
-    timeLimit: 300,
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
   },
   {
     id: 'essay-4',
     title: 'Future Careers',
     prompt: 'What job would you like to have when you grow up, and why?',
-    wordGoal: 150,
-    timeLimit: 300,
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
   },
   {
     id: 'essay-5',
     title: 'Cultural Traditions',
     prompt: 'Describe a tradition from your culture that you think is important.',
-    wordGoal: 150,
-    timeLimit: 300,
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
+  },
+  // WSC 2026 "Are We There Yet?" Collaborative Writing prompts
+  {
+    id: 'essay-wsc-1',
+    title: 'The Journey vs. The Destination',
+    prompt: 'Some argue that the journey matters more than the destination. Using examples from history, science, or literature, discuss whether the process of discovery is more valuable than what is ultimately discovered.',
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
+  },
+  {
+    id: 'essay-wsc-2',
+    title: 'Progress at What Cost?',
+    prompt: 'Humanity has made remarkable progress in technology, medicine, and connectivity. But have we left something important behind? Write about what we may have lost in our rush to move forward.',
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
+  },
+  {
+    id: 'essay-wsc-3',
+    title: 'Maps and Uncharted Territory',
+    prompt: 'Maps once showed "Here be dragons" at the edges of the known world. What are the uncharted territories of our time, and why do they matter? Consider physical, intellectual, or social frontiers.',
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
+  },
+  {
+    id: 'essay-wsc-4',
+    title: 'The Detour That Changed Everything',
+    prompt: 'Many of the greatest discoveries were accidents or detours from the original plan. Write about a time when getting lost -- literally or figuratively -- led to something better than the original destination.',
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
+  },
+  {
+    id: 'essay-wsc-5',
+    title: 'Are We There Yet?',
+    prompt: 'The question "Are we there yet?" implies impatience with the present and fixation on the future. Is this restlessness a strength or a weakness of human nature? Argue your position with evidence from multiple disciplines.',
+    wordGoal: WORD_TARGET_MIN,
+    timeLimit: 1200,
   },
 ];
+
+// Essay structure guide sections
+const ESSAY_STRUCTURE = [
+  { section: 'Introduction', detail: 'Hook + thesis statement', icon: '1' },
+  { section: 'Body 1', detail: 'Point + evidence + analysis', icon: '2' },
+  { section: 'Body 2', detail: 'Point + evidence + analysis', icon: '3' },
+  { section: 'Body 3', detail: 'Point + evidence + analysis', icon: '4' },
+  { section: 'Conclusion', detail: 'Restate thesis + final thought', icon: '5' },
+];
+
+function getWordCountColor(count: number): { text: string; bg: string; label: string } {
+  if (count < 200) return { text: 'text-coral-600', bg: 'bg-coral-500', label: 'Keep writing!' };
+  if (count < WORD_TARGET_MIN) return { text: 'text-gold-600', bg: 'bg-gold-500', label: 'Getting there...' };
+  if (count <= WORD_TARGET_MAX) return { text: 'text-sage-600', bg: 'bg-sage-500', label: 'In the target range!' };
+  return { text: 'text-orange-600', bg: 'bg-orange-500', label: 'Consider wrapping up' };
+}
 
 // Writing tips shown during essay
 const WRITING_TIPS = [
@@ -77,6 +133,7 @@ export function EssaySprint({ sessionId, isHost = false, onExit, mode = 'solo' }
     currentTip: 0,
   });
 
+  const [showStructureGuide, setShowStructureGuide] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Timer
@@ -186,22 +243,26 @@ export function EssaySprint({ sessionId, isHost = false, onExit, mode = 'solo' }
                 Essay Sprint
               </h2>
               <p className="text-ink-600 mb-4">
-                Write a short essay on a random topic
+                Write a structured essay on a random topic
               </p>
               <div className="bg-paper-100 rounded-xl p-4 mb-8 text-left">
                 <h4 className="font-semibold text-ink-700 mb-2">How it works:</h4>
                 <ul className="text-sm text-ink-600 space-y-2">
                   <li className="flex items-start gap-2">
                     <Target className="w-4 h-4 text-coral-500 mt-0.5 shrink-0" />
-                    <span>You'll get a prompt and 5 minutes to write</span>
+                    <span>You&apos;ll get a prompt and 20 minutes to write</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Target className="w-4 h-4 text-coral-500 mt-0.5 shrink-0" />
-                    <span>Aim for at least 150 words</span>
+                    <span>Target: <strong>500-800 words</strong> (WSC Collaborative Writing length)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Target className="w-4 h-4 text-coral-500 mt-0.5 shrink-0" />
-                    <span>Focus on clear ideas and good structure</span>
+                    <span>Use the essay structure guide for best results</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Target className="w-4 h-4 text-coral-500 mt-0.5 shrink-0" />
+                    <span>Includes WSC 2026 &quot;Are We There Yet?&quot; themed prompts</span>
                   </li>
                 </ul>
               </div>
@@ -212,29 +273,41 @@ export function EssaySprint({ sessionId, isHost = false, onExit, mode = 'solo' }
           </div>
         );
 
-      case 'playing':
+      case 'playing': {
+        const wcColor = getWordCountColor(state.wordCount);
         return (
           <div className="flex-1 flex flex-col p-4 md:p-6">
-            <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col">
+            <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
               {/* Header Stats */}
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-4 gap-3 mb-4">
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <Clock className={`w-4 h-4 ${state.timeLeft < 60 ? 'text-coral-500 animate-pulse' : 'text-ink-400'}`} />
-                    <span className={`text-xl font-bold ${state.timeLeft < 60 ? 'text-coral-600' : 'text-ink-700'}`}>
+                    <Clock className={`w-4 h-4 ${state.timeLeft < 120 ? 'text-coral-500 animate-pulse' : 'text-ink-400'}`} />
+                    <span className={`text-xl font-bold ${state.timeLeft < 120 ? 'text-coral-600' : 'text-ink-700'}`}>
                       {formatTime(state.timeLeft)}
                     </span>
                   </div>
                   <p className="text-xs text-ink-500">Time Left</p>
                 </div>
-                <div className="bg-white rounded-xl p-3 text-center shadow-sm">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className={`text-xl font-bold ${state.wordCount >= state.currentPrompt.wordGoal ? 'text-sage-600' : 'text-ink-700'}`}>
+                {/* Prominent Word Count with color coding */}
+                <div className={`bg-white rounded-xl p-3 text-center shadow-sm border-2 ${
+                  state.wordCount < 200 ? 'border-coral-300' :
+                  state.wordCount < WORD_TARGET_MIN ? 'border-gold-300' :
+                  state.wordCount <= WORD_TARGET_MAX ? 'border-sage-300' :
+                  'border-orange-300'
+                }`}>
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <span className={`text-2xl font-bold ${wcColor.text}`}>
                       {state.wordCount}
                     </span>
-                    <span className="text-ink-400">/ {state.currentPrompt.wordGoal}</span>
                   </div>
-                  <p className="text-xs text-ink-500">Words</p>
+                  <p className={`text-xs font-medium ${wcColor.text}`}>{wcColor.label}</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 text-center shadow-sm">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <span className="text-sm text-ink-400">{WORD_TARGET_MIN}-{WORD_TARGET_MAX}</span>
+                  </div>
+                  <p className="text-xs text-ink-500">Target Words</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 text-center shadow-sm">
                   <span className="text-xl font-bold text-gold-600">{wordsPerMinute}</span>
@@ -245,9 +318,9 @@ export function EssaySprint({ sessionId, isHost = false, onExit, mode = 'solo' }
               {/* Progress bar */}
               <div className="mb-4">
                 <Progress
-                  value={Math.min(progressPercent, 100)}
+                  value={Math.min((state.wordCount / WORD_TARGET_MIN) * 100, 100)}
                   max={100}
-                  variant={state.wordCount >= state.currentPrompt.wordGoal ? 'sage' : 'gold'}
+                  variant={state.wordCount >= WORD_TARGET_MIN ? 'sage' : state.wordCount >= 200 ? 'gold' : 'coral'}
                 />
               </div>
 
@@ -260,6 +333,44 @@ export function EssaySprint({ sessionId, isHost = false, onExit, mode = 'solo' }
                   </p>
                 </CardContent>
               </Card>
+
+              {/* Essay Structure Guide (collapsible) */}
+              <div className="mb-4">
+                <button
+                  onClick={() => setShowStructureGuide(!showStructureGuide)}
+                  className="flex items-center gap-2 text-sm font-medium text-ink-600 hover:text-ink-800 transition-colors"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Essay Structure Guide
+                  {showStructureGuide ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                <AnimatePresence>
+                  {showStructureGuide && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-2 p-4 bg-cream-100 border border-cream-200 rounded-xl">
+                        <div className="space-y-2">
+                          {ESSAY_STRUCTURE.map((item) => (
+                            <div key={item.section} className="flex items-center gap-3">
+                              <span className="w-6 h-6 rounded-full bg-gold-500 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                {item.icon}
+                              </span>
+                              <div>
+                                <span className="font-medium text-ink-700 text-sm">{item.section}</span>
+                                <span className="text-ink-500 text-sm"> -- {item.detail}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Writing Area */}
               <div className="flex-1 flex flex-col">
@@ -301,6 +412,7 @@ export function EssaySprint({ sessionId, isHost = false, onExit, mode = 'solo' }
             </div>
           </div>
         );
+      }
 
       case 'ended':
         const score = calculateScore();

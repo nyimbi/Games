@@ -90,7 +90,7 @@ export function CoachNav() {
             </div>
           )}
           <div className="flex items-center gap-3 px-4 py-2">
-            <Avatar name={user?.display_name || ''} color={user?.avatar_color} size="sm" />
+            <Avatar name={user?.display_name || ''} animal={user?.avatar} color={user?.avatar_color} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{user?.display_name}</p>
               <p className="text-xs text-ink-400 truncate">Coach</p>
@@ -161,7 +161,7 @@ export function CoachNav() {
 
             <div className="mt-4 pt-4 border-t border-ink-700">
               <div className="flex items-center gap-3 px-4 py-2">
-                <Avatar name={user?.display_name || ''} color={user?.avatar_color} size="sm" />
+                <Avatar name={user?.display_name || ''} animal={user?.avatar} color={user?.avatar_color} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{user?.display_name}</p>
                 </div>

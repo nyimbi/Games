@@ -8,7 +8,10 @@
       "options": ["Automated Interface", "Artificial Intelligence", "Advanced Integration", "Applied Informatics"],
       "correct_index": 1,
       "explanation": "AI stands for Artificial Intelligence, the simulation of human intelligence by machines.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The race to Artificial General Intelligence is one of the defining 'are we there yet' questions of our era.",
+      "deep_explanation": "The term 'Artificial Intelligence' was coined by John McCarthy in 1956 at the Dartmouth Conference. AI encompasses machine learning, natural language processing, computer vision, and robotics. Current AI is 'narrow' — excellent at specific tasks (chess, image recognition, language) but unable to generalize across domains. The quest for 'Artificial General Intelligence' (AGI) — AI matching human-level reasoning across all tasks — remains one of technology's greatest open questions, with estimates ranging from 10 to 100+ years away.",
+      "tags": ["technology", "AI", "computing", "future"]
     },
     {
       "id": "spec-002",
@@ -17,7 +20,10 @@
       "options": ["Shanghai Tower", "Burj Khalifa", "One World Trade Center", "Taipei 101"],
       "correct_index": 1,
       "explanation": "The Burj Khalifa in Dubai stands at 828 meters (2,717 feet) tall.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The Burj Khalifa represents humanity's literal reach upward, but Saudi Arabia's planned Jeddah Tower (1,000m) shows we haven't stopped climbing.",
+      "deep_explanation": "The Burj Khalifa opened in 2010 after 6 years of construction. It contains over 160 floors, 57 elevators, and uses enough concrete to build a sidewalk stretching a quarter of the way around the world. The building required innovative engineering solutions for wind resistance, foundation stability in sandy soil, and pumping concrete to extreme heights. It holds multiple records including highest occupied floor, highest outdoor observation deck, and elevator with the longest travel distance.",
+      "tags": ["architecture", "engineering", "records", "Dubai"]
     },
     {
       "id": "spec-003",
@@ -26,7 +32,10 @@
       "options": ["Instagram", "Snapchat", "TikTok", "YouTube"],
       "correct_index": 2,
       "explanation": "TikTok, launched internationally in 2017, became a global phenomenon for short-form video content.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — TikTok's global spread shows how quickly cultural ideas can travel in the digital age, raising questions about who controls the journey.",
+      "deep_explanation": "TikTok (known as Douyin in China) was launched internationally by ByteDance in 2017, merging with Musical.ly in 2018. By 2024, it had over 1.5 billion monthly active users. TikTok's algorithm is notably effective at predicting user preferences, keeping average session times at 95 minutes per day for users aged 4-18. The platform has faced scrutiny from multiple governments over data privacy concerns, leading to bans or restrictions in India, potential bans in the US, and ongoing debates about digital sovereignty.",
+      "tags": ["social-media", "technology", "digital-culture", "ByteDance"]
     },
     {
       "id": "spec-004",
@@ -35,7 +44,10 @@
       "options": ["Google", "Samsung", "Apple", "Microsoft"],
       "correct_index": 2,
       "explanation": "Apple introduced the iPhone in 2007, revolutionizing the smartphone industry.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The iPhone's arrival in 2007 redefined what it means to 'be somewhere' by putting the entire internet in everyone's pocket.",
+      "deep_explanation": "Steve Jobs unveiled the iPhone on January 9, 2007, calling it 'three revolutionary products in one: a widescreen iPod, a revolutionary mobile phone, and a breakthrough internet communicator.' The iPhone launched on June 29, 2007, at $499. It eliminated physical keyboards, introduced multi-touch, and created the App Store ecosystem (2008) that now contains over 1.8 million apps. The iPhone has generated over $2 trillion in cumulative revenue and fundamentally changed how humans communicate, navigate, shop, and access information.",
+      "tags": ["technology", "Apple", "smartphones", "innovation"]
     },
     {
       "id": "spec-005",
@@ -44,7 +56,10 @@
       "options": ["New File Type", "Non-Fungible Token", "Network File Transfer", "Next Format Technology"],
       "correct_index": 1,
       "explanation": "NFT stands for Non-Fungible Token, a unique digital asset verified using blockchain.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — NFTs represent an attempt to bring scarcity and ownership to the digital world, but whether they've arrived at a lasting purpose remains debated.",
+      "deep_explanation": "Non-Fungible Tokens are unique digital identifiers recorded on a blockchain that certify ownership and authenticity of digital assets. 'Non-fungible' means each token is unique and cannot be exchanged one-for-one with another (unlike Bitcoin, where each unit is identical). NFTs surged in 2021 when digital artist Beeple sold an NFT artwork for $69 million at Christie's auction house. However, the NFT market crashed dramatically in 2022-2023, with trading volumes dropping over 90%. The technology's long-term utility in gaming, real estate, and identity verification is still being explored.",
+      "tags": ["blockchain", "digital-assets", "NFT", "technology"]
     },
     {
       "id": "spec-006",

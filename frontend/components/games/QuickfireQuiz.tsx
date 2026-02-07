@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, X, HelpCircle, Zap } from 'lucide-react';
-import { Button, Card, CardContent, Badge, Avatar, TimerDisplay, Progress } from '@/components/ui';
+import { Check, X, HelpCircle, Zap, ChevronDown, ChevronUp, Link2, Sparkles } from 'lucide-react';
+import { Button, Card, CardContent, Badge, Avatar, TimerDisplay, Progress, Textarea } from '@/components/ui';
 import { GameLayout, WaitingRoom, Countdown, GameOver } from './GameLayout';
 import { useGameState } from '@/lib/hooks/useGameState';
 import { type Question } from '@/lib/games/types';
+import { useSounds } from '@/lib/hooks/useSounds';
+import { createAdaptiveState, recordAnswer, getAdaptiveDifficulty } from '@/lib/games/adaptive';
+import { recordWrongAnswer } from '@/lib/games/wrongAnswerJournal';
+import { updatePlayerStats, checkAchievements, getPlayerStats } from '@/lib/games/achievements';
+import { useAchievementToast } from '@/components/ui/AchievementToast';
+import { AIExplanation } from './AIExplanation';
 
 interface QuickfireQuizProps {
   sessionId: string;
@@ -42,6 +48,14 @@ export function QuickfireQuiz({
     leaveSession,
     submitAnswer,
   } = gameState;
+
+  const sounds = useSounds();
+  const { showAchievements } = useAchievementToast();
+  const [adaptiveState, setAdaptiveState] = useState(createAdaptiveState());
+  const [explainBackMode, setExplainBackMode] = useState(false);
+  const [explainBackText, setExplainBackText] = useState('');
+  const [showDeepExplanation, setShowDeepExplanation] = useState(false);
+  const streakRef = useRef(0);
 
   // Solo mode state - supports continuous play up to 100 questions
   const MAX_QUESTIONS = 100;
@@ -98,6 +112,61 @@ export function QuickfireQuiz({
     const isCorrect = answerIndex === currentQ?.correct_index;
     const points = isCorrect ? Math.ceil(soloState.timeLeft * 10) : 0;
 
+    // Sound effects
+    if (isCorrect) {
+      sounds.play('correct');
+      streakRef.current += 1;
+      if (streakRef.current >= 3) {
+        sounds.play('streak');
+      }
+    } else {
+      sounds.play('wrong');
+      streakRef.current = 0;
+    }
+
+    // Adaptive difficulty
+    setAdaptiveState((prev) => recordAnswer(prev, isCorrect));
+
+    // Wrong answer journal
+    if (!isCorrect && currentQ) {
+      recordWrongAnswer(
+        currentQ.id,
+        currentQ.text,
+        currentQ.subject,
+        answerIndex >= 0 ? currentQ.options[answerIndex] : '(timed out)',
+        currentQ.options[currentQ.correct_index],
+        currentQ.explanation,
+        currentQ.deep_explanation
+      );
+    }
+
+    // Update player stats and check achievements
+    const updatedStats = updatePlayerStats((stats) => {
+      const newStreak = isCorrect ? stats.currentStreak + 1 : 0;
+      const subjectAcc = { ...stats.subjectAccuracy };
+      const subKey = currentQ?.subject || 'mixed';
+      const prev = subjectAcc[subKey] || { correct: 0, total: 0 };
+      subjectAcc[subKey] = {
+        correct: prev.correct + (isCorrect ? 1 : 0),
+        total: prev.total + 1,
+      };
+
+      return {
+        ...stats,
+        totalQuestionsAnswered: stats.totalQuestionsAnswered + 1,
+        correctAnswers: stats.correctAnswers + (isCorrect ? 1 : 0),
+        currentStreak: newStreak,
+        longestStreak: Math.max(stats.longestStreak, newStreak),
+        subjectAccuracy: subjectAcc,
+      };
+    });
+
+    const newAchievements = checkAchievements(updatedStats);
+    if (newAchievements.length > 0) {
+      sounds.play('achievement');
+      showAchievements(newAchievements);
+    }
+
     setSoloState((prev) => ({
       ...prev,
       phase: 'revealing',
@@ -114,7 +183,18 @@ export function QuickfireQuiz({
       setShowExplanation(true);
     }
 
+    // ~20% chance of Explain It Back after correct answer
+    if (isCorrect && Math.random() < 0.2) {
+      setExplainBackMode(true);
+      setExplainBackText('');
+      return; // Don't auto-advance; wait for explain-back resolution
+    }
+
     // Move to next question after delay
+    advanceToNext();
+  }, [soloState, sounds, showAchievements]);
+
+  const advanceToNext = useCallback(() => {
     setTimeout(() => {
       const nextIndex = soloState.currentIndex + 1;
       const questionsAnswered = soloState.answers.length + 1;
@@ -133,6 +213,7 @@ export function QuickfireQuiz({
         }));
         setSelectedAnswer(null);
         setShowExplanation(false);
+        setShowDeepExplanation(false);
       }
       // Continue to next question
       else {
@@ -144,9 +225,28 @@ export function QuickfireQuiz({
         }));
         setSelectedAnswer(null);
         setShowExplanation(false);
+        setShowDeepExplanation(false);
       }
     }, 3000);
   }, [soloState]);
+
+  const handleExplainBackDone = useCallback((wellExplained: boolean) => {
+    setExplainBackMode(false);
+    setExplainBackText('');
+    if (!wellExplained && soloState.questions[soloState.currentIndex]) {
+      const q = soloState.questions[soloState.currentIndex];
+      recordWrongAnswer(
+        q.id,
+        q.text,
+        q.subject,
+        '(needs review - explain back)',
+        q.options[q.correct_index],
+        q.explanation,
+        q.deep_explanation
+      );
+    }
+    advanceToNext();
+  }, [soloState, advanceToNext]);
 
   const handleMultiplayerAnswer = (index: number) => {
     setSelectedAnswer(index);
@@ -327,6 +427,20 @@ export function QuickfireQuiz({
                 </div>
               )}
 
+              {/* Theme Connection Badge */}
+              {isRevealed && currentQ?.theme_connection && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-3"
+                >
+                  <Badge variant="outline" className="bg-gold-50 border-gold-300 text-gold-800">
+                    <Link2 className="w-3 h-3 mr-1" />
+                    {currentQ.theme_connection}
+                  </Badge>
+                </motion.div>
+              )}
+
               {/* Explanation */}
               {isRevealed && currentQ?.explanation && (
                 <motion.div
@@ -371,6 +485,85 @@ export function QuickfireQuiz({
                       </AnimatePresence>
                     </>
                   )}
+                </motion.div>
+              )}
+
+              {/* Deep Explanation - Learn More */}
+              {isRevealed && currentQ?.deep_explanation && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-3"
+                >
+                  <button
+                    onClick={() => setShowDeepExplanation(!showDeepExplanation)}
+                    className="flex items-center gap-2 text-gold-700 hover:text-gold-800 text-sm font-medium"
+                  >
+                    {showDeepExplanation ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    Learn More
+                  </button>
+                  <AnimatePresence>
+                    {showDeepExplanation && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-2 p-4 bg-gold-50 border border-gold-200 rounded-xl text-ink-700 text-sm leading-relaxed"
+                      >
+                        {currentQ.deep_explanation}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+
+              {/* AI Explanation */}
+              {isRevealed && currentQ && (
+                <AIExplanation
+                  question={currentQ}
+                  userAnswer={selectedAnswer}
+                  wasCorrect={selectedAnswer === currentQ.correct_index}
+                />
+              )}
+
+              {/* Explain It Back Mode */}
+              {isRevealed && explainBackMode && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-4 bg-cream-100 border-2 border-gold-300 rounded-xl"
+                >
+                  <h4 className="font-semibold text-ink-800 mb-2">
+                    Explain It Back
+                  </h4>
+                  <p className="text-sm text-ink-600 mb-3">
+                    In your own words, why is this the correct answer?
+                  </p>
+                  <Textarea
+                    value={explainBackText}
+                    onChange={(e) => setExplainBackText(e.target.value)}
+                    placeholder="Type your explanation..."
+                    className="mb-3 min-h-[80px] text-sm"
+                    rows={3}
+                  />
+                  <div className="flex gap-3">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleExplainBackDone(true)}
+                      className="flex-1 bg-sage-600 hover:bg-sage-700"
+                    >
+                      I explained it well
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleExplainBackDone(false)}
+                      className="flex-1"
+                    >
+                      I need to review this
+                    </Button>
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -522,6 +715,10 @@ export function QuickfireQuiz({
                       phase: 'waiting',
                     });
                     setSelectedAnswer(null);
+                    setAdaptiveState(createAdaptiveState());
+                    setExplainBackMode(false);
+                    setShowDeepExplanation(false);
+                    streakRef.current = 0;
                   }} className="flex-1">
                     Play Again
                   </Button>

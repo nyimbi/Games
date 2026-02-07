@@ -220,6 +220,7 @@ export default function CoachDashboard() {
                           <Avatar
                             key={member.id}
                             name={member.display_name}
+                            animal={member.avatar}
                             color={member.avatar_color}
                             size="sm"
                             className="ring-2 ring-cream-100"
@@ -227,8 +228,11 @@ export default function CoachDashboard() {
                         ))}
                       </div>
                       <span className="text-ink-600 font-medium">
-                        {teamMembers.length} {teamMembers.length === 1 ? 'member' : 'members'}
+                        {teamMembers.length}/6 members
                       </span>
+                      {teamMembers.length >= 6 && (
+                        <Badge className="bg-coral-100 text-coral-700 ml-2">Full</Badge>
+                      )}
                     </div>
                   </div>
                 </div>

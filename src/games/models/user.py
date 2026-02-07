@@ -17,6 +17,13 @@ def _validate_team_code(code: str) -> str:
 
 TeamCode = Annotated[str, AfterValidator(_validate_team_code)]
 
+ANIMAL_AVATARS = [
+	"fox", "owl", "dolphin", "lion", "panda",
+	"butterfly", "turtle", "eagle", "octopus", "parrot",
+	"wolf", "shark", "bee", "unicorn", "frog",
+	"penguin", "lizard", "koala", "seal", "tiger",
+]
+
 
 class UserRole(str, Enum):
 	"""User roles in the system."""
@@ -38,6 +45,8 @@ class User(BaseModel):
 	role: UserRole
 	team_id: int | None = None
 	avatar_color: str = Field(default="#6b9080")  # Sage green default
+	scholar_code: str | None = None
+	avatar: str = "fox"
 	created_at: datetime = Field(default_factory=datetime.utcnow)
 
 	def is_coach(self) -> bool:
@@ -68,6 +77,7 @@ class UserCreate(BaseModel):
 	display_name: str = Field(..., min_length=1, max_length=50)
 	role: UserRole
 	avatar_color: str | None = None
+	avatar: str = "fox"
 
 
 class TeamCreate(BaseModel):
@@ -84,3 +94,11 @@ class TeamJoin(BaseModel):
 	model_config = ConfigDict(extra="forbid")
 
 	join_code: str = Field(..., min_length=6, max_length=6)
+
+
+class ScholarCodeLookup(BaseModel):
+	"""Schema for looking up a user by scholar code."""
+
+	model_config = ConfigDict(extra="forbid")
+
+	scholar_code: str = Field(..., min_length=5, max_length=15)

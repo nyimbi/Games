@@ -210,6 +210,7 @@ export default function PlayerHub() {
                   <div className="flex items-center gap-3">
                     <Avatar
                       name={user?.display_name || ''}
+                      animal={user?.avatar}
                       color={user?.avatar_color}
                       size="lg"
                     />
@@ -364,6 +365,7 @@ export default function PlayerHub() {
                     >
                       <Avatar
                         name={member.display_name}
+                        animal={member.avatar}
                         color={member.avatar_color}
                         size="sm"
                       />

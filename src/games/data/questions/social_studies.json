@@ -8,7 +8,10 @@
       "options": ["London", "Berlin", "Paris", "Madrid"],
       "correct_index": 2,
       "explanation": "Paris has been the capital of France since the 10th century.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Paris has been a destination for travelers, revolutionaries, and dreamers for over a millennium.",
+      "deep_explanation": "Paris became France's capital when Hugh Capet, the first King of the Franks, chose it as his seat of power in 987 CE. The city's strategic location on the Seine River made it a natural hub for trade and governance. Today, Paris is the most visited city in the world with over 30 million tourists annually, and houses institutions like the Louvre, the world's largest art museum.",
+      "tags": ["geography", "capitals", "France", "Europe"]
     },
     {
       "id": "ss-002",
@@ -17,7 +20,10 @@
       "options": ["Atlantic", "Indian", "Arctic", "Pacific"],
       "correct_index": 3,
       "explanation": "The Pacific Ocean covers about 63 million square miles, more than all land areas combined.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The Pacific Ocean was the last great barrier to global circumnavigation, and crossing it shaped the history of exploration.",
+      "deep_explanation": "The Pacific Ocean covers approximately 165.25 million square kilometers (63.8 million square miles), making it larger than all of Earth's land areas combined. Named by explorer Ferdinand Magellan in 1520 (from Latin 'pacificus' meaning peaceful), it contains the Mariana Trench — the deepest point on Earth at nearly 11,000 meters. The Pacific hosts the Ring of Fire, where 75% of the world's volcanoes are located.",
+      "tags": ["geography", "oceans", "Pacific", "exploration"]
     },
     {
       "id": "ss-003",
@@ -26,7 +32,10 @@
       "options": ["1943", "1944", "1945", "1946"],
       "correct_index": 2,
       "explanation": "World War II ended in 1945 with the surrender of Germany in May and Japan in September.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The end of WWII marked humanity's arrival at both nuclear capability and the United Nations — milestones that defined the modern era.",
+      "deep_explanation": "WWII ended in two stages: Germany surrendered unconditionally on May 8, 1945 (V-E Day), and Japan surrendered on September 2, 1945 (V-J Day), following the atomic bombings of Hiroshima and Nagasaki. The war killed an estimated 70-85 million people (about 3% of the world's 1940 population), making it the deadliest conflict in human history. Its conclusion led to the creation of the United Nations, the Universal Declaration of Human Rights, and the beginning of the Cold War.",
+      "tags": ["history", "WWII", "twentieth-century", "conflict"]
     },
     {
       "id": "ss-004",
@@ -35,7 +44,10 @@
       "options": ["Thomas Jefferson", "George Washington", "John Adams", "Benjamin Franklin"],
       "correct_index": 1,
       "explanation": "George Washington served as the first U.S. President from 1789 to 1797.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — Washington's journey from revolutionary general to first president defined the destination of American democracy.",
+      "deep_explanation": "George Washington was unanimously elected by the Electoral College in both 1789 and 1792 — the only president to achieve this. He set crucial precedents: a two-term limit (later codified in the 22nd Amendment), the Cabinet system, and the tradition of a peaceful transfer of power. Washington deliberately stepped down after two terms, establishing that the presidency was not a monarchy — a revolutionary concept at the time.",
+      "tags": ["history", "presidents", "United-States", "democracy"]
     },
     {
       "id": "ss-005",
@@ -44,7 +56,10 @@
       "options": ["Romans", "Greeks", "Egyptians", "Persians"],
       "correct_index": 2,
       "explanation": "The ancient Egyptians built the Giza pyramids around 2560 BCE as tombs for pharaohs.",
-      "time_limit_seconds": 30
+      "time_limit_seconds": 30,
+      "theme_connection": "Are We There Yet? — The pyramids are perhaps humanity's oldest megaproject, and like modern ones, they were built to outlast the civilization that created them.",
+      "deep_explanation": "The Great Pyramid of Giza, built for Pharaoh Khufu around 2560 BCE, stood as the tallest human-made structure for over 3,800 years. It contains approximately 2.3 million stone blocks, each weighing 2.5 tons on average. Recent archaeological evidence suggests the pyramids were built by skilled, well-fed laborers (not slaves) working in rotating shifts of about 10,000 workers. The precision of the construction — aligned to within 0.05 degrees of true north — remains remarkable by modern standards.",
+      "tags": ["history", "ancient-civilizations", "Egypt", "architecture"]
     },
     {
       "id": "ss-006",

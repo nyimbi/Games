@@ -16,6 +16,7 @@ import {
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Avatar } from '@/components/ui';
+import { ScholarCodeCard } from '@/components/ui/ScholarCodeCard';
 
 const navItems = [
   { href: '/team', icon: Home, label: 'Hub' },
@@ -83,7 +84,7 @@ export function PlayerNav() {
             {mobileMenuOpen ? (
               <X className="w-6 h-6 text-ink-600" />
             ) : (
-              <Avatar name={user?.display_name || ''} color={user?.avatar_color} size="sm" />
+              <Avatar name={user?.display_name || ''} animal={user?.avatar} color={user?.avatar_color} size="sm" />
             )}
           </button>
         </div>
@@ -97,12 +98,20 @@ export function PlayerNav() {
           <div className="px-4 py-4">
             {/* User Info */}
             <div className="flex items-center gap-3 pb-4 border-b border-ink-200">
-              <Avatar name={user?.display_name || ''} color={user?.avatar_color} size="md" />
+              <Avatar name={user?.display_name || ''} animal={user?.avatar} color={user?.avatar_color} size="md" />
               <div className="flex-1">
                 <p className="font-semibold text-ink-800">{user?.display_name}</p>
                 <p className="text-sm text-ink-500">Scholar</p>
               </div>
             </div>
+
+            {/* Scholar Code */}
+            {user?.scholar_code && (
+              <div className="py-3 border-b border-ink-200">
+                <p className="text-xs text-ink-400 mb-1">Scholar Code</p>
+                <ScholarCodeCard code={user.scholar_code} variant="compact" />
+              </div>
+            )}
 
             {/* Team Info */}
             {team ? (
@@ -130,10 +139,22 @@ export function PlayerNav() {
               </div>
             )}
 
+            {/* Profile */}
+            <button
+              onClick={() => {
+                router.push('/team/profile');
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 mt-4 text-ink-700 hover:bg-ink-50 rounded-xl transition-colors"
+            >
+              <User className="w-5 h-5" />
+              <span className="font-medium">Profile</span>
+            </button>
+
             {/* Sign Out */}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 mt-4 text-coral-600 hover:bg-coral-50 rounded-xl transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 text-coral-600 hover:bg-coral-50 rounded-xl transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Sign Out</span>

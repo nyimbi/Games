@@ -49,6 +49,7 @@ export interface GamePlayer {
   id: string;
   display_name: string;
   avatar_color: string;
+  avatar?: string;
   score: number;
   is_ready: boolean;
   is_connected: boolean;
@@ -65,6 +66,93 @@ export interface Question {
   correct_index: number;
   explanation?: string;
   time_limit_seconds: number;
+  // Enhanced fields for WSC 2026
+  theme_connection?: string;
+  deep_explanation?: string;
+  related_questions?: string[];
+  tags?: string[];
+}
+
+// Reading Comprehension types
+export interface PassageQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  paragraph_ref?: number;
+}
+
+export interface ReadingPassage {
+  id: string;
+  title: string;
+  content: string;
+  subject: string;
+  theme_connection?: string;
+  questions: PassageQuestion[];
+}
+
+// Achievement types
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'streak' | 'mastery' | 'speed' | 'exploration' | 'special';
+  condition: (stats: PlayerStats) => boolean;
+}
+
+export interface UnlockedAchievement {
+  id: string;
+  unlockedAt: string;
+}
+
+// Player stats for tracking
+export interface PlayerStats {
+  totalQuestionsAnswered: number;
+  correctAnswers: number;
+  currentStreak: number;
+  longestStreak: number;
+  gamesPlayed: number;
+  dailyStreak: number;
+  subjectAccuracy: Record<string, { correct: number; total: number }>;
+  fastestCorrectMs: number;
+  perfectRounds: number;
+  totalTimePlayed: number;
+}
+
+// Wrong answer entry
+export interface WrongAnswerEntry {
+  questionId: string;
+  question: string;
+  subject: string;
+  userAnswer: string;
+  correctAnswer: string;
+  explanation?: string;
+  deep_explanation?: string;
+  timestamp: string;
+  reviewCount: number;
+  nextReview: string;
+  learned: boolean;
+}
+
+// Spaced repetition card state
+export interface FlashcardProgress {
+  questionId: string;
+  easeFactor: number;
+  interval: number;
+  nextReview: string;
+  repetitions: number;
+}
+
+// Daily challenge state
+export interface DailyStreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastPlayedDate: string;
+  completedDates: string[];
+  todayScore?: number;
+  todayCompleted: boolean;
 }
 
 export interface WritingPrompt {
@@ -141,6 +229,23 @@ export type GameState =
   | QuizGameState
   | WritingGameState
   | DebateGameState;
+
+// Student profile for adaptive explanations
+export interface StudentProfile {
+  gradeLevel: number | null; // 4-12, null = not set
+  inferredLevel: 'beginner' | 'intermediate' | 'advanced' | null;
+  profileSetAt: string | null;
+  lastInferredAt: string | null;
+}
+
+export type StudentLevel = 'beginner' | 'intermediate' | 'advanced';
+
+export interface ExplanationConfig {
+  maxTokens: number;
+  complexity: string;
+  vocabulary: string;
+  sentences: string;
+}
 
 // Game actions
 export interface GameAction {

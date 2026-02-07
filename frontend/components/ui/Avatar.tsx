@@ -1,12 +1,15 @@
 'use client';
 
 import clsx from 'clsx';
+import { getAvatarById } from '@/lib/games/avatars';
 
 export interface AvatarProps {
-  /** Display name (used for initials) */
+  /** Display name (used for initials fallback) */
   name: string;
   /** Custom background color */
   color?: string;
+  /** Animal avatar ID (e.g., 'fox', 'panda') */
+  animal?: string;
   /** Size variant */
   size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Image URL (optional) */
@@ -15,14 +18,21 @@ export interface AvatarProps {
   className?: string;
 }
 
+const emojiSizes = {
+  xs: 'text-sm',
+  sm: 'text-lg',
+  md: 'text-2xl',
+  lg: 'text-3xl',
+};
+
 export function Avatar({
   name,
   color,
+  animal,
   size = 'md',
   src,
   className,
 }: AvatarProps) {
-  // Get initials from name
   const getInitials = (name: string): string => {
     const words = name.trim().split(/\s+/);
     if (words.length === 1) {
@@ -53,6 +63,20 @@ export function Avatar({
     );
   }
 
+  // Animal emoji avatar
+  if (animal) {
+    const avatarData = getAvatarById(animal);
+    return (
+      <div
+        className={clsx('avatar', sizeClasses[size], className)}
+        style={{ backgroundColor: avatarData.color }}
+        title={name}
+      >
+        <span className={emojiSizes[size]}>{avatarData.emoji}</span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={clsx('avatar', sizeClasses[size], className)}
@@ -66,7 +90,7 @@ export function Avatar({
 
 // Avatar Group for showing multiple players
 export interface AvatarGroupProps {
-  users: Array<{ name: string; color?: string; src?: string }>;
+  users: Array<{ name: string; color?: string; animal?: string; src?: string }>;
   max?: number;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -94,6 +118,7 @@ export function AvatarGroup({
           key={i}
           name={user.name}
           color={user.color}
+          animal={user.animal}
           src={user.src}
           size={size}
           className={clsx(
