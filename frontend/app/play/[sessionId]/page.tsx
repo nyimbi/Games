@@ -39,6 +39,16 @@ import {
   ParagraphSwap,
   ReverseEssay,
   TimesTableBlitz,
+  MathHangman,
+  SequenceSleuth,
+  FractionFaceOff,
+  PrimePatrol,
+  OperationBuilder,
+  ShapeSherlock,
+  EstimationNation,
+  GraphGuesser,
+  NumberConnections,
+  DivisibilityDash,
   GameProvider,
 } from '@/components/games';
 import { sessionsApi, type Session } from '@/lib/api/client';
@@ -242,6 +252,36 @@ export default function PlaySessionPage() {
 
       case 'times_table_blitz':
         return <TimesTableBlitz sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'math_hangman':
+        return <MathHangman sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'sequence_sleuth':
+        return <SequenceSleuth sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'fraction_faceoff':
+        return <FractionFaceOff sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'prime_patrol':
+        return <PrimePatrol sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'operation_builder':
+        return <OperationBuilder sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'shape_sherlock':
+        return <ShapeSherlock sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'estimation_nation':
+        return <EstimationNation sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'graph_guesser':
+        return <GraphGuesser sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'number_connections':
+        return <NumberConnections sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'divisibility_dash':
+        return <DivisibilityDash sessionId={sessionIdParam} onExit={handleExit} />;
 
       default:
         return (
