@@ -26,9 +26,16 @@ function LoginContent() {
   const [displayName, setDisplayName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('fox');
   const [scholarCode, setScholarCode] = useState('');   // recovery input
+  const [rememberMe, setRememberMe] = useState(true);
   const [revealedCode, setRevealedCode] = useState('');
   const [teamCode, setTeamCode] = useState('');         // join code (from URL or typed)
   const [teamName, setTeamName] = useState('');         // coach: new team name
+
+  // Pre-fill saved scholar code from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('saved_scholar_code');
+    if (saved) { setScholarCode(saved); setRememberMe(true); }
+  }, []);
 
   // Pre-fill team code from URL (?code=ABC123) and skip straight to new-scholar flow
   const urlCode = searchParams.get('code')?.toUpperCase() ?? '';
@@ -52,6 +59,11 @@ function LoginContent() {
     setIsLoading(true); setError(null);
     try {
       await recover(scholarCode.trim());
+      if (rememberMe) {
+        localStorage.setItem('saved_scholar_code', scholarCode.trim());
+      } else {
+        localStorage.removeItem('saved_scholar_code');
+      }
       // useEffect redirect handles navigation
     } catch (err) {
       setError(err instanceof ApiError
@@ -181,6 +193,8 @@ function LoginContent() {
                         onKeyDown={e => e.key === 'Enter' && handleRecover()}
                         placeholder="e.g. OWL-SIPHO"
                         autoFocus={!urlCode}
+                        autoComplete="username"
+                        name="scholar_code"
                         className="flex-1 px-4 py-3 rounded-xl border-2 border-ink-200 focus:border-gold-400 focus:outline-none font-mono text-lg text-center tracking-wider uppercase"
                         maxLength={30}
                       />
@@ -188,9 +202,18 @@ function LoginContent() {
                         {isLoading ? '…' : <ArrowRight className="w-5 h-5" />}
                       </Button>
                     </div>
+                    <label className="flex items-center gap-2 cursor-pointer select-none mt-1">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={e => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded border-ink-300 text-gold-500 focus:ring-gold-400 cursor-pointer"
+                      />
+                      <span className="text-sm text-ink-500">Remember me on this device</span>
+                    </label>
                     {error && (
                       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="mt-2 text-sm text-coral-600 flex items-center gap-1">
+                        className="mt-1 text-sm text-coral-600 flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />{error}
                       </motion.p>
                     )}
