@@ -5,104 +5,66 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Equal, Check, X, ChevronRight, RotateCcw } from 'lucide-react';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import { GameLayout } from './GameLayout';
+import { generateOperationPuzzle } from '@/lib/games/mathGenerators';
 
-interface Slot { type: 'number' | 'op'; value?: number; }
+const TOTAL_ROUNDS = 10;
+const OP_CYCLE = ['+', '−', '×', '÷'];
+const OP_JS: Record<string, string> = { '+': '+', '−': '-', '×': '*', '÷': '/' };
 
-interface Puzzle {
-  slots: Slot[];
-  target: number;
-  hint?: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
-function evalSlots(slots: Slot[], ops: string[]): number {
-  let expr = '';
-  let opIdx = 0;
-  for (const s of slots) {
-    if (s.type === 'number') expr += s.value;
-    else { expr += ops[opIdx++] ?? '?'; }
+function evalOps(nums: number[], ops: string[]): number {
+  let expr = String(nums[0]);
+  for (let i = 0; i < ops.length; i++) {
+    expr += (OP_JS[ops[i]] ?? '+') + String(nums[i + 1]);
   }
   try { return Function('"use strict"; return (' + expr + ')')(); } catch { return NaN; }
 }
 
-function countOps(slots: Slot[]): number {
-  return slots.filter(s => s.type === 'op').length;
+function cycleOp(op: string): string {
+  const idx = OP_CYCLE.indexOf(op);
+  return OP_CYCLE[(idx + 1) % OP_CYCLE.length];
 }
 
-const PUZZLES: Puzzle[] = [
-  // easy
-  { difficulty: 'easy', target: 10, hint: "5 _ 5 = 10", slots: [{type:'number',value:5},{type:'op'},{type:'number',value:5}] },
-  { difficulty: 'easy', target: 20, hint: "4 _ 5 = 20", slots: [{type:'number',value:4},{type:'op'},{type:'number',value:5}] },
-  { difficulty: 'easy', target: 3, hint: "12 _ 4 = 3", slots: [{type:'number',value:12},{type:'op'},{type:'number',value:4}] },
-  { difficulty: 'easy', target: 7, hint: "15 _ 8 = 7", slots: [{type:'number',value:15},{type:'op'},{type:'number',value:8}] },
-  // medium
-  { difficulty: 'medium', target: 14, hint: "3 _ 4 _ 2 = 14", slots: [{type:'number',value:3},{type:'op'},{type:'number',value:4},{type:'op'},{type:'number',value:2}] },
-  { difficulty: 'medium', target: 8, hint: "10 _ 2 _ 3 = 8", slots: [{type:'number',value:10},{type:'op'},{type:'number',value:2},{type:'op'},{type:'number',value:3}] },
-  { difficulty: 'medium', target: 25, hint: "5 _ 3 _ 10 = 25", slots: [{type:'number',value:5},{type:'op'},{type:'number',value:3},{type:'op'},{type:'number',value:10}] },
-  { difficulty: 'medium', target: 100, hint: "4 _ 5 _ 5 _ 20 = 100", slots: [{type:'number',value:4},{type:'op'},{type:'number',value:5},{type:'op'},{type:'number',value:5},{type:'op'},{type:'number',value:20}] },
-  { difficulty: 'medium', target: 1, hint: "9 _ 9 _ 9 = 1 (use ÷ and −)", slots: [{type:'number',value:9},{type:'op'},{type:'number',value:9},{type:'op'},{type:'number',value:9}] },
-  // hard
-  { difficulty: 'hard', target: 32, hint: "(5 _ 3) _ 4 = 32", slots: [{type:'number',value:5},{type:'op'},{type:'number',value:3},{type:'op'},{type:'number',value:4}] },
-  { difficulty: 'hard', target: 7, hint: "2 _ 3 _ 5 _ 4 = 7 (mixed)", slots: [{type:'number',value:2},{type:'op'},{type:'number',value:3},{type:'op'},{type:'number',value:5},{type:'op'},{type:'number',value:4}] },
-  { difficulty: 'hard', target: 12, hint: "36 _ 4 _ 3 _ 3 = 12", slots: [{type:'number',value:36},{type:'op'},{type:'number',value:4},{type:'op'},{type:'number',value:3},{type:'op'},{type:'number',value:3}] },
-];
-
-const OPS = ['+', '−', '×', '÷'];
-const OP_MAP: Record<string, string> = { '+': '+', '−': '-', '×': '*', '÷': '/' };
-
-const SOLUTIONS: Record<number, string[][]> = {
-  10: [['+']],
-  20: [['×']],
-  3: [['÷']],
-  7: [['−']],
-  14: [['×', '+']],
-  8: [['÷', '+']],
-  25: [['×', '+']],
-  100: [['×', '×', '+']],
-  1: [['÷', '−']],
-  32: [['+', '×']],
-  15: [['×', '+', '−']],
-  12: [['÷', '÷', '+']],
-};
+function newQ() {
+  const p = generateOperationPuzzle();
+  return { puzzle: p, ops: new Array(p.numbers.length - 1).fill('+') as string[] };
+}
 
 interface OperationBuilderProps { sessionId: string; isHost?: boolean; onExit?: () => void; }
 
 export function OperationBuilder({ onExit }: OperationBuilderProps) {
-  const [queue] = useState(() => [...PUZZLES].sort(() => Math.random() - 0.5).slice(0, 8));
-  const [index, setIndex] = useState(0);
-  const [ops, setOps] = useState<string[]>(() => Array(countOps(PUZZLES[0].slots)).fill('+'));
+  const [qNum, setQNum] = useState(0);
+  const [{ puzzle: q, ops }, setQState] = useState(newQ);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState<'playing' | 'ended'>('playing');
 
-  const q = queue[index];
-  const numOps = countOps(q.slots);
-  const result = evalSlots(q.slots, ops.map(o => OP_MAP[o]));
-  const isCorrect = Math.abs(result - q.target) < 0.0001;
+  const setOps = (o: string[]) => setQState(s => ({ ...s, ops: o }));
 
-  const cycleOp = (i: number) => {
+  const currentResult = evalOps(q.numbers, ops);
+  const isMatch = Math.abs(currentResult - q.target) < 0.0001;
+  const isCorrect = submitted && isMatch;
+
+  const handleToggleOp = (i: number) => {
     if (submitted) return;
-    setOps(prev => {
-      const next = [...prev];
-      const idx = OPS.indexOf(next[i]);
-      next[i] = OPS[(idx + 1) % OPS.length];
-      return next;
-    });
+    const next = [...ops];
+    next[i] = cycleOp(next[i]);
+    setOps(next);
   };
 
   const handleSubmit = () => {
+    if (!isMatch) return;
     setSubmitted(true);
-    if (isCorrect) {
-      const pts = q.difficulty === 'hard' ? 20 : q.difficulty === 'medium' ? 15 : 10;
-      setScore(s => s + pts);
-    }
+    setScore(s => s + q.points);
+  };
+
+  const handleSkip = () => {
+    setSubmitted(true); // reveal without points
   };
 
   const handleNext = () => {
-    if (index + 1 >= queue.length) { setPhase('ended'); return; }
-    const next = index + 1;
-    setIndex(next);
-    setOps(Array(countOps(queue[next].slots)).fill('+'));
+    if (qNum + 1 >= TOTAL_ROUNDS) { setPhase('ended'); return; }
+    setQNum(n => n + 1);
+    setQState(newQ());
     setSubmitted(false);
   };
 
@@ -121,70 +83,79 @@ export function OperationBuilder({ onExit }: OperationBuilderProps) {
     );
   }
 
-  let opIdx = -1;
   return (
-    <GameLayout title="Operation Builder" subtitle="Click operators to cycle through +, −, ×, ÷" players={[]} onBack={onExit}>
+    <GameLayout title="Operation Builder" subtitle="Click operators to cycle +  −  ×  ÷ until the expression equals the target" players={[]} onBack={onExit}>
       <div className="flex-1 flex flex-col p-6 max-w-xl mx-auto w-full">
         <div className="flex items-center justify-between mb-5">
           <Badge variant={q.difficulty === 'hard' ? 'coral' : q.difficulty === 'medium' ? 'gold' : 'outline'}>
             {q.difficulty}
           </Badge>
-          <span className="text-sm text-ink-500">{index + 1}/{queue.length} · Score: <strong>{score}</strong></span>
+          <span className="text-sm text-ink-500">{qNum + 1}/{TOTAL_ROUNDS} · Score: <strong>{score}</strong></span>
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.div key={index} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="mb-6"><CardContent className="p-8">
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                {q.slots.map((slot, i) => {
-                  if (slot.type === 'number') {
-                    return (
-                      <span key={i} className="font-display text-3xl font-bold text-ink-800">{slot.value}</span>
-                    );
-                  } else {
-                    opIdx++;
-                    const oi = opIdx;
-                    return (
-                      <motion.button key={i} onClick={() => cycleOp(oi)} whileTap={{ scale: 0.9 }}
-                        className={`w-12 h-12 rounded-xl font-bold text-xl border-2 transition-all ${
-                          submitted ? (isCorrect ? 'bg-sage-200 border-sage-400 text-sage-800' : 'bg-coral-200 border-coral-400 text-coral-800')
-                          : 'bg-gold-100 border-gold-400 text-gold-800 hover:bg-gold-200 cursor-pointer'
-                        }`}>
-                        {ops[oi]}
-                      </motion.button>
-                    );
-                  }
-                })}
-                <span className="font-display text-3xl font-bold text-ink-400">=</span>
-                <span className={`font-display text-3xl font-bold ${
-                  !isNaN(result) && Math.abs(result - q.target) < 0.0001 ? 'text-sage-600'
-                  : !isNaN(result) ? 'text-coral-600' : 'text-ink-400'
-                }`}>
-                  {isNaN(result) ? '?' : Number.isInteger(result) ? result : result.toFixed(2)}
-                </span>
-                <span className="font-display text-3xl font-bold text-ink-400">
-                  (target: <span className="text-gold-600">{q.target}</span>)
-                </span>
-              </div>
-              {q.hint && !submitted && (
-                <p className="text-xs text-ink-400 text-center mt-4">Hint: {q.hint}</p>
-              )}
+          <motion.div key={qNum} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Target */}
+            <Card className="mb-6 bg-gold-50 border-gold-200"><CardContent className="p-5 text-center">
+              <p className="text-xs text-ink-400 uppercase tracking-wide mb-1">Target</p>
+              <p className="font-display text-5xl font-bold text-gold-700">{q.target}</p>
             </CardContent></Card>
 
+            {/* Expression builder */}
+            <div className="flex items-center justify-center gap-3 flex-wrap mb-4">
+              {q.numbers.map((n, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-white border-2 border-ink-200 flex items-center justify-center">
+                    <span className="font-display text-2xl font-bold text-ink-800">{n}</span>
+                  </div>
+                  {i < ops.length && (
+                    <button onClick={() => handleToggleOp(i)}
+                      className={`w-12 h-12 rounded-xl border-2 font-bold text-xl transition-all ${
+                        submitted ? 'cursor-default border-ink-100 bg-cream-100 text-ink-400'
+                        : 'border-gold-300 bg-gold-100 text-gold-800 hover:bg-gold-200 active:scale-95'
+                      }`}>
+                      {ops[i]}
+                    </button>
+                  )}
+                </div>
+              ))}
+              <div className="flex items-center gap-3">
+                <span className="font-display text-2xl font-bold text-ink-400">=</span>
+                <div className={`w-16 h-14 rounded-xl border-2 flex items-center justify-center transition-colors ${
+                  isMatch ? 'bg-sage-100 border-sage-400' : 'bg-white border-ink-200'
+                }`}>
+                  <span className={`font-display text-2xl font-bold ${isMatch ? 'text-sage-700' : 'text-ink-400'}`}>
+                    {Number.isFinite(currentResult) ? currentResult : '?'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-center text-ink-400 mb-4">
+              Tap an operator to cycle through +  −  ×  ÷
+            </p>
+
             {!submitted ? (
-              <Button variant="gold" className="w-full" onClick={handleSubmit} disabled={!isCorrect}>
-                {isCorrect ? '✓ Submit' : 'Keep adjusting…'}
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="secondary" className="flex-1" onClick={handleSkip}>
+                  Give up (reveal)
+                </Button>
+                <Button variant="gold" className="flex-1" onClick={handleSubmit} disabled={!isMatch}>
+                  <Check className="w-4 h-4 mr-1" /> Submit!
+                </Button>
+              </div>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                <div className={`p-4 rounded-xl border-2 text-center ${isCorrect ? 'bg-sage-100 border-sage-400' : 'bg-coral-100 border-coral-400'}`}>
-                  {isCorrect
-                    ? <p className="font-semibold text-sage-800">✓ Correct! +{q.difficulty === 'hard' ? 20 : q.difficulty === 'medium' ? 15 : 10}pts</p>
-                    : <p className="font-semibold text-coral-800">Not quite — the target was {q.target}</p>
-                  }
+                <div className={`p-4 rounded-xl border-2 text-center ${isCorrect ? 'bg-sage-100 border-sage-400' : 'bg-coral-50 border-coral-300'}`}>
+                  <p className="font-semibold">
+                    {isCorrect ? `✓ Correct! +${q.points}pts` : 'Solution:'}
+                  </p>
+                  <p className="font-display text-lg font-bold mt-1">
+                    {q.numbers.map((n, i) => i < q.correctOps.length ? `${n} ${q.correctOps[i]} ` : n).join('')} = {q.target}
+                  </p>
                 </div>
                 <Button variant="primary" className="w-full" onClick={handleNext}>
-                  {index + 1 < queue.length ? 'Next Puzzle' : 'See Results'} <ChevronRight className="w-4 h-4 ml-1" />
+                  {qNum + 1 < TOTAL_ROUNDS ? 'Next Puzzle' : 'See Results'} <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </motion.div>
             )}
