@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Upload, Layers, Play, Trash2, RotateCcw,
-  BookOpen, Check, ArrowLeft, Loader2, X, PlusCircle, Star,
+  BookOpen, Check, ArrowLeft, Loader2, X, PlusCircle, Star, ExternalLink,
 } from 'lucide-react';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import {
@@ -14,6 +14,136 @@ import {
   type AnkiDeck, type AnkiCard,
 } from '@/lib/anki/parser';
 import { BUILTIN_DECKS } from '@/lib/anki/builtinDecks';
+import { FEATURED_DECKS, apkgPath } from '@/lib/anki/featuredDecks';
+import { ANKIWEB_CATALOG, ankiWebInfoUrl } from '@/lib/anki/ankiwebCatalog';
+
+// ─── Featured Decks (server .apkg + TypeScript builtins) ─────────────────────
+
+type DeckState = { decks: AnkiDeck[]; setDecks: (d: AnkiDeck[]) => void; onPlay: (d: AnkiDeck) => void };
+
+function FeaturedSection({ decks, setDecks, onPlay }: DeckState) {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const addApkg = async (slug: string) => {
+    setLoading(slug);
+    try {
+      const res = await fetch(apkgPath(slug));
+      if (!res.ok) throw new Error(`Failed to download deck (${res.status})`);
+      const blob = await res.blob();
+      const file = new File([blob], `${slug}.apkg`, { type: 'application/octet-stream' });
+      const parsed = await parseApkg(file);
+      for (const d of parsed) saveDeck(d);
+      setDecks(getSavedDecks());
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Download failed');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const allItems = [
+    ...FEATURED_DECKS.map(f => ({ id: `featured-${f.slug}`, name: f.name, count: f.cardCount, slug: f.slug, type: 'apkg' as const })),
+    ...BUILTIN_DECKS.map(b => ({ id: b.id, name: b.name, count: b.cards.length, deck: b, type: 'builtin' as const })),
+  ];
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <Star className="w-4 h-4 text-gold-500" />
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide">Built-in Decks</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {allItems.map(item => {
+          const savedId = item.type === 'apkg'
+            ? decks.find(d => d.name === item.name)?.id
+            : decks.find(d => d.id === item.id)?.id;
+          const saved = decks.find(d => d.id === (savedId ?? item.id));
+          const isLoading = item.type === 'apkg' && loading === (item as { slug: string }).slug;
+
+          return (
+            <div key={String(item.id)}
+              className="bg-white rounded-xl border border-ink-100 p-3 flex items-center gap-3 hover:border-gold-200 transition-colors">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-ink-800 text-sm truncate">{item.name}</p>
+                <p className="text-xs text-ink-400">{item.count} cards</p>
+              </div>
+              {saved ? (
+                <button onClick={() => onPlay(saved)}
+                  className="flex items-center gap-1 text-xs font-semibold text-gold-600 hover:text-gold-800 px-3 py-1.5 rounded-lg bg-gold-50 hover:bg-gold-100 transition-colors whitespace-nowrap">
+                  <Play className="w-3 h-3" />Study
+                </button>
+              ) : item.type === 'apkg' ? (
+                <button onClick={() => addApkg((item as { slug: string }).slug)} disabled={isLoading}
+                  className="flex items-center gap-1 text-xs font-semibold text-ink-500 hover:text-ink-700 px-3 py-1.5 rounded-lg bg-ink-50 hover:bg-ink-100 transition-colors whitespace-nowrap disabled:opacity-50">
+                  {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <PlusCircle className="w-3 h-3" />}
+                  {isLoading ? 'Adding…' : 'Add'}
+                </button>
+              ) : (
+                <button onClick={() => { saveDeck((item as { deck: AnkiDeck }).deck); setDecks(getSavedDecks()); }}
+                  className="flex items-center gap-1 text-xs font-semibold text-ink-500 hover:text-ink-700 px-3 py-1.5 rounded-lg bg-ink-50 hover:bg-ink-100 transition-colors whitespace-nowrap">
+                  <PlusCircle className="w-3 h-3" />Add
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── AnkiWeb Community Catalog ────────────────────────────────────────────────
+
+const SUBJECT_COLORS: Record<string, string> = {
+  Geography: 'bg-blue-100 text-blue-700',
+  Chemistry: 'bg-purple-100 text-purple-700',
+  Swahili:   'bg-sage-100 text-sage-700',
+  Music:     'bg-gold-100 text-gold-700',
+};
+
+function AnkiWebSection() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-6">
+      <button onClick={() => setOpen(o => !o)}
+        className="flex items-center justify-between w-full mb-3 group">
+        <div className="flex items-center gap-2">
+          <ExternalLink className="w-4 h-4 text-ink-400" />
+          <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide group-hover:text-ink-600 transition-colors">
+            AnkiWeb Community Decks
+          </p>
+        </div>
+        <span className="text-xs text-ink-300">{open ? 'Hide' : 'Browse'}</span>
+      </button>
+      {open && (
+        <div className="space-y-2">
+          <p className="text-xs text-ink-400 mb-3">
+            Download any deck from AnkiWeb, then drag it into the import zone above.
+          </p>
+          {ANKIWEB_CATALOG.map(deck => (
+            <div key={deck.id}
+              className="bg-white rounded-xl border border-ink-100 p-3 flex items-start gap-3 hover:border-ink-200 transition-colors">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <p className="font-medium text-ink-800 text-sm">{deck.name}</p>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${SUBJECT_COLORS[deck.subject] ?? 'bg-ink-100 text-ink-600'}`}>
+                    {deck.subject}
+                  </span>
+                </div>
+                <p className="text-xs text-ink-400 leading-relaxed">{deck.description}</p>
+                <p className="text-xs text-ink-300 mt-1">~{deck.cardCount.toLocaleString()} cards</p>
+              </div>
+              <a href={ankiWebInfoUrl(deck.id)} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs font-semibold text-ink-500 hover:text-ink-700 px-3 py-1.5 rounded-lg bg-ink-50 hover:bg-ink-100 transition-colors whitespace-nowrap flex-shrink-0">
+                <ExternalLink className="w-3 h-3" />AnkiWeb
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Deck Library ─────────────────────────────────────────────────────────────
 
@@ -113,38 +243,11 @@ function DeckLibrary({ onPlay }: { onPlay: (deck: AnkiDeck) => void }) {
           </motion.div>
         )}
 
-        {/* Featured built-in decks */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Star className="w-4 h-4 text-gold-500" />
-            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide">Featured Decks</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {BUILTIN_DECKS.map(bd => {
-              const alreadyAdded = decks.some(d => d.id === bd.id);
-              return (
-                <div key={bd.id}
-                  className="bg-white rounded-xl border border-ink-100 p-3 flex items-center gap-3 hover:border-gold-200 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-ink-800 text-sm truncate">{bd.name}</p>
-                    <p className="text-xs text-ink-400">{bd.cards.length} cards</p>
-                  </div>
-                  {alreadyAdded ? (
-                    <button onClick={() => onPlay(decks.find(d => d.id === bd.id)!)}
-                      className="flex items-center gap-1 text-xs font-semibold text-gold-600 hover:text-gold-800 px-3 py-1.5 rounded-lg bg-gold-50 hover:bg-gold-100 transition-colors whitespace-nowrap">
-                      <Play className="w-3 h-3" />Study
-                    </button>
-                  ) : (
-                    <button onClick={() => { saveDeck(bd); setDecks(getSavedDecks()); }}
-                      className="flex items-center gap-1 text-xs font-semibold text-ink-500 hover:text-ink-700 px-3 py-1.5 rounded-lg bg-ink-50 hover:bg-ink-100 transition-colors whitespace-nowrap">
-                      <PlusCircle className="w-3 h-3" />Add
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {/* Featured decks — server-hosted .apkg + TypeScript builtins */}
+        <FeaturedSection decks={decks} setDecks={setDecks} onPlay={onPlay} />
+
+        {/* AnkiWeb catalog */}
+        <AnkiWebSection />
 
         {/* Saved decks */}
         {decks.length === 0 ? (
