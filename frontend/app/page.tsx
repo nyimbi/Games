@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { BookOpen, Users, Trophy, Sparkles, GraduationCap, Gamepad2 } from 'lucide-react';
+import { BookOpen, Users, Trophy, Sparkles, GraduationCap, Gamepad2, FlipHorizontal2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -27,6 +27,11 @@ const features = [
     icon: Sparkles,
     title: 'Solo Practice',
     description: 'Practice on your own anytime, anywhere',
+  },
+  {
+    icon: FlipHorizontal2,
+    title: 'Anki Flashcards',
+    description: '12 curated decks — or import your own .apkg files',
   },
 ];
 
@@ -236,6 +241,34 @@ export default function Home() {
                 <span className="font-display text-lg">{category.name}</span>
               </div>
             ))}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Flashcards CTA */}
+      <section className="px-6 py-12 bg-gold-50">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          className="max-w-3xl mx-auto flex flex-col md:flex-row items-center gap-6"
+        >
+          <motion.div variants={itemVariants} className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-gold-100 rounded-xl mb-4">
+              <FlipHorizontal2 className="w-7 h-7 text-gold-600" />
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-ink-800 mb-2">
+              Anki Flashcards
+            </h2>
+            <p className="text-ink-600">
+              Study 12 curated decks covering capitals, science, history, literature, art, and more — or import your own .apkg files.
+            </p>
+          </motion.div>
+          <motion.div variants={itemVariants} className="flex-shrink-0">
+            <Button variant="gold" size="lg" onClick={() => router.push('/play/anki')}>
+              Study Flashcards
+            </Button>
           </motion.div>
         </motion.div>
       </section>

@@ -4,8 +4,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Upload, Layers, Play, Trash2, RotateCcw, ChevronRight,
-  BookOpen, Check, ArrowLeft, Loader2, X,
+  Upload, Layers, Play, Trash2, RotateCcw,
+  BookOpen, Check, ArrowLeft, Loader2, X, PlusCircle, Star,
 } from 'lucide-react';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import {
@@ -13,6 +13,7 @@ import {
   getDeckProgress, saveDeckProgress, resetDeckProgress,
   type AnkiDeck, type AnkiCard,
 } from '@/lib/anki/parser';
+import { BUILTIN_DECKS } from '@/lib/anki/builtinDecks';
 
 // ─── Deck Library ─────────────────────────────────────────────────────────────
 
@@ -112,10 +113,43 @@ function DeckLibrary({ onPlay }: { onPlay: (deck: AnkiDeck) => void }) {
           </motion.div>
         )}
 
+        {/* Featured built-in decks */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Star className="w-4 h-4 text-gold-500" />
+            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wide">Featured Decks</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {BUILTIN_DECKS.map(bd => {
+              const alreadyAdded = decks.some(d => d.id === bd.id);
+              return (
+                <div key={bd.id}
+                  className="bg-white rounded-xl border border-ink-100 p-3 flex items-center gap-3 hover:border-gold-200 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-ink-800 text-sm truncate">{bd.name}</p>
+                    <p className="text-xs text-ink-400">{bd.cards.length} cards</p>
+                  </div>
+                  {alreadyAdded ? (
+                    <button onClick={() => onPlay(decks.find(d => d.id === bd.id)!)}
+                      className="flex items-center gap-1 text-xs font-semibold text-gold-600 hover:text-gold-800 px-3 py-1.5 rounded-lg bg-gold-50 hover:bg-gold-100 transition-colors whitespace-nowrap">
+                      <Play className="w-3 h-3" />Study
+                    </button>
+                  ) : (
+                    <button onClick={() => { saveDeck(bd); setDecks(getSavedDecks()); }}
+                      className="flex items-center gap-1 text-xs font-semibold text-ink-500 hover:text-ink-700 px-3 py-1.5 rounded-lg bg-ink-50 hover:bg-ink-100 transition-colors whitespace-nowrap">
+                      <PlusCircle className="w-3 h-3" />Add
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Saved decks */}
         {decks.length === 0 ? (
           <p className="text-center text-ink-400 text-sm py-8">
-            No decks imported yet — drop an .apkg file above to get started.
+            Add a featured deck above, or drop your own .apkg file to get started.
           </p>
         ) : (
           <div className="space-y-3">

@@ -14,6 +14,7 @@ import {
   Star,
   ArrowRight,
   Sparkles,
+  FlipHorizontal2,
 } from 'lucide-react';
 import { Button, Card, CardHeader, CardContent, Avatar, Badge, Progress } from '@/components/ui';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -306,6 +307,34 @@ export default function PlayerHub() {
                   className="flex-shrink-0"
                 >
                   Start
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Anki Flashcards */}
+        <motion.div variants={itemVariants}>
+          <Card className="bg-gradient-to-br from-gold-50 to-gold-100 border-gold-200 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gold-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FlipHorizontal2 className="w-7 h-7 text-gold-700" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-display text-xl font-semibold text-ink-800 mb-1">
+                    Anki Flashcards
+                  </h3>
+                  <p className="text-ink-500 text-sm">
+                    12 curated study decks — capitals, science, history, art &amp; more
+                  </p>
+                </div>
+                <Button
+                  variant="gold"
+                  onClick={() => router.push('/play/anki')}
+                  className="flex-shrink-0"
+                >
+                  Study
                 </Button>
               </div>
             </CardContent>
