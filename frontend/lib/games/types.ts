@@ -32,7 +32,19 @@ export type GameType =
   | 'scholar_sprint'
   | 'treasure_hunt'
   | 'argument_arena'
-  | 'memory_mosaic';
+  | 'memory_mosaic'
+  // New WSC games
+  | 'tossup_bonus'
+  | 'fact_or_fiction'
+  | 'timeline_race'
+  | 'analogy_arena'
+  | 'subject_swap'
+  | 'six_degrees'
+  | 'evidence_hunt'
+  | 'devils_advocate'
+  | 'paragraph_swap'
+  | 'reverse_essay'
+  | 'times_table_blitz';
 
 // Game sync types
 export type SyncType = 'real_time' | 'turn_based' | 'synchronized' | 'parallel' | 'individual' | 'role_assigned' | 'collaborative';

@@ -28,6 +28,17 @@ import {
   EliminationOlympics,
   RolePlayDebates,
   ArgumentBuilder,
+  TossupBonus,
+  FactOrFiction,
+  TimelineRace,
+  AnalogyArena,
+  SubjectSwap,
+  SixDegrees,
+  EvidenceHunt,
+  DevilsAdvocate,
+  ParagraphSwap,
+  ReverseEssay,
+  TimesTableBlitz,
   GameProvider,
 } from '@/components/games';
 import { sessionsApi, type Session } from '@/lib/api/client';
@@ -198,6 +209,39 @@ export default function PlaySessionPage() {
 
       case 'argument_builder':
         return <ArgumentBuilder onExit={handleExit} />;
+
+      case 'tossup_bonus':
+        return <TossupBonus sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'fact_or_fiction':
+        return <FactOrFiction sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'timeline_race':
+        return <TimelineRace sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'analogy_arena':
+        return <AnalogyArena sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'subject_swap':
+        return <SubjectSwap sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'six_degrees':
+        return <SixDegrees sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'evidence_hunt':
+        return <EvidenceHunt sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'devils_advocate':
+        return <DevilsAdvocate sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'paragraph_swap':
+        return <ParagraphSwap sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'reverse_essay':
+        return <ReverseEssay sessionId={sessionIdParam} onExit={handleExit} />;
+
+      case 'times_table_blitz':
+        return <TimesTableBlitz sessionId={sessionIdParam} onExit={handleExit} />;
 
       default:
         return (
