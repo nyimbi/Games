@@ -9,12 +9,12 @@ const sections = [
   {
     title: 'Acceptance of Terms',
     content:
-      'By accessing and using WSC Scholar Games, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the platform. These terms apply to all users, including students, coaches, and visitors.',
+      'By accessing and using Llocal Games, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the platform. These terms apply to all users, including students, coaches, and visitors.',
   },
   {
     title: 'Use of Service',
     content:
-      'WSC Scholar Games is provided as an educational tool for World Scholars Cup preparation. The platform is intended for practicing trivia, writing, debate, and challenge activities. You may use the service for personal educational purposes and team-based practice sessions. Any use of the platform for purposes other than education is not permitted.',
+      'Llocal Games is provided as an educational tool for educational gaming preparation. The platform is intended for practicing trivia, writing, debate, and challenge activities. You may use the service for personal educational purposes and team-based practice sessions. Any use of the platform for purposes other than education is not permitted.',
   },
   {
     title: 'User Conduct',
@@ -24,17 +24,17 @@ const sections = [
   {
     title: 'Intellectual Property',
     content:
-      'All content, design, and functionality of WSC Scholar Games is the property of its creators. Game questions, scoring systems, and platform features are provided for educational use only. You may not reproduce, distribute, or create derivative works from the platform content without permission.',
+      'All content, design, and functionality of Llocal Games is the property of its creators. Game questions, scoring systems, and platform features are provided for educational use only. You may not reproduce, distribute, or create derivative works from the platform content without permission.',
   },
   {
     title: 'Disclaimers',
     content:
-      'WSC Scholar Games is provided "as is" without warranties of any kind. We do not guarantee that scores, rankings, or analytics reflect actual World Scholars Cup performance. The platform is a practice tool and should be used alongside other preparation methods. We are not affiliated with or endorsed by the World Scholar\'s Cup organization.',
+      'Llocal Games is provided "as is" without warranties of any kind. We do not guarantee that scores, rankings, or analytics reflect actual educational gaming performance. The platform is a practice tool and should be used alongside other preparation methods. We are not affiliated with or endorsed by the World Scholar\'s Cup organization.',
   },
   {
     title: 'Limitation of Liability',
     content:
-      'WSC Scholar Games and its creators shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform. This includes but is not limited to loss of data, interruption of service, or inaccuracies in game content. Our total liability shall not exceed the amount you have paid to use the service.',
+      'Llocal Games and its creators shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform. This includes but is not limited to loss of data, interruption of service, or inaccuracies in game content. Our total liability shall not exceed the amount you have paid to use the service.',
   },
   {
     title: 'Changes to Terms',
@@ -76,7 +76,7 @@ export default function TermsPage() {
           </div>
 
           <p className="text-ink-600 text-lg leading-relaxed mb-8">
-            Please read these terms carefully before using WSC Scholar Games.
+            Please read these terms carefully before using Llocal Games.
             By using the platform, you agree to these terms and conditions.
           </p>
 

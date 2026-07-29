@@ -4,13 +4,13 @@ import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'WSC Scholar Games',
-    template: '%s | WSC Scholar Games',
+    default: 'Llocal Games',
+    template: '%s | Llocal Games',
   },
   description:
-    'Real-time multiplayer learning games for World Scholars Cup preparation',
-  keywords: ['World Scholars Cup', 'WSC', 'learning games', 'trivia', 'education'],
-  authors: [{ name: 'WSC Scholar Games' }],
+    'Fun educational games for curious kids — trivia, writing, puzzles, and debates',
+  keywords: ['educational games', 'kids learning', 'trivia games', 'brain games', 'education'],
+  authors: [{ name: 'Llocal Games' }],
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '32x32' },

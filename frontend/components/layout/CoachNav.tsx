@@ -156,7 +156,7 @@ export function CoachNav() {
               <GraduationCap className="w-6 h-6 text-ink-800" />
             </div>
             <div>
-              <span className="font-display text-lg font-semibold">WSC Games</span>
+              <span className="font-display text-lg font-semibold">Llocal Games</span>
               <span className="block text-xs text-ink-400">Coach Dashboard</span>
             </div>
           </button>
@@ -219,7 +219,7 @@ export function CoachNav() {
             <div className="w-8 h-8 bg-gold-500 rounded-lg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-ink-800" />
             </div>
-            <span className="font-display font-semibold">WSC Games</span>
+            <span className="font-display font-semibold">Llocal Games</span>
           </button>
 
           <button

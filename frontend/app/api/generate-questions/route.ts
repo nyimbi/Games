@@ -97,12 +97,11 @@ export async function POST(request: NextRequest) {
       ? `\nAvoid repeating these question IDs or their content: ${excludeIds.slice(0, 20).join(', ')}`
       : '';
 
-    const subjectName = subject === 'mixed' ? 'a mix of science, social studies, arts, literature, and WSC special area'
-      : subject === 'special_area' ? 'the WSC Special Area (2026 theme: "Are We There Yet?")'
+    const subjectName = subject === 'mixed' ? 'a mix of science, social studies, arts, literature, and general knowledge'
+      : subject === 'special_area' ? 'general knowledge and fun facts (science, nature, history, culture)'
       : subject.replace('_', ' ');
 
-    const systemPrompt = `You are an expert question writer for the World Scholar's Cup (WSC) 2026.
-The 2026 WSC theme is "Are We There Yet?" — exploring journeys (literal and metaphorical), progress, destinations, milestones, exploration, discovery, movement, and the question of whether humanity has arrived or still has far to go. This theme spans science, history, literature, arts, and special area.
+    const systemPrompt = `You are an expert question writer for educational games aimed at curious kids and young learners (ages 8-14).
 
 Generate exactly ${count} multiple-choice questions on ${subjectName}.
 ${difficultyInstruction}
@@ -113,7 +112,7 @@ Each question MUST have:
 - "options": Exactly 4 answer choices (no duplicates)
 - "correct_index": Index (0-3) of the correct answer
 - "explanation": Why the correct answer is right (>10 characters)
-- "theme_connection": How this relates to "Are We There Yet?" theme (optional but encouraged)
+- "theme_connection": An interesting related fact or connection to spark curiosity (optional)
 - "deep_explanation": A deeper exploration of the concept for curious students (optional)
 - "tags": Array of 1-3 topic tags (optional)
 
@@ -124,7 +123,7 @@ Respond ONLY with valid JSON in this exact format:
   "questions": [ ... ]
 }`;
 
-    const userPrompt = `Generate ${count} ${difficulty} ${subjectName} questions for WSC 2026 preparation.`;
+    const userPrompt = `Generate ${count} ${difficulty} ${subjectName} questions for educational games.`;
 
     const apiUrl = `${AZURE_OPENAI_ENDPOINT}openai/deployments/${AZURE_OPENAI_DEPLOYMENT_NAME}/chat/completions?api-version=${AZURE_OPENAI_API_VERSION}`;
 

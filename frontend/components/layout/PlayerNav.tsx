@@ -70,7 +70,7 @@ export function PlayerNav() {
               <GraduationCap className="w-5 h-5 text-gold-400" />
             </div>
             <div>
-              <span className="font-display font-semibold text-ink-800">WSC Games</span>
+              <span className="font-display font-semibold text-ink-800">Llocal Games</span>
               {team && (
                 <span className="block text-xs text-ink-500">{team.name}</span>
               )}

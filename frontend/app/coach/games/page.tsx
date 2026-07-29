@@ -64,16 +64,16 @@ const ALL_GAMES: GameInfo[] = [
   { id: 'impromptu_challenge', name: 'Impromptu Challenge', description: 'Speak on a random topic with minimal preparation. Builds confidence and thinking on your feet.', category: 'debate', minPlayers: 1, maxPlayers: 6, duration: 8, difficulty: 3 },
 
   // Solo
-  { id: 'scholars_challenge', name: "Scholar's Challenge", description: 'Comprehensive solo quiz covering all subjects. Track personal bests and improvement over time.', category: 'solo', minPlayers: 1, maxPlayers: 1, duration: 10, difficulty: 2 },
+  { id: 'scholars_challenge', name: 'Brain Challenge', description: 'Comprehensive solo quiz covering all subjects. Track personal bests and improvement over time.', category: 'solo', minPlayers: 1, maxPlayers: 1, duration: 10, difficulty: 2 },
   { id: 'battle_mode', name: 'Battle Mode', description: 'Head-to-head competition against another scholar. Answer faster and more accurately to win.', category: 'solo', minPlayers: 2, maxPlayers: 2, duration: 8, difficulty: 2 },
   { id: 'connection_quest', name: 'Connection Quest', description: 'Find hidden connections between seemingly unrelated clues. Tests lateral thinking and knowledge links.', category: 'solo', minPlayers: 1, maxPlayers: 4, duration: 10, difficulty: 2 },
-  { id: 'scholar_sprint', name: 'Scholar Sprint', description: 'Timed sprint through as many questions as possible. Speed and accuracy both count toward your score.', category: 'solo', minPlayers: 1, maxPlayers: 6, duration: 5, difficulty: 1 },
+  { id: 'scholar_sprint', name: 'Speed Sprint', description: 'Timed sprint through as many questions as possible. Speed and accuracy both count toward your score.', category: 'solo', minPlayers: 1, maxPlayers: 6, duration: 5, difficulty: 1 },
   { id: 'treasure_hunt', name: 'Treasure Hunt', description: 'Follow clues through a series of knowledge challenges to find the treasure. Each answer unlocks the next.', category: 'solo', minPlayers: 1, maxPlayers: 6, duration: 12, difficulty: 2 },
   { id: 'memory_mosaic', name: 'Memory Mosaic', description: 'Match pairs and remember positions in this knowledge-based memory game. Tests recall and pattern memory.', category: 'solo', minPlayers: 1, maxPlayers: 4, duration: 8, difficulty: 1 },
 ];
 
 const CATEGORIES: Record<string, { label: string; emoji: string; color: string }> = {
-  scholars_bowl: { label: "Scholar's Bowl", emoji: '🎯', color: 'bg-gold-100 text-gold-700' },
+  scholars_bowl: { label: 'Trivia Bowl', emoji: '🎯', color: 'bg-gold-100 text-gold-700' },
   writing: { label: 'Writing', emoji: '✍️', color: 'bg-sage-100 text-sage-700' },
   challenge: { label: 'Challenge', emoji: '⚡', color: 'bg-coral-100 text-coral-700' },
   debate: { label: 'Debate', emoji: '🗣️', color: 'bg-ink-100 text-ink-600' },

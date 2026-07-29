@@ -111,7 +111,7 @@ export default function Home() {
             variants={itemVariants}
             className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-ink-800 mb-6 leading-tight"
           >
-            WSC Scholar
+            Llocal
             <span className="block text-gold-600">Games</span>
           </motion.h1>
 
@@ -120,8 +120,8 @@ export default function Home() {
             variants={itemVariants}
             className="text-xl md:text-2xl text-ink-600 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Real-time multiplayer learning games for World Scholars Cup preparation.
-            Practice together, learn faster.
+            Fun educational games for curious minds.
+            Play solo or challenge your team.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -228,7 +228,7 @@ export default function Home() {
             className="grid grid-cols-2 md:grid-cols-4 gap-4"
           >
             {[
-              { name: "Scholar's Bowl", color: 'bg-coral-100 text-coral-700', emoji: '🎯' },
+              { name: 'Trivia Bowl', color: 'bg-coral-100 text-coral-700', emoji: '🎯' },
               { name: 'Writing', color: 'bg-sage-100 text-sage-700', emoji: '✍️' },
               { name: 'Challenge', color: 'bg-gold-100 text-gold-700', emoji: '⚡' },
               { name: 'Debate', color: 'bg-ink-100 text-ink-700', emoji: '🗣️' },
@@ -307,7 +307,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="px-6 py-8 bg-ink-900 text-cream-300">
         <div className="max-w-6xl mx-auto text-center text-sm">
-          <p>WSC Scholar Games • Built for World Scholars Cup preparation</p>
+          <p>Llocal Games • Educational games for curious kids</p>
         </div>
       </footer>
     </main>

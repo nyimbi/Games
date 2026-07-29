@@ -12,6 +12,7 @@ import {
   Play,
   Star,
   Lock,
+  Search,
 } from 'lucide-react';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -32,7 +33,7 @@ const itemVariants = {
 const GAME_CATEGORIES = [
   {
     id: 'scholars_bowl',
-    name: "Scholar's Bowl",
+    name: 'Trivia Bowl',
     icon: '🎯',
     color: 'bg-coral-100 text-coral-700',
     borderColor: 'border-coral-300',
@@ -272,10 +273,14 @@ export default function GamesPage() {
 
   const initialCategory = searchParams.get('category') || null;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
+  const [query, setQuery] = useState('');
 
-  const filteredGames = selectedCategory
-    ? GAMES.filter((game) => game.category === selectedCategory)
-    : GAMES;
+  const searching = query.trim().length > 0;
+  const filteredGames = searching
+    ? GAMES.filter((g) => g.name.toLowerCase().includes(query.toLowerCase()))
+    : selectedCategory
+    ? GAMES.filter((g) => g.category === selectedCategory)
+    : [];
 
   const selectedCategoryData = GAME_CATEGORIES.find((c) => c.id === selectedCategory);
 
@@ -283,18 +288,20 @@ export default function GamesPage() {
     router.push(`/play/solo?game=${gameId.replace(/-/g, '_')}`);
   };
 
+  const showCategories = !searching && !selectedCategory;
+
   return (
     <div className="p-6">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="max-w-4xl mx-auto space-y-6"
+        className="max-w-4xl mx-auto space-y-5"
       >
         {/* Header */}
         <motion.div variants={itemVariants}>
-          <div className="flex items-center gap-3 mb-2">
-            {selectedCategory && (
+          <div className="flex items-center gap-3">
+            {selectedCategory && !searching && (
               <button
                 onClick={() => setSelectedCategory(null)}
                 className="p-2 hover:bg-ink-100 rounded-lg transition-colors"
@@ -302,119 +309,129 @@ export default function GamesPage() {
                 <ArrowLeft className="w-5 h-5 text-ink-600" />
               </button>
             )}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gold-100 rounded-xl flex items-center justify-center">
-                <Gamepad2 className="w-6 h-6 text-gold-700" />
+            <div className="flex items-center gap-3 flex-1">
+              <div className="w-10 h-10 bg-gold-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Gamepad2 className="w-5 h-5 text-gold-700" />
               </div>
               <div>
-                <h1 className="font-display text-2xl font-bold text-ink-800">
-                  {selectedCategoryData ? selectedCategoryData.name : 'Games'}
+                <h1 className="font-display text-xl font-bold text-ink-800 leading-tight">
+                  {searching ? 'Search results' : selectedCategoryData ? selectedCategoryData.name : 'Choose a Game'}
                 </h1>
-                <p className="text-ink-500 text-sm">
-                  {selectedCategoryData
+                <p className="text-ink-400 text-xs">
+                  {searching
+                    ? `${filteredGames.length} match${filteredGames.length !== 1 ? 'es' : ''}`
+                    : selectedCategoryData
                     ? selectedCategoryData.description
-                    : '16 games across 4 categories'}
+                    : '4 categories · 16 games'}
                 </p>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Category Filter (when no category selected) */}
-        {!selectedCategory && (
+        {/* Search */}
+        <motion.div variants={itemVariants}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
+            <input
+              type="text"
+              placeholder="Search games…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 text-sm border border-ink-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-gold-300 focus:border-transparent"
+            />
+          </div>
+        </motion.div>
+
+        {/* Category tiles */}
+        {showCategories && (
           <motion.div variants={itemVariants}>
             <div className="grid grid-cols-2 gap-3">
-              {GAME_CATEGORIES.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`${category.color} p-5 rounded-xl text-left hover:scale-[1.02] active:scale-[0.98] transition-transform`}
-                >
-                  <span className="text-2xl block mb-1">{category.icon}</span>
-                  <span className="font-display text-lg font-semibold block">
-                    {category.name}
-                  </span>
-                  <span className="text-sm opacity-75">{category.description}</span>
-                </button>
-              ))}
+              {GAME_CATEGORIES.map((category) => {
+                const count = GAMES.filter((g) => g.category === category.id).length;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`${category.color} p-4 rounded-xl text-left hover:scale-[1.02] active:scale-[0.98] transition-transform`}
+                  >
+                    <span className="text-2xl block mb-1">{category.icon}</span>
+                    <span className="font-display text-base font-semibold block leading-tight">
+                      {category.name}
+                    </span>
+                    <span className="text-xs opacity-75">{count} games · {category.description}</span>
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}
 
-        {/* Games List */}
-        <motion.div variants={itemVariants} className="space-y-3">
-          {filteredGames.map((game) => {
-            const category = GAME_CATEGORIES.find((c) => c.id === game.category);
-
-            return (
-              <Card
-                key={game.id}
-                className={`overflow-hidden transition-all ${
-                  game.available
-                    ? 'hover:shadow-md cursor-pointer'
-                    : 'opacity-60'
-                }`}
-                onClick={() => game.available && handlePlayGame(game.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* Category indicator */}
-                    <div
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${category?.color}`}
-                    >
-                      <span className="text-xl">{category?.icon}</span>
-                    </div>
-
-                    {/* Game info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-display font-semibold text-ink-800 truncate">
-                          {game.name}
-                        </h3>
-                        {!game.available && (
-                          <Lock className="w-4 h-4 text-ink-400 flex-shrink-0" />
-                        )}
+        {/* Game grid */}
+        {filteredGames.length > 0 && (
+          <motion.div variants={itemVariants}>
+            <div className="grid grid-cols-2 gap-3">
+              {filteredGames.map((game) => {
+                const category = GAME_CATEGORIES.find((c) => c.id === game.category);
+                return (
+                  <Card
+                    key={game.id}
+                    className={`overflow-hidden transition-all ${
+                      game.available ? 'hover:shadow-md cursor-pointer' : 'opacity-60'
+                    }`}
+                    onClick={() => game.available && handlePlayGame(game.id)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-base ${category?.color}`}>
+                          {category?.icon}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1">
+                            <h3 className="font-display font-semibold text-ink-800 text-sm truncate leading-tight">
+                              {game.name}
+                            </h3>
+                            {!game.available && <Lock className="w-3 h-3 text-ink-400 flex-shrink-0" />}
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-sm text-ink-500 mb-2 line-clamp-1">
+                      <p className="text-xs text-ink-500 mb-3 line-clamp-2 leading-relaxed">
                         {game.description}
                       </p>
-                      <div className="flex items-center gap-4 text-xs text-ink-400">
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5" />
-                          {game.players}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {game.time}
-                        </span>
-                        <DifficultyStars level={game.difficulty} />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs text-ink-400">
+                          <span className="flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" />
+                            {game.time}
+                          </span>
+                          <DifficultyStars level={game.difficulty} />
+                        </div>
+                        {game.available ? (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePlayGame(game.id); }}
+                            className="flex items-center gap-1 bg-gold-500 hover:bg-gold-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg transition-colors"
+                          >
+                            <Play className="w-3 h-3" />
+                            Play
+                          </button>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">Soon</Badge>
+                        )}
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
 
-                    {/* Play button */}
-                    <div className="flex-shrink-0">
-                      {game.available ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePlayGame(game.id);
-                          }}
-                        >
-                          <Play className="w-4 h-4 mr-1" />
-                          Play
-                        </Button>
-                      ) : (
-                        <Badge variant="outline">Coming Soon</Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </motion.div>
+        {/* Empty search state */}
+        {searching && filteredGames.length === 0 && (
+          <motion.div variants={itemVariants} className="text-center py-10 text-ink-400 text-sm">
+            No games matching &ldquo;{query}&rdquo;
+          </motion.div>
+        )}
 
         {/* No team notice */}
         {!team && (
@@ -422,22 +439,14 @@ export default function GamesPage() {
             <Card className="bg-gold-50 border-gold-200">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gold-200 rounded-full flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-gold-700" />
+                  <div className="w-9 h-9 bg-gold-200 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-4 h-4 text-gold-700" />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-ink-800">
-                      Join a team for multiplayer games!
-                    </p>
-                    <p className="text-sm text-ink-500">
-                      Ask your coach for the team code
-                    </p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-ink-800 text-sm">Join a team for multiplayer games!</p>
+                    <p className="text-xs text-ink-500">Ask your coach for the team code</p>
                   </div>
-                  <Button
-                    variant="gold"
-                    size="sm"
-                    onClick={() => router.push('/team')}
-                  >
+                  <Button variant="gold" size="sm" onClick={() => router.push('/team')}>
                     Join Team
                   </Button>
                 </div>

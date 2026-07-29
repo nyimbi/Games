@@ -34,7 +34,7 @@ const itemVariants = {
 };
 
 const GAME_CATEGORIES = [
-  { id: 'scholars_bowl', name: "Scholar's Bowl", icon: '🎯', color: 'bg-coral-100 text-coral-700' },
+  { id: 'scholars_bowl', name: 'Trivia Bowl', icon: '🎯', color: 'bg-coral-100 text-coral-700' },
   { id: 'writing', name: 'Writing', icon: '✍️', color: 'bg-sage-100 text-sage-700' },
   { id: 'challenge', name: 'Challenge', icon: '⚡', color: 'bg-gold-100 text-gold-700' },
   { id: 'debate', name: 'Debate', icon: '🗣️', color: 'bg-ink-100 text-ink-700' },

@@ -31,7 +31,7 @@ interface TennisResponse {
   feedback: string;
 }
 
-const SYSTEM_PROMPT = `You are a skilled but encouraging debate opponent for young scholars (ages 9-14) in a World Scholars Cup practice game called "Argument Tennis".
+const SYSTEM_PROMPT = `You are a skilled but encouraging debate opponent for young learners (ages 8-14) in an educational game called "Argument Tennis".
 
 Your role is to:
 1. Generate a thoughtful counter-argument that directly responds to what the student wrote

@@ -43,16 +43,16 @@ const ALL_GAMES = [
   { id: 'role_play_debates', name: 'Role Play Debates', category: 'debate' },
   { id: 'argument_builder', name: 'Argument Builder', category: 'debate' },
   { id: 'impromptu_challenge', name: 'Impromptu Challenge', category: 'debate' },
-  { id: 'scholars_challenge', name: "Scholar's Challenge", category: 'solo' },
+  { id: 'scholars_challenge', name: 'Brain Challenge', category: 'solo' },
   { id: 'battle_mode', name: 'Battle Mode', category: 'solo' },
   { id: 'connection_quest', name: 'Connection Quest', category: 'solo' },
-  { id: 'scholar_sprint', name: 'Scholar Sprint', category: 'solo' },
+  { id: 'scholar_sprint', name: 'Speed Sprint', category: 'solo' },
   { id: 'treasure_hunt', name: 'Treasure Hunt', category: 'solo' },
   { id: 'memory_mosaic', name: 'Memory Mosaic', category: 'solo' },
 ];
 
 const CATEGORIES: Record<string, { label: string; emoji: string }> = {
-  scholars_bowl: { label: "Scholar's Bowl", emoji: '🎯' },
+  scholars_bowl: { label: 'Trivia Bowl', emoji: '🎯' },
   writing: { label: 'Writing', emoji: '✍️' },
   challenge: { label: 'Challenge', emoji: '⚡' },
   debate: { label: 'Debate', emoji: '🗣️' },

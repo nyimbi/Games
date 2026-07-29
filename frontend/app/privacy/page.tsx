@@ -9,22 +9,22 @@ const sections = [
   {
     title: 'What We Collect',
     content:
-      'WSC Scholar Games stores minimal data to provide you with a seamless experience. We collect your chosen display name, avatar selection, and scholar code. Game progress, scores, and team membership are stored to track your learning journey. All user preferences are stored locally in your browser using localStorage.',
+      'Llocal Games stores minimal data to provide you with a seamless experience. We collect your chosen display name, avatar selection, and player code. Game progress, scores, and team membership are stored to track your learning journey. All user preferences are stored locally in your browser using localStorage.',
   },
   {
     title: 'How We Use Data',
     content:
-      'Your data is used solely to provide the WSC Scholar Games experience. This includes displaying your profile to teammates and coaches, tracking game scores and progress, generating analytics to help you improve, and enabling team-based practice sessions. We do not use your data for advertising or marketing purposes.',
+      'Your data is used solely to provide the Llocal Games experience. This includes displaying your profile to teammates and coaches, tracking game scores and progress, generating analytics to help you improve, and enabling team-based practice sessions. We do not use your data for advertising or marketing purposes.',
   },
   {
     title: "Children's Privacy",
     content:
-      'WSC Scholar Games is designed for educational use by students participating in the World Scholars Cup. We do not knowingly collect personal information beyond what is necessary for the platform to function. No email addresses, phone numbers, or real names are required. Students identify themselves using display names and scholar codes only.',
+      'Llocal Games is designed for educational use by students participating in the educational gaming. We do not knowingly collect personal information beyond what is necessary for the platform to function. No email addresses, phone numbers, or real names are required. Students identify themselves using display names and player codes only.',
   },
   {
     title: 'Data Storage',
     content:
-      'Session data (user ID, display name, scholar code) is stored in your browser\'s localStorage and is never transmitted to third parties. Game data and team information are stored on our servers to enable multiplayer features. You can clear your local data at any time by logging out or clearing your browser storage.',
+      'Session data (user ID, display name, player code) is stored in your browser\'s localStorage and is never transmitted to third parties. Game data and team information are stored on our servers to enable multiplayer features. You can clear your local data at any time by logging out or clearing your browser storage.',
   },
   {
     title: 'Third Parties',
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
           </div>
 
           <p className="text-ink-600 text-lg leading-relaxed mb-8">
-            WSC Scholar Games is an educational platform built for World
+            Llocal Games is an educational platform built for World
             Scholars Cup preparation. Your privacy matters to us. This policy
             explains what data we collect and how we use it.
           </p>

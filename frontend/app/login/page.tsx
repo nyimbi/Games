@@ -67,7 +67,7 @@ function LoginContent() {
       // useEffect redirect handles navigation
     } catch (err) {
       setError(err instanceof ApiError
-        ? (err.data?.detail || 'Scholar Code not found — check and try again')
+        ? (err.data?.detail || 'Player Code not found — check and try again')
         : 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -163,7 +163,7 @@ function LoginContent() {
             className="inline-flex items-center justify-center w-16 h-16 bg-ink-800 rounded-2xl shadow-xl mb-4 hover:bg-ink-700 transition-colors">
             <GraduationCap className="w-8 h-8 text-gold-400" />
           </button>
-          <h1 className="font-display text-3xl font-bold text-ink-800">WSC Scholar Games</h1>
+          <h1 className="font-display text-3xl font-bold text-ink-800">Llocal Games</h1>
         </motion.div>
 
         {/* Step dots */}
@@ -184,7 +184,7 @@ function LoginContent() {
                 <CardContent className="p-8 space-y-6">
                   {/* Returning scholar — primary action */}
                   <div>
-                    <p className="text-sm font-semibold text-ink-600 mb-2">Returning scholar? Sign in with your code:</p>
+                    <p className="text-sm font-semibold text-ink-600 mb-2">Returning player? Sign in with your code:</p>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -230,7 +230,7 @@ function LoginContent() {
                     <button onClick={() => handleStartNew('player')}
                       className="p-5 rounded-xl border-2 border-gold-200 bg-gold-50 hover:border-gold-400 hover:bg-gold-100 transition-all text-left group">
                       <Users className="w-7 h-7 text-gold-600 mb-3 group-hover:scale-110 transition-transform" />
-                      <p className="font-display font-semibold text-ink-800 text-sm">I'm a Scholar</p>
+                      <p className="font-display font-semibold text-ink-800 text-sm">I'm a Student</p>
                       <p className="text-xs text-ink-500 mt-0.5">Join and play!</p>
                     </button>
                     <button onClick={() => handleStartNew('coach')}
@@ -359,7 +359,7 @@ function LoginContent() {
                   <div className="w-16 h-16 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <KeyRound className="w-8 h-8 text-gold-600" />
                   </div>
-                  <h2 className="font-display text-2xl font-semibold text-ink-800 mb-2">Your Scholar Code</h2>
+                  <h2 className="font-display text-2xl font-semibold text-ink-800 mb-2">Your Player Code</h2>
                   <p className="text-ink-500 text-sm mb-6">
                     This is how you sign back in. Screenshot it or write it down!
                   </p>

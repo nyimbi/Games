@@ -62,7 +62,7 @@ const SUBJECTS = [
   { value: 'social_studies', name: 'Social Studies', icon: Globe, color: 'bg-coral-100 text-coral-700' },
   { value: 'arts', name: 'Arts', icon: Palette, color: 'bg-gold-100 text-gold-700' },
   { value: 'literature', name: 'Literature', icon: BookOpen, color: 'bg-ink-100 text-ink-700' },
-  { value: 'special_area', name: 'WSC Special', icon: Sparkles, color: 'bg-purple-100 text-purple-700' },
+  { value: 'special_area', name: 'Fun Facts', icon: Sparkles, color: 'bg-purple-100 text-purple-700' },
 ];
 
 const DIFFICULTIES = [
@@ -80,12 +80,12 @@ const SOLO_GAMES = [
   { id: 'essay_sprint', name: 'Essay Sprint', icon: FileText, color: 'bg-coral-100 text-coral-700', description: 'Timed writing', needsQuestions: false },
   { id: 'mini_debate', name: 'Mini-Debate', icon: MessageSquare, color: 'bg-purple-100 text-purple-700', description: 'Practice debate', needsQuestions: false },
   { id: 'impromptu_challenge', name: 'Impromptu', icon: Mic, color: 'bg-purple-100 text-purple-700', description: 'Quick speaking', needsQuestions: false },
-  { id: 'scholar_read', name: 'Scholar Read', icon: BookOpenCheck, color: 'bg-sage-100 text-sage-700', description: 'Reading comprehension', needsQuestions: false },
-  { id: 'scholars_challenge', name: "Scholar's Challenge", icon: GraduationCap, color: 'bg-gold-100 text-gold-700', description: 'Full WSC simulation', needsQuestions: false },
+  { id: 'scholar_read', name: 'Read & Learn', icon: BookOpenCheck, color: 'bg-sage-100 text-sage-700', description: 'Reading comprehension', needsQuestions: false },
+  { id: 'scholars_challenge', name: 'Brain Challenge', icon: GraduationCap, color: 'bg-gold-100 text-gold-700', description: 'Comprehensive challenge', needsQuestions: false },
   { id: 'battle_mode', name: 'Battle vs AI', icon: Swords, color: 'bg-coral-100 text-coral-700', description: 'Race against AI', needsQuestions: false },
   { id: 'wrong_answer_review', name: 'Review Mistakes', icon: ClipboardList, color: 'bg-ink-100 text-ink-700', description: 'Learn from errors', needsQuestions: false },
   { id: 'connection_quest', name: 'Connection Quest', icon: Link2, color: 'bg-gold-100 text-gold-700', description: 'Find hidden groups', needsQuestions: false },
-  { id: 'scholar_sprint', name: 'Scholar Sprint', icon: Zap, color: 'bg-coral-100 text-coral-700', description: 'Endless speed quiz', needsQuestions: false },
+  { id: 'scholar_sprint', name: 'Speed Sprint', icon: Zap, color: 'bg-coral-100 text-coral-700', description: 'Endless speed quiz', needsQuestions: false },
   { id: 'treasure_hunt', name: 'Treasure Hunt', icon: Map, color: 'bg-sage-100 text-sage-700', description: 'Explore & conquer', needsQuestions: false },
   { id: 'argument_arena', name: 'Argument Arena', icon: Swords, color: 'bg-purple-100 text-purple-700', description: 'Card debate battle', needsQuestions: false },
   { id: 'memory_mosaic', name: 'Memory Mosaic', icon: Grid3X3, color: 'bg-sky-100 text-sky-700', description: 'Match connections', needsQuestions: false },

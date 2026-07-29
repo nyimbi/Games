@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const levelInstruction = LEVEL_PROMPTS[studentLevel.level] || LEVEL_PROMPTS.intermediate;
     const gradeContext = studentLevel.grade ? ` The student is in grade ${studentLevel.grade}.` : '';
 
-    const systemPrompt = `You are a supportive, knowledgeable tutor for young scholars preparing for the World Scholars Cup.
+    const systemPrompt = `You are a supportive, knowledgeable tutor for young learners playing educational games.
 ${levelInstruction}${gradeContext}
 
 Respond in JSON format only with this structure:
@@ -76,7 +76,7 @@ Correct answer: ${String.fromCharCode(65 + correctIndex)}) ${options[correctInde
 ${userAnswer !== null && userAnswer >= 0 ? `Student's answer: ${String.fromCharCode(65 + userAnswer)}) ${options[userAnswer]}` : 'Student did not answer (timed out)'}
 Student got it: ${wasCorrect ? 'CORRECT' : 'WRONG'}
 ${existingExplanation ? `Basic explanation available: "${existingExplanation}"` : ''}
-${themeConnection ? `WSC Theme connection: "${themeConnection}"` : ''}
+${themeConnection ? `Topic connection: "${themeConnection}"` : ''}
 
 ${wasCorrect
   ? 'The student got this right and wants to understand WHY this is correct and learn something deeper.'
