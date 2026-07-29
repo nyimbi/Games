@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
@@ -114,7 +115,7 @@ export function TimelineRace({ onExit }: TimelineRaceProps) {
     <GameLayout title="Timeline Race" subtitle="Click events from EARLIEST to LATEST" players={[]} onBack={onExit}>
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between mb-4">
-          <div><p className="font-display font-bold text-ink-800">{tl.title}</p><Badge variant="outline">{tl.subject}</Badge></div>
+          <div><p className="font-display font-bold text-ink-800">{tl.title}</p><Badge variant="outline">{formatSubject(tl.subject)}</Badge></div>
           <div className="flex items-center gap-3">
             <span className={`font-mono font-bold text-xl ${timeLeft <= 10 ? 'text-coral-600' : 'text-ink-700'}`}>{timeLeft}s</span>
           </div>

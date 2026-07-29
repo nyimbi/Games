@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -120,7 +121,7 @@ export function TossupBonus({ onExit }: TossupBonusProps) {
     <GameLayout title="Tossup/Bonus" subtitle="Buzz in early for maximum points!" players={[]} onBack={onExit}>
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between mb-4">
-          <Badge variant="outline">{q.subject}</Badge>
+          <Badge variant="outline">{formatSubject(q.subject)}</Badge>
           <div className="flex items-center gap-3">
             <span className="text-sm text-ink-500">Question {qIndex + 1}/{QUESTIONS.length}</span>
             <Badge variant="gold" className="text-lg px-3 py-1">{pointValue} pts</Badge>

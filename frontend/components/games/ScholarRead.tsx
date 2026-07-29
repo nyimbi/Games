@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -187,7 +188,7 @@ export function ScholarRead({ onExit }: ScholarReadProps) {
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline">{passage.subject}</Badge>
+                                <Badge variant="outline">{formatSubject(passage.subject)}</Badge>
                                 <span className="text-sm text-ink-500">
                                   {passage.questions.length} questions
                                 </span>

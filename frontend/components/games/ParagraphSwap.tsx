@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
@@ -123,7 +124,7 @@ export function ParagraphSwap({ onExit }: ParagraphSwapProps) {
         <div className="flex items-center justify-between mb-5">
           <div>
             <p className="font-display font-bold text-ink-800">{essay.title}</p>
-            <Badge variant="outline">{essay.subject}</Badge>
+            <Badge variant="outline">{formatSubject(essay.subject)}</Badge>
           </div>
           <span className="text-sm text-ink-500">{index + 1}/{queue.length}</span>
         </div>

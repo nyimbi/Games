@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -122,7 +123,7 @@ export function ReverseEssay({ onExit }: ReverseEssayProps) {
     <GameLayout title="Reverse Essay" subtitle="Read the body — find the thesis it argues" players={[]} onBack={onExit}>
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between mb-4">
-          <Badge variant="outline">{q.subject}</Badge>
+          <Badge variant="outline">{formatSubject(q.subject)}</Badge>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowHint(!showHint)}
               className={`flex items-center gap-1 text-sm px-3 py-1 rounded-full border transition-colors ${showHint ? 'bg-gold-100 border-gold-300 text-gold-700' : 'border-ink-200 text-ink-500 hover:border-gold-300'}`}>

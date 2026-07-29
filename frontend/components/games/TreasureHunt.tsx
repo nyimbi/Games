@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -497,7 +498,7 @@ export function TreasureHunt({ onExit }: TreasureHuntProps) {
           <motion.div key={currentQ.id} initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} className="mt-4 mb-6">
             <Card className="bg-white">
               <CardContent className="p-5">
-                <Badge variant="outline" className="mb-3">{currentQ.subject}</Badge>
+                <Badge variant="outline" className="mb-3">{formatSubject(currentQ.subject)}</Badge>
                 <h2 className="font-display text-lg md:text-xl font-semibold text-ink-800 leading-relaxed">{currentQ.text}</h2>
               </CardContent>
             </Card>

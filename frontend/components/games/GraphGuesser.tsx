@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -107,7 +108,7 @@ export function GraphGuesser({ onExit }: GraphGuesserProps) {
     <GameLayout title="Graph Guesser" subtitle="Which graph matches this real-world scenario?" players={[]} onBack={onExit}>
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between mb-4">
-          <Badge variant="outline">{q.subject}</Badge>
+          <Badge variant="outline">{formatSubject(q.subject)}</Badge>
           <span className="text-sm text-ink-500">{index + 1}/{queue.length} · Score: <strong>{score}</strong></span>
         </div>
 

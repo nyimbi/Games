@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';

@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -597,9 +598,9 @@ export function ScholarSprint({ onExit }: ScholarSprintProps) {
             >
               <div className="space-y-2">
                 <Badge variant="outline" className="text-xs">
-                  {currentQuestion.subject}
+                  {formatSubject(currentQuestion.subject)}
                 </Badge>
-                <p className="text-lg font-semibold text-ink-900 leading-snug">
+                <p className="text-lg font-semibold text-ink-900 leading-relaxed">
                   {currentQuestion.text}
                 </p>
               </div>

@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -167,7 +168,7 @@ export function DevilsAdvocate({ onExit }: DevilsAdvocateProps) {
     <GameLayout title="Devil's Advocate" subtitle="Find the STRONGEST counter-argument" players={[]} onBack={onExit}>
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between mb-3">
-          <Badge variant="outline">{q.subject}</Badge>
+          <Badge variant="outline">{formatSubject(q.subject)}</Badge>
           <span className={`font-mono font-bold text-xl ${timeLeft <= 7 ? 'text-coral-600' : 'text-ink-700'}`}>{timeLeft}s</span>
         </div>
         <Progress value={(timeLeft / 25) * 100} className="mb-5 h-2" />

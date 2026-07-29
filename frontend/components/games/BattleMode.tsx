@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -409,7 +410,7 @@ export function BattleMode({ onExit }: BattleModeProps) {
                   <Card className="bg-white">
                     <CardContent className="p-5">
                       <Badge variant="outline" className="mb-3">
-                        {currentQuestion.subject}
+                        {formatSubject(currentQuestion.subject)}
                       </Badge>
                       <h2 className="font-display text-xl font-semibold text-ink-800 leading-relaxed">
                         {currentQuestion.text}

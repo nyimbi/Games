@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -347,7 +348,7 @@ export function QuickfireQuiz({
                 <Card className="bg-white">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <Badge variant="outline">{currentQ?.subject || 'Mixed'}</Badge>
+                      <Badge variant="outline">{formatSubject(currentQ?.subject)}</Badge>
                       <TimerDisplay
                         time={currentTime}
                         maxTime={30}

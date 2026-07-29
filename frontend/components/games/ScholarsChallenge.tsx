@@ -46,6 +46,7 @@ const SUBJECT_LABELS: Record<string, string> = {
   social_studies: 'Social Studies',
   arts: 'Arts & Culture',
   literature: 'Literature',
+  special_area: 'Fun Facts',
 };
 const SUBJECT_COLORS: Record<string, string> = {
   science: 'bg-sage-500',

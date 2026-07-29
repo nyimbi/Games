@@ -1,4 +1,5 @@
 'use client';
+import { formatSubject } from '@/lib/utils/format';
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -29,7 +30,7 @@ const SUBJECT_LABELS: Record<string, string> = {
   social_studies: 'Social Studies',
   arts: 'Arts & Culture',
   literature: 'Literature',
-  special_area: 'Special Area',
+  special_area: 'Fun Facts',
 };
 
 /** Convert a WrongAnswerEntry to a minimal Question for AIExplanation. */
@@ -246,7 +247,7 @@ export function WrongAnswerJournal({ onExit }: WrongAnswerJournalProps) {
                     : 'text-ink-600 hover:bg-ink-100'
                 }`}
               >
-                {SUBJECT_LABELS[s] || s} ({subjectBreakdown[s]})
+                {formatSubject(s)} ({subjectBreakdown[s]})
               </button>
             ))}
           </div>
@@ -298,7 +299,7 @@ export function WrongAnswerJournal({ onExit }: WrongAnswerJournalProps) {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <Badge variant="outline" size="sm">
-                                  {SUBJECT_LABELS[entry.subject] || entry.subject}
+                                  {formatSubject(entry.subject)}
                                 </Badge>
                                 {isDue && (
                                   <Badge variant="outline" size="sm" className="text-coral-600 border-coral-300">
@@ -386,7 +387,7 @@ export function WrongAnswerJournal({ onExit }: WrongAnswerJournalProps) {
                             <Card className="bg-white min-h-[250px]">
                               <CardContent className="p-6 flex flex-col items-center justify-center min-h-[250px]">
                                 <Badge variant="outline" className="mb-4">
-                                  {SUBJECT_LABELS[currentFlashcard?.subject || ''] ||
+                                  {formatSubject(currentFlashcard?.subject) ||
                                     currentFlashcard?.subject}
                                 </Badge>
                                 <p className="font-display text-xl font-semibold text-ink-800 text-center leading-relaxed">
