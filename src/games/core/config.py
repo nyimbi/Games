@@ -32,12 +32,9 @@ class Settings(BaseSettings):
 	cors_origins: list[str] = [
 		"http://localhost:3000",
 		"http://127.0.0.1:3000",
-		"http://20.63.27.56:3000",
-		"http://20.63.27.56",
+		"https://games.llocal.com",
 		"https://llocal.com",
-		"http://llocal.com",
 		"https://www.llocal.com",
-		"http://www.llocal.com",
 	]
 
 	# Server

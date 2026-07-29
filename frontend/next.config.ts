@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable React strict mode
+  output: "standalone",
   reactStrictMode: true,
   // API proxy to backend
   async rewrites() {
