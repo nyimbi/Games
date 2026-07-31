@@ -53,7 +53,7 @@ const CATEGORIES: Category[] = [
 		Icon: MessageSquare,
 		tint: 'from-sage-100 to-sage-50 border-sage-300',
 		tintBar: 'bg-sage-500',
-		gameCount: 2,
+		gameCount: 3,
 	},
 	{
 		slug: 'vocabulary',
@@ -62,7 +62,7 @@ const CATEGORIES: Category[] = [
 		Icon: BookOpen,
 		tint: 'from-ink-100 to-ink-50 border-ink-300',
 		tintBar: 'bg-ink-700',
-		gameCount: 6,
+		gameCount: 8,
 	},
 ];
 

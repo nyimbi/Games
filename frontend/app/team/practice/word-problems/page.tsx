@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { ArrowLeft, ChevronRight, MessageSquare, Search } from 'lucide-react';
+import { ArrowLeft, ChevronRight, MessageSquare, Search, PenLine } from 'lucide-react';
 
 interface GameTile {
 	slug: string;
@@ -26,6 +26,13 @@ const GAMES: GameTile[] = [
 		subtitle: 'Fill in the blank in the story — inverse thinking',
 		Icon: Search,
 		minutes: 4,
+	},
+	{
+		slug: 'build-a-problem',
+		title: 'Build-a-Problem',
+		subtitle: 'You write the story for an equation — AI grades it',
+		Icon: PenLine,
+		minutes: 6,
 	},
 ];
 

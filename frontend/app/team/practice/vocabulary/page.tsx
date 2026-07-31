@@ -12,6 +12,8 @@ import {
 	Filter,
 	Zap,
 	Eye,
+	PenLine,
+	MessageCircle,
 } from 'lucide-react';
 
 import { useWordVault } from '@/lib/hooks/useVault';
@@ -65,6 +67,20 @@ const GAMES: GameTile[] = [
 		title: 'Wrong Word Hunt',
 		subtitle: 'Spot the word that doesn’t fit — then fix it',
 		Icon: Eye,
+		minutes: 4,
+	},
+	{
+		slug: 'sentence-spinner',
+		title: 'Sentence Spinner',
+		subtitle: 'Write a sentence using a target word — AI grades your work',
+		Icon: PenLine,
+		minutes: 5,
+	},
+	{
+		slug: 'wordish-charades',
+		title: 'Wordish Charades',
+		subtitle: 'Guess the word from AI-generated clues',
+		Icon: MessageCircle,
 		minutes: 4,
 	},
 ];

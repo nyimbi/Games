@@ -53,6 +53,11 @@ class Settings(BaseSettings):
 	data_dir: Path = Path(__file__).parent.parent.parent.parent / "data"
 	questions_dir: Path = Path(__file__).parent.parent / "data" / "questions"
 
+	# LiteLLM gateway (OpenAI-compatible; wildcard routes to local Ollama)
+	litellm_base_url: str = "https://llm.lindela.io"
+	litellm_api_key: str = "sk-pjs-litellm-master-key"
+	litellm_default_model: str = "gemma4:cloud"
+
 
 @lru_cache
 def get_settings() -> Settings:
