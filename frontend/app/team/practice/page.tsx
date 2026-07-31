@@ -36,7 +36,6 @@ const CATEGORIES: Category[] = [
 		tint: 'from-gold-100 to-gold-50 border-gold-300',
 		tintBar: 'bg-gold-500',
 		gameCount: 3,
-		comingSoon: true,
 	},
 	{
 		slug: 'fractions',
