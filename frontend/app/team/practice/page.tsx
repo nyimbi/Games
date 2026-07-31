@@ -63,8 +63,7 @@ const CATEGORIES: Category[] = [
 		Icon: BookOpen,
 		tint: 'from-ink-100 to-ink-50 border-ink-300',
 		tintBar: 'bg-ink-700',
-		gameCount: 8,
-		comingSoon: true,
+		gameCount: 4,
 	},
 ];
 

@@ -15,6 +15,7 @@ from pydantic import BaseModel, ConfigDict
 _SEED_DIR = Path(__file__).parent.parent.parent / "data" / "seed"
 _FACTS_CATALOG: list[dict] | None = None
 _WORDS_CATALOG: list[dict] | None = None
+_OOO_SETS: list[dict] | None = None
 
 
 def _load_facts_catalog() -> list[dict]:
@@ -31,6 +32,14 @@ def _load_words_catalog() -> list[dict]:
 		with open(_SEED_DIR / "words.json") as f:
 			_WORDS_CATALOG = json.load(f)["words"]
 	return _WORDS_CATALOG
+
+
+def _load_ooo_sets() -> list[dict]:
+	global _OOO_SETS
+	if _OOO_SETS is None:
+		with open(_SEED_DIR / "odd_one_out.json") as f:
+			_OOO_SETS = json.load(f)["sets"]
+	return _OOO_SETS
 
 from games.core.database import get_connection
 from games.models import (
@@ -567,6 +576,17 @@ async def get_words_catalog(
 	if has_morphology:
 		words = [w for w in words if "morphology" in w]
 	return {"words": words, "count": len(words)}
+
+
+@router.get("/catalog/odd-one-out")
+async def get_odd_one_out_sets(
+	level: int | None = Query(None, ge=1, le=3),
+) -> dict[str, Any]:
+	"""Curated 4-word sets for the Odd One Out game."""
+	sets = _load_ooo_sets()
+	if level is not None:
+		sets = [s for s in sets if s.get("level") == level]
+	return {"sets": sets, "count": len(sets)}
 
 
 @router.get("/catalog/word/{word}")

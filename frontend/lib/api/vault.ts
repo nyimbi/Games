@@ -113,6 +113,14 @@ export interface WordCatalogItem {
 	antonyms?: string[];
 }
 
+export interface OddOneOutSet {
+	id: string;
+	level: number;
+	words: string[];
+	odd: string;
+	reason: string;
+}
+
 // --------------------------------------------------------------------------
 // Offline queue — buffer failed attempts, flush on next success
 // --------------------------------------------------------------------------
@@ -261,6 +269,15 @@ export const vaultApi = {
 
 	getWordDetail: (word: string) =>
 		fetcher<WordCatalogItem>(`/vault/catalog/word/${encodeURIComponent(word)}`),
+
+	getOddOneOutSets: (params?: { level?: number }) => {
+		const sp = new URLSearchParams();
+		if (params?.level) sp.set('level', String(params.level));
+		const qs = sp.toString();
+		return fetcher<{ sets: OddOneOutSet[]; count: number }>(
+			`/vault/catalog/odd-one-out${qs ? `?${qs}` : ''}`,
+		);
+	},
 
 	flushOfflineQueue: flushQueue,
 };

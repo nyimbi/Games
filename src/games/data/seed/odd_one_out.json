@@ -1,0 +1,41 @@
+{
+	"_meta": {
+		"description": "Curated 4-word sets for Odd One Out — 3 words in the same semantic category, 1 outsider. 'reason' explains what the 3 share.",
+		"level_key": {"1": "core", "2": "stretch", "3": "advanced"}
+	},
+	"sets": [
+		{"id": "quiet_speech", "level": 1, "words": ["whisper", "mumble", "murmur", "shout"], "odd": "shout", "reason": "the others are quiet ways of speaking"},
+		{"id": "fast_movement", "level": 1, "words": ["dart", "sprint", "dash", "plod"], "odd": "plod", "reason": "the others mean moving quickly"},
+		{"id": "slow_movement", "level": 1, "words": ["plod", "trudge", "amble", "sprint"], "odd": "sprint", "reason": "the others mean moving slowly"},
+		{"id": "big", "level": 1, "words": ["enormous", "huge", "massive", "tiny"], "odd": "tiny", "reason": "the others mean very large"},
+		{"id": "small", "level": 1, "words": ["tiny", "minuscule", "wee", "enormous"], "odd": "enormous", "reason": "the others mean very small"},
+		{"id": "happy", "level": 1, "words": ["delighted", "thrilled", "joyful", "furious"], "odd": "furious", "reason": "the others mean very happy"},
+		{"id": "angry", "level": 1, "words": ["furious", "enraged", "livid", "delighted"], "odd": "delighted", "reason": "the others mean very angry"},
+		{"id": "brave", "level": 1, "words": ["brave", "courageous", "bold", "timid"], "odd": "timid", "reason": "the others mean unafraid"},
+		{"id": "shy", "level": 1, "words": ["timid", "meek", "shy", "confident"], "odd": "confident", "reason": "the others mean easily frightened"},
+		{"id": "wet", "level": 1, "words": ["damp", "moist", "soggy", "arid"], "odd": "arid", "reason": "the others mean somewhat wet"},
+
+		{"id": "tired", "level": 2, "words": ["weary", "exhausted", "drained", "energetic"], "odd": "energetic", "reason": "the others mean very tired"},
+		{"id": "shiny", "level": 2, "words": ["gleaming", "brilliant", "shining", "dull"], "odd": "dull", "reason": "the others mean bright and shining"},
+		{"id": "old", "level": 2, "words": ["ancient", "aged", "antique", "modern"], "odd": "modern", "reason": "the others mean very old"},
+		{"id": "strong", "level": 2, "words": ["sturdy", "robust", "solid", "delicate"], "odd": "delicate", "reason": "the others mean strong and well-built"},
+		{"id": "weak_easily_broken", "level": 2, "words": ["delicate", "fragile", "flimsy", "sturdy"], "odd": "sturdy", "reason": "the others mean easily broken"},
+		{"id": "look_carefully", "level": 2, "words": ["observe", "examine", "inspect", "ignore"], "odd": "ignore", "reason": "the others mean to look at carefully"},
+		{"id": "walk", "level": 2, "words": ["stroll", "amble", "wander", "sprint"], "odd": "sprint", "reason": "the others mean to walk casually"},
+		{"id": "worried", "level": 2, "words": ["anxious", "nervous", "worried", "calm"], "odd": "calm", "reason": "the others mean feeling uneasy"},
+		{"id": "generous", "level": 2, "words": ["generous", "giving", "kind", "stingy"], "odd": "stingy", "reason": "the others mean willing to share"},
+		{"id": "smart", "level": 2, "words": ["clever", "bright", "sharp", "dull"], "odd": "dull", "reason": "the others mean intelligent"},
+
+		{"id": "water_flow", "level": 2, "words": ["current", "stream", "flow", "puddle"], "odd": "puddle", "reason": "the others describe moving water"},
+		{"id": "landform", "level": 2, "words": ["valley", "meadow", "cliff", "puddle"], "odd": "puddle", "reason": "the others are landforms"},
+		{"id": "weather", "level": 2, "words": ["breeze", "gale", "wind", "meadow"], "odd": "meadow", "reason": "the others describe wind"},
+		{"id": "gather_bring_together", "level": 2, "words": ["gather", "collect", "assemble", "scatter"], "odd": "scatter", "reason": "the others mean to bring things together"},
+		{"id": "search_find", "level": 2, "words": ["discover", "find", "uncover", "hide"], "odd": "hide", "reason": "the others mean to find something"},
+		{"id": "think_carefully", "level": 2, "words": ["consider", "ponder", "reflect", "ignore"], "odd": "ignore", "reason": "the others mean to think carefully"},
+
+		{"id": "strange", "level": 3, "words": ["peculiar", "odd", "quirky", "ordinary"], "odd": "ordinary", "reason": "the others mean strange or unusual"},
+		{"id": "grand", "level": 3, "words": ["magnificent", "splendid", "grand", "plain"], "odd": "plain", "reason": "the others mean very impressive"},
+		{"id": "real", "level": 3, "words": ["genuine", "authentic", "true", "fake"], "odd": "fake", "reason": "the others mean real"},
+		{"id": "seasons_of_growth", "level": 3, "words": ["blossom", "bloom", "flourish", "wither"], "odd": "wither", "reason": "the others describe plants growing well"}
+	]
+}
