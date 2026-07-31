@@ -1,0 +1,2775 @@
+{
+  "facts": [
+    {
+      "fact_id": "mult_2x2",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        2
+      ],
+      "answer": "4",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_2x3",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        3
+      ],
+      "answer": "6",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_2x4",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        4
+      ],
+      "answer": "8",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_2x5",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        5
+      ],
+      "answer": "10",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_2x6",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        6
+      ],
+      "answer": "12",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_2x7",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        7
+      ],
+      "answer": "14",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_2x8",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        8
+      ],
+      "answer": "16",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_2x9",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        9
+      ],
+      "answer": "18",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_2x10",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        10
+      ],
+      "answer": "20",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_2x11",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        11
+      ],
+      "answer": "22",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_2x12",
+      "fact_type": "mult",
+      "operands": [
+        2,
+        12
+      ],
+      "answer": "24",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_3x2",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        2
+      ],
+      "answer": "6",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_3x3",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        3
+      ],
+      "answer": "9",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_3x4",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        4
+      ],
+      "answer": "12",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_3x5",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        5
+      ],
+      "answer": "15",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_3x6",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        6
+      ],
+      "answer": "18",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_3x7",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        7
+      ],
+      "answer": "21",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_3x8",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        8
+      ],
+      "answer": "24",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_3x9",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        9
+      ],
+      "answer": "27",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_3x10",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        10
+      ],
+      "answer": "30",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_3x11",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        11
+      ],
+      "answer": "33",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_3x12",
+      "fact_type": "mult",
+      "operands": [
+        3,
+        12
+      ],
+      "answer": "36",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_4x2",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        2
+      ],
+      "answer": "8",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_4x3",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        3
+      ],
+      "answer": "12",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_4x4",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        4
+      ],
+      "answer": "16",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_4x5",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        5
+      ],
+      "answer": "20",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_4x6",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        6
+      ],
+      "answer": "24",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_4x7",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        7
+      ],
+      "answer": "28",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_4x8",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        8
+      ],
+      "answer": "32",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_4x9",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        9
+      ],
+      "answer": "36",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_4x10",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        10
+      ],
+      "answer": "40",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_4x11",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        11
+      ],
+      "answer": "44",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_4x12",
+      "fact_type": "mult",
+      "operands": [
+        4,
+        12
+      ],
+      "answer": "48",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_5x2",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        2
+      ],
+      "answer": "10",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_5x3",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        3
+      ],
+      "answer": "15",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_5x4",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        4
+      ],
+      "answer": "20",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_5x5",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        5
+      ],
+      "answer": "25",
+      "tier": 1
+    },
+    {
+      "fact_id": "mult_5x6",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        6
+      ],
+      "answer": "30",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_5x7",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        7
+      ],
+      "answer": "35",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_5x8",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        8
+      ],
+      "answer": "40",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_5x9",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        9
+      ],
+      "answer": "45",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_5x10",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        10
+      ],
+      "answer": "50",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_5x11",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        11
+      ],
+      "answer": "55",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_5x12",
+      "fact_type": "mult",
+      "operands": [
+        5,
+        12
+      ],
+      "answer": "60",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_6x2",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        2
+      ],
+      "answer": "12",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x3",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        3
+      ],
+      "answer": "18",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x4",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        4
+      ],
+      "answer": "24",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x5",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        5
+      ],
+      "answer": "30",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x6",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        6
+      ],
+      "answer": "36",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x7",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        7
+      ],
+      "answer": "42",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x8",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        8
+      ],
+      "answer": "48",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x9",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        9
+      ],
+      "answer": "54",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_6x10",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        10
+      ],
+      "answer": "60",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_6x11",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        11
+      ],
+      "answer": "66",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_6x12",
+      "fact_type": "mult",
+      "operands": [
+        6,
+        12
+      ],
+      "answer": "72",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_7x2",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        2
+      ],
+      "answer": "14",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x3",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        3
+      ],
+      "answer": "21",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x4",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        4
+      ],
+      "answer": "28",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x5",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        5
+      ],
+      "answer": "35",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x6",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        6
+      ],
+      "answer": "42",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x7",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        7
+      ],
+      "answer": "49",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x8",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        8
+      ],
+      "answer": "56",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x9",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        9
+      ],
+      "answer": "63",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_7x10",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        10
+      ],
+      "answer": "70",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_7x11",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        11
+      ],
+      "answer": "77",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_7x12",
+      "fact_type": "mult",
+      "operands": [
+        7,
+        12
+      ],
+      "answer": "84",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_8x2",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        2
+      ],
+      "answer": "16",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x3",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        3
+      ],
+      "answer": "24",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x4",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        4
+      ],
+      "answer": "32",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x5",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        5
+      ],
+      "answer": "40",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x6",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        6
+      ],
+      "answer": "48",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x7",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        7
+      ],
+      "answer": "56",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x8",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        8
+      ],
+      "answer": "64",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x9",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        9
+      ],
+      "answer": "72",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_8x10",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        10
+      ],
+      "answer": "80",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_8x11",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        11
+      ],
+      "answer": "88",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_8x12",
+      "fact_type": "mult",
+      "operands": [
+        8,
+        12
+      ],
+      "answer": "96",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_9x2",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        2
+      ],
+      "answer": "18",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x3",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        3
+      ],
+      "answer": "27",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x4",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        4
+      ],
+      "answer": "36",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x5",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        5
+      ],
+      "answer": "45",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x6",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        6
+      ],
+      "answer": "54",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x7",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        7
+      ],
+      "answer": "63",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x8",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        8
+      ],
+      "answer": "72",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x9",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        9
+      ],
+      "answer": "81",
+      "tier": 2
+    },
+    {
+      "fact_id": "mult_9x10",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        10
+      ],
+      "answer": "90",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_9x11",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        11
+      ],
+      "answer": "99",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_9x12",
+      "fact_type": "mult",
+      "operands": [
+        9,
+        12
+      ],
+      "answer": "108",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x2",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        2
+      ],
+      "answer": "20",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x3",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        3
+      ],
+      "answer": "30",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x4",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        4
+      ],
+      "answer": "40",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x5",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        5
+      ],
+      "answer": "50",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x6",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        6
+      ],
+      "answer": "60",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x7",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        7
+      ],
+      "answer": "70",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x8",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        8
+      ],
+      "answer": "80",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x9",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        9
+      ],
+      "answer": "90",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x10",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        10
+      ],
+      "answer": "100",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x11",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        11
+      ],
+      "answer": "110",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_10x12",
+      "fact_type": "mult",
+      "operands": [
+        10,
+        12
+      ],
+      "answer": "120",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x2",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        2
+      ],
+      "answer": "22",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x3",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        3
+      ],
+      "answer": "33",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x4",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        4
+      ],
+      "answer": "44",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x5",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        5
+      ],
+      "answer": "55",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x6",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        6
+      ],
+      "answer": "66",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x7",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        7
+      ],
+      "answer": "77",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x8",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        8
+      ],
+      "answer": "88",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x9",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        9
+      ],
+      "answer": "99",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x10",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        10
+      ],
+      "answer": "110",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x11",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        11
+      ],
+      "answer": "121",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_11x12",
+      "fact_type": "mult",
+      "operands": [
+        11,
+        12
+      ],
+      "answer": "132",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x2",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        2
+      ],
+      "answer": "24",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x3",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        3
+      ],
+      "answer": "36",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x4",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        4
+      ],
+      "answer": "48",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x5",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        5
+      ],
+      "answer": "60",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x6",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        6
+      ],
+      "answer": "72",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x7",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        7
+      ],
+      "answer": "84",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x8",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        8
+      ],
+      "answer": "96",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x9",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        9
+      ],
+      "answer": "108",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x10",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        10
+      ],
+      "answer": "120",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x11",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        11
+      ],
+      "answer": "132",
+      "tier": 3
+    },
+    {
+      "fact_id": "mult_12x12",
+      "fact_type": "mult",
+      "operands": [
+        12,
+        12
+      ],
+      "answer": "144",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_4\u00f72",
+      "fact_type": "div",
+      "operands": [
+        4,
+        2
+      ],
+      "answer": "2",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_6\u00f72",
+      "fact_type": "div",
+      "operands": [
+        6,
+        2
+      ],
+      "answer": "3",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_6\u00f73",
+      "fact_type": "div",
+      "operands": [
+        6,
+        3
+      ],
+      "answer": "2",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_8\u00f72",
+      "fact_type": "div",
+      "operands": [
+        8,
+        2
+      ],
+      "answer": "4",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_8\u00f74",
+      "fact_type": "div",
+      "operands": [
+        8,
+        4
+      ],
+      "answer": "2",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_10\u00f72",
+      "fact_type": "div",
+      "operands": [
+        10,
+        2
+      ],
+      "answer": "5",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_10\u00f75",
+      "fact_type": "div",
+      "operands": [
+        10,
+        5
+      ],
+      "answer": "2",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_12\u00f72",
+      "fact_type": "div",
+      "operands": [
+        12,
+        2
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_12\u00f76",
+      "fact_type": "div",
+      "operands": [
+        12,
+        6
+      ],
+      "answer": "2",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_14\u00f72",
+      "fact_type": "div",
+      "operands": [
+        14,
+        2
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_14\u00f77",
+      "fact_type": "div",
+      "operands": [
+        14,
+        7
+      ],
+      "answer": "2",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_16\u00f72",
+      "fact_type": "div",
+      "operands": [
+        16,
+        2
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_16\u00f78",
+      "fact_type": "div",
+      "operands": [
+        16,
+        8
+      ],
+      "answer": "2",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_18\u00f72",
+      "fact_type": "div",
+      "operands": [
+        18,
+        2
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_18\u00f79",
+      "fact_type": "div",
+      "operands": [
+        18,
+        9
+      ],
+      "answer": "2",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_20\u00f72",
+      "fact_type": "div",
+      "operands": [
+        20,
+        2
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_20\u00f710",
+      "fact_type": "div",
+      "operands": [
+        20,
+        10
+      ],
+      "answer": "2",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_22\u00f72",
+      "fact_type": "div",
+      "operands": [
+        22,
+        2
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_22\u00f711",
+      "fact_type": "div",
+      "operands": [
+        22,
+        11
+      ],
+      "answer": "2",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_24\u00f72",
+      "fact_type": "div",
+      "operands": [
+        24,
+        2
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_24\u00f712",
+      "fact_type": "div",
+      "operands": [
+        24,
+        12
+      ],
+      "answer": "2",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_9\u00f73",
+      "fact_type": "div",
+      "operands": [
+        9,
+        3
+      ],
+      "answer": "3",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_12\u00f73",
+      "fact_type": "div",
+      "operands": [
+        12,
+        3
+      ],
+      "answer": "4",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_12\u00f74",
+      "fact_type": "div",
+      "operands": [
+        12,
+        4
+      ],
+      "answer": "3",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_15\u00f73",
+      "fact_type": "div",
+      "operands": [
+        15,
+        3
+      ],
+      "answer": "5",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_15\u00f75",
+      "fact_type": "div",
+      "operands": [
+        15,
+        5
+      ],
+      "answer": "3",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_18\u00f73",
+      "fact_type": "div",
+      "operands": [
+        18,
+        3
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_18\u00f76",
+      "fact_type": "div",
+      "operands": [
+        18,
+        6
+      ],
+      "answer": "3",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_21\u00f73",
+      "fact_type": "div",
+      "operands": [
+        21,
+        3
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_21\u00f77",
+      "fact_type": "div",
+      "operands": [
+        21,
+        7
+      ],
+      "answer": "3",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_24\u00f73",
+      "fact_type": "div",
+      "operands": [
+        24,
+        3
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_24\u00f78",
+      "fact_type": "div",
+      "operands": [
+        24,
+        8
+      ],
+      "answer": "3",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_27\u00f73",
+      "fact_type": "div",
+      "operands": [
+        27,
+        3
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_27\u00f79",
+      "fact_type": "div",
+      "operands": [
+        27,
+        9
+      ],
+      "answer": "3",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_30\u00f73",
+      "fact_type": "div",
+      "operands": [
+        30,
+        3
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_30\u00f710",
+      "fact_type": "div",
+      "operands": [
+        30,
+        10
+      ],
+      "answer": "3",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_33\u00f73",
+      "fact_type": "div",
+      "operands": [
+        33,
+        3
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_33\u00f711",
+      "fact_type": "div",
+      "operands": [
+        33,
+        11
+      ],
+      "answer": "3",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_36\u00f73",
+      "fact_type": "div",
+      "operands": [
+        36,
+        3
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_36\u00f712",
+      "fact_type": "div",
+      "operands": [
+        36,
+        12
+      ],
+      "answer": "3",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_16\u00f74",
+      "fact_type": "div",
+      "operands": [
+        16,
+        4
+      ],
+      "answer": "4",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_20\u00f74",
+      "fact_type": "div",
+      "operands": [
+        20,
+        4
+      ],
+      "answer": "5",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_20\u00f75",
+      "fact_type": "div",
+      "operands": [
+        20,
+        5
+      ],
+      "answer": "4",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_24\u00f74",
+      "fact_type": "div",
+      "operands": [
+        24,
+        4
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_24\u00f76",
+      "fact_type": "div",
+      "operands": [
+        24,
+        6
+      ],
+      "answer": "4",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_28\u00f74",
+      "fact_type": "div",
+      "operands": [
+        28,
+        4
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_28\u00f77",
+      "fact_type": "div",
+      "operands": [
+        28,
+        7
+      ],
+      "answer": "4",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_32\u00f74",
+      "fact_type": "div",
+      "operands": [
+        32,
+        4
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_32\u00f78",
+      "fact_type": "div",
+      "operands": [
+        32,
+        8
+      ],
+      "answer": "4",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_36\u00f74",
+      "fact_type": "div",
+      "operands": [
+        36,
+        4
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_36\u00f79",
+      "fact_type": "div",
+      "operands": [
+        36,
+        9
+      ],
+      "answer": "4",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_40\u00f74",
+      "fact_type": "div",
+      "operands": [
+        40,
+        4
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_40\u00f710",
+      "fact_type": "div",
+      "operands": [
+        40,
+        10
+      ],
+      "answer": "4",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_44\u00f74",
+      "fact_type": "div",
+      "operands": [
+        44,
+        4
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_44\u00f711",
+      "fact_type": "div",
+      "operands": [
+        44,
+        11
+      ],
+      "answer": "4",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_48\u00f74",
+      "fact_type": "div",
+      "operands": [
+        48,
+        4
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_48\u00f712",
+      "fact_type": "div",
+      "operands": [
+        48,
+        12
+      ],
+      "answer": "4",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_25\u00f75",
+      "fact_type": "div",
+      "operands": [
+        25,
+        5
+      ],
+      "answer": "5",
+      "tier": 1
+    },
+    {
+      "fact_id": "div_30\u00f75",
+      "fact_type": "div",
+      "operands": [
+        30,
+        5
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_30\u00f76",
+      "fact_type": "div",
+      "operands": [
+        30,
+        6
+      ],
+      "answer": "5",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_35\u00f75",
+      "fact_type": "div",
+      "operands": [
+        35,
+        5
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_35\u00f77",
+      "fact_type": "div",
+      "operands": [
+        35,
+        7
+      ],
+      "answer": "5",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_40\u00f75",
+      "fact_type": "div",
+      "operands": [
+        40,
+        5
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_40\u00f78",
+      "fact_type": "div",
+      "operands": [
+        40,
+        8
+      ],
+      "answer": "5",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_45\u00f75",
+      "fact_type": "div",
+      "operands": [
+        45,
+        5
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_45\u00f79",
+      "fact_type": "div",
+      "operands": [
+        45,
+        9
+      ],
+      "answer": "5",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_50\u00f75",
+      "fact_type": "div",
+      "operands": [
+        50,
+        5
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_50\u00f710",
+      "fact_type": "div",
+      "operands": [
+        50,
+        10
+      ],
+      "answer": "5",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_55\u00f75",
+      "fact_type": "div",
+      "operands": [
+        55,
+        5
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_55\u00f711",
+      "fact_type": "div",
+      "operands": [
+        55,
+        11
+      ],
+      "answer": "5",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_60\u00f75",
+      "fact_type": "div",
+      "operands": [
+        60,
+        5
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_60\u00f712",
+      "fact_type": "div",
+      "operands": [
+        60,
+        12
+      ],
+      "answer": "5",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_36\u00f76",
+      "fact_type": "div",
+      "operands": [
+        36,
+        6
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_42\u00f76",
+      "fact_type": "div",
+      "operands": [
+        42,
+        6
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_42\u00f77",
+      "fact_type": "div",
+      "operands": [
+        42,
+        7
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_48\u00f76",
+      "fact_type": "div",
+      "operands": [
+        48,
+        6
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_48\u00f78",
+      "fact_type": "div",
+      "operands": [
+        48,
+        8
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_54\u00f76",
+      "fact_type": "div",
+      "operands": [
+        54,
+        6
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_54\u00f79",
+      "fact_type": "div",
+      "operands": [
+        54,
+        9
+      ],
+      "answer": "6",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_60\u00f76",
+      "fact_type": "div",
+      "operands": [
+        60,
+        6
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_60\u00f710",
+      "fact_type": "div",
+      "operands": [
+        60,
+        10
+      ],
+      "answer": "6",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_66\u00f76",
+      "fact_type": "div",
+      "operands": [
+        66,
+        6
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_66\u00f711",
+      "fact_type": "div",
+      "operands": [
+        66,
+        11
+      ],
+      "answer": "6",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_72\u00f76",
+      "fact_type": "div",
+      "operands": [
+        72,
+        6
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_72\u00f712",
+      "fact_type": "div",
+      "operands": [
+        72,
+        12
+      ],
+      "answer": "6",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_49\u00f77",
+      "fact_type": "div",
+      "operands": [
+        49,
+        7
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_56\u00f77",
+      "fact_type": "div",
+      "operands": [
+        56,
+        7
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_56\u00f78",
+      "fact_type": "div",
+      "operands": [
+        56,
+        8
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_63\u00f77",
+      "fact_type": "div",
+      "operands": [
+        63,
+        7
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_63\u00f79",
+      "fact_type": "div",
+      "operands": [
+        63,
+        9
+      ],
+      "answer": "7",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_70\u00f77",
+      "fact_type": "div",
+      "operands": [
+        70,
+        7
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_70\u00f710",
+      "fact_type": "div",
+      "operands": [
+        70,
+        10
+      ],
+      "answer": "7",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_77\u00f77",
+      "fact_type": "div",
+      "operands": [
+        77,
+        7
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_77\u00f711",
+      "fact_type": "div",
+      "operands": [
+        77,
+        11
+      ],
+      "answer": "7",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_84\u00f77",
+      "fact_type": "div",
+      "operands": [
+        84,
+        7
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_84\u00f712",
+      "fact_type": "div",
+      "operands": [
+        84,
+        12
+      ],
+      "answer": "7",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_64\u00f78",
+      "fact_type": "div",
+      "operands": [
+        64,
+        8
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_72\u00f78",
+      "fact_type": "div",
+      "operands": [
+        72,
+        8
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_72\u00f79",
+      "fact_type": "div",
+      "operands": [
+        72,
+        9
+      ],
+      "answer": "8",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_80\u00f78",
+      "fact_type": "div",
+      "operands": [
+        80,
+        8
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_80\u00f710",
+      "fact_type": "div",
+      "operands": [
+        80,
+        10
+      ],
+      "answer": "8",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_88\u00f78",
+      "fact_type": "div",
+      "operands": [
+        88,
+        8
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_88\u00f711",
+      "fact_type": "div",
+      "operands": [
+        88,
+        11
+      ],
+      "answer": "8",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_96\u00f78",
+      "fact_type": "div",
+      "operands": [
+        96,
+        8
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_96\u00f712",
+      "fact_type": "div",
+      "operands": [
+        96,
+        12
+      ],
+      "answer": "8",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_81\u00f79",
+      "fact_type": "div",
+      "operands": [
+        81,
+        9
+      ],
+      "answer": "9",
+      "tier": 2
+    },
+    {
+      "fact_id": "div_90\u00f79",
+      "fact_type": "div",
+      "operands": [
+        90,
+        9
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_90\u00f710",
+      "fact_type": "div",
+      "operands": [
+        90,
+        10
+      ],
+      "answer": "9",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_99\u00f79",
+      "fact_type": "div",
+      "operands": [
+        99,
+        9
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_99\u00f711",
+      "fact_type": "div",
+      "operands": [
+        99,
+        11
+      ],
+      "answer": "9",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_108\u00f79",
+      "fact_type": "div",
+      "operands": [
+        108,
+        9
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_108\u00f712",
+      "fact_type": "div",
+      "operands": [
+        108,
+        12
+      ],
+      "answer": "9",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_100\u00f710",
+      "fact_type": "div",
+      "operands": [
+        100,
+        10
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_110\u00f710",
+      "fact_type": "div",
+      "operands": [
+        110,
+        10
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_110\u00f711",
+      "fact_type": "div",
+      "operands": [
+        110,
+        11
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_120\u00f710",
+      "fact_type": "div",
+      "operands": [
+        120,
+        10
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_120\u00f712",
+      "fact_type": "div",
+      "operands": [
+        120,
+        12
+      ],
+      "answer": "10",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_121\u00f711",
+      "fact_type": "div",
+      "operands": [
+        121,
+        11
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_132\u00f711",
+      "fact_type": "div",
+      "operands": [
+        132,
+        11
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_132\u00f712",
+      "fact_type": "div",
+      "operands": [
+        132,
+        12
+      ],
+      "answer": "11",
+      "tier": 3
+    },
+    {
+      "fact_id": "div_144\u00f712",
+      "fact_type": "div",
+      "operands": [
+        144,
+        12
+      ],
+      "answer": "12",
+      "tier": 3
+    },
+    {
+      "fact_id": "frac_eq_1/2=2/4",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/2",
+        "2/4"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_1/2=3/6",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/2",
+        "3/6"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_1/2=4/8",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/2",
+        "4/8"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_1/2=5/10",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/2",
+        "5/10"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_1/3=2/6",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/3",
+        "2/6"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_1/3=3/9",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/3",
+        "3/9"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_2/3=4/6",
+      "fact_type": "frac_eq",
+      "operands": [
+        "2/3",
+        "4/6"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_2/3=6/9",
+      "fact_type": "frac_eq",
+      "operands": [
+        "2/3",
+        "6/9"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_1/4=2/8",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/4",
+        "2/8"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_1/4=3/12",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/4",
+        "3/12"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_3/4=6/8",
+      "fact_type": "frac_eq",
+      "operands": [
+        "3/4",
+        "6/8"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_3/4=9/12",
+      "fact_type": "frac_eq",
+      "operands": [
+        "3/4",
+        "9/12"
+      ],
+      "answer": "true",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_eq_1/5=2/10",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/5",
+        "2/10"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_2/5=4/10",
+      "fact_type": "frac_eq",
+      "operands": [
+        "2/5",
+        "4/10"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_3/5=6/10",
+      "fact_type": "frac_eq",
+      "operands": [
+        "3/5",
+        "6/10"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_4/5=8/10",
+      "fact_type": "frac_eq",
+      "operands": [
+        "4/5",
+        "8/10"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_1/6=2/12",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/6",
+        "2/12"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_5/6=10/12",
+      "fact_type": "frac_eq",
+      "operands": [
+        "5/6",
+        "10/12"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_1/8=2/16",
+      "fact_type": "frac_eq",
+      "operands": [
+        "1/8",
+        "2/16"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_eq_3/8=6/16",
+      "fact_type": "frac_eq",
+      "operands": [
+        "3/8",
+        "6/16"
+      ],
+      "answer": "true",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_cmp_1/4>3/4",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "1/4",
+        "3/4"
+      ],
+      "answer": ">",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_cmp_2/5<4/5",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "2/5",
+        "4/5"
+      ],
+      "answer": "<",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_cmp_3/8<5/8",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "3/8",
+        "5/8"
+      ],
+      "answer": "<",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_cmp_2/6<5/6",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "2/6",
+        "5/6"
+      ],
+      "answer": "<",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_cmp_1/3<2/3",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "1/3",
+        "2/3"
+      ],
+      "answer": "<",
+      "tier": 1
+    },
+    {
+      "fact_id": "frac_cmp_1/2>1/3",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "1/2",
+        "1/3"
+      ],
+      "answer": ">",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_cmp_1/4>1/6",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "1/4",
+        "1/6"
+      ],
+      "answer": ">",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_cmp_1/3>1/5",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "1/3",
+        "1/5"
+      ],
+      "answer": ">",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_cmp_2/3>2/5",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "2/3",
+        "2/5"
+      ],
+      "answer": ">",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_cmp_3/4>3/8",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "3/4",
+        "3/8"
+      ],
+      "answer": ">",
+      "tier": 2
+    },
+    {
+      "fact_id": "frac_cmp_2/3>3/5",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "2/3",
+        "3/5"
+      ],
+      "answer": ">",
+      "tier": 3
+    },
+    {
+      "fact_id": "frac_cmp_3/8<2/5",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "3/8",
+        "2/5"
+      ],
+      "answer": "<",
+      "tier": 3
+    },
+    {
+      "fact_id": "frac_cmp_5/8<3/4",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "5/8",
+        "3/4"
+      ],
+      "answer": "<",
+      "tier": 3
+    },
+    {
+      "fact_id": "frac_cmp_4/9<5/10",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "4/9",
+        "5/10"
+      ],
+      "answer": "<",
+      "tier": 3
+    },
+    {
+      "fact_id": "frac_cmp_3/7<4/8",
+      "fact_type": "frac_cmp",
+      "operands": [
+        "3/7",
+        "4/8"
+      ],
+      "answer": "<",
+      "tier": 3
+    }
+  ],
+  "count": 277
+}

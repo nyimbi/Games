@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Users,
+  Flame,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -21,6 +22,7 @@ import { ScholarCodeCard } from '@/components/ui/ScholarCodeCard';
 const navItems = [
   { href: '/team', icon: Home, label: 'Hub' },
   { href: '/team/games', icon: Gamepad2, label: 'Games' },
+  { href: '/team/practice', icon: Flame, label: 'Practice' },
   { href: '/team/leaderboard', icon: Trophy, label: 'Leaderboard' },
   { href: '/team/progress', icon: User, label: 'My Progress' },
 ];

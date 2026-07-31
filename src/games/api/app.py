@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from games.api.routes import auth_router, games_router, pusher_router, sessions_router
+from games.api.routes import auth_router, games_router, pusher_router, sessions_router, vault_router
 from games.core.config import get_settings
 from games.core.database import close_pool, init_db
 
@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
 	app.include_router(sessions_router, prefix="/api")
 	app.include_router(games_router, prefix="/api")
 	app.include_router(pusher_router, prefix="/api")
+	app.include_router(vault_router, prefix="/api")
 
 	# Health check
 	@app.get("/health")

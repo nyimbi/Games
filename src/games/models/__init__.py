@@ -33,6 +33,19 @@ from games.models.session import (
 	SessionStatus,
 	SessionUpdate,
 )
+from games.models.vault import (
+	FactAttemptCreate,
+	FactDueResponse,
+	FactStatus,
+	FactType,
+	FactVaultItem,
+	VaultStats,
+	WordDueResponse,
+	WordEncounterCreate,
+	WordMode,
+	WordVaultItem,
+	WrongAnswerDigest,
+)
 from games.models.user import (
 	ANIMAL_AVATARS,
 	Team,
@@ -88,4 +101,16 @@ __all__ = [
 	"PlayerProgress",
 	"LeaderboardEntry",
 	"SessionResult",
+	# Vault models
+	"FactType",
+	"FactStatus",
+	"WordMode",
+	"FactVaultItem",
+	"WordVaultItem",
+	"FactAttemptCreate",
+	"WordEncounterCreate",
+	"FactDueResponse",
+	"WordDueResponse",
+	"VaultStats",
+	"WrongAnswerDigest",
 ]

@@ -197,6 +197,74 @@ async def init_db() -> None:
 			END $$;
 		""")
 
+		# Fact vault: per-user mastery of math facts (times tables, division, add, sub, fractions)
+		await conn.execute("""
+			CREATE TABLE IF NOT EXISTS fact_vault (
+				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				fact_id TEXT NOT NULL,
+				fact_type TEXT NOT NULL,
+				operands JSONB NOT NULL,
+				answer TEXT NOT NULL,
+				attempts INTEGER NOT NULL DEFAULT 0,
+				correct INTEGER NOT NULL DEFAULT 0,
+				avg_ms INTEGER NOT NULL DEFAULT 0,
+				status TEXT NOT NULL DEFAULT 'learning',
+				ease REAL NOT NULL DEFAULT 2.5,
+				interval_hours REAL NOT NULL DEFAULT 0.083,
+				last_seen_at TIMESTAMPTZ,
+				due_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				PRIMARY KEY (user_id, fact_id)
+			)
+		""")
+
+		# Fact attempts: append-only log of every math attempt (for Wrong Answer Journal, analytics)
+		await conn.execute("""
+			CREATE TABLE IF NOT EXISTS fact_attempt (
+				id BIGSERIAL PRIMARY KEY,
+				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				fact_id TEXT NOT NULL,
+				fact_type TEXT NOT NULL,
+				game_id TEXT NOT NULL,
+				correct BOOLEAN NOT NULL,
+				ms INTEGER NOT NULL,
+				at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			)
+		""")
+
+		# Word vault: per-user mastery of vocabulary words
+		await conn.execute("""
+			CREATE TABLE IF NOT EXISTS word_vault (
+				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				word TEXT NOT NULL,
+				pos TEXT,
+				mastery_level INTEGER NOT NULL DEFAULT 0,
+				encounters_count INTEGER NOT NULL DEFAULT 0,
+				correct_count INTEGER NOT NULL DEFAULT 0,
+				distinct_games INTEGER NOT NULL DEFAULT 0,
+				ease REAL NOT NULL DEFAULT 2.5,
+				interval_hours REAL NOT NULL DEFAULT 0.083,
+				last_seen_at TIMESTAMPTZ,
+				due_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				PRIMARY KEY (user_id, word)
+			)
+		""")
+
+		# Word encounters: append-only log — needed to compute "distinct games ≥ 2, span ≥ 7 days"
+		await conn.execute("""
+			CREATE TABLE IF NOT EXISTS word_encounter (
+				id BIGSERIAL PRIMARY KEY,
+				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				word TEXT NOT NULL,
+				game_id TEXT NOT NULL,
+				mode TEXT NOT NULL,
+				correct BOOLEAN NOT NULL,
+				ms INTEGER,
+				at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			)
+		""")
+
 		# Create indexes
 		await conn.execute(
 			"CREATE INDEX IF NOT EXISTS idx_users_team ON users (team_id)"
@@ -212,6 +280,30 @@ async def init_db() -> None:
 		)
 		await conn.execute(
 			"CREATE INDEX IF NOT EXISTS idx_teams_join_code ON teams (join_code)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_fact_vault_due ON fact_vault (user_id, due_at)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_fact_vault_status ON fact_vault (user_id, status)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_fact_attempt_user ON fact_attempt (user_id, at DESC)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_fact_attempt_fact ON fact_attempt (user_id, fact_id, at DESC)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_word_vault_due ON word_vault (user_id, due_at)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_word_vault_mastery ON word_vault (user_id, mastery_level)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_word_encounter_user ON word_encounter (user_id, at DESC)"
+		)
+		await conn.execute(
+			"CREATE INDEX IF NOT EXISTS idx_word_encounter_word ON word_encounter (user_id, word, at DESC)"
 		)
 
 
