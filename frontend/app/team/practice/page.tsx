@@ -45,7 +45,6 @@ const CATEGORIES: Category[] = [
 		tint: 'from-coral-100 to-coral-50 border-coral-300',
 		tintBar: 'bg-coral-500',
 		gameCount: 3,
-		comingSoon: true,
 	},
 	{
 		slug: 'word-problems',
