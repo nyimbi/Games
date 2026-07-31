@@ -121,6 +121,45 @@ export interface OddOneOutSet {
 	reason: string;
 }
 
+export interface PrefixPowerItem {
+	id: string;
+	level: number;
+	sentence: string;
+	root: string;
+	options: string[];
+	correct: string;
+	meaning: string;
+}
+
+export interface WrongWordItem {
+	id: string;
+	level: number;
+	passage: string;
+	wrong_word: string;
+	correct_word: string;
+	options: string[];
+	explanation: string;
+}
+
+export interface WordProblemItem {
+	id: string;
+	level: number;
+	story: string;
+	operation: '+' | '-' | '×' | '÷';
+	numbers: number[];
+	answer: number;
+	keywords: string[];
+}
+
+export interface MissingNumberItem {
+	id: string;
+	level: number;
+	story: string;
+	answer: number;
+	options: number[];
+	hint: string;
+}
+
 // --------------------------------------------------------------------------
 // Offline queue — buffer failed attempts, flush on next success
 // --------------------------------------------------------------------------
@@ -276,6 +315,43 @@ export const vaultApi = {
 		const qs = sp.toString();
 		return fetcher<{ sets: OddOneOutSet[]; count: number }>(
 			`/vault/catalog/odd-one-out${qs ? `?${qs}` : ''}`,
+		);
+	},
+
+	getPrefixItems: (params?: { level?: number }) => {
+		const sp = new URLSearchParams();
+		if (params?.level) sp.set('level', String(params.level));
+		const qs = sp.toString();
+		return fetcher<{ items: PrefixPowerItem[]; count: number }>(
+			`/vault/catalog/prefix-power${qs ? `?${qs}` : ''}`,
+		);
+	},
+
+	getWrongWordItems: (params?: { level?: number }) => {
+		const sp = new URLSearchParams();
+		if (params?.level) sp.set('level', String(params.level));
+		const qs = sp.toString();
+		return fetcher<{ items: WrongWordItem[]; count: number }>(
+			`/vault/catalog/wrong-word-hunt${qs ? `?${qs}` : ''}`,
+		);
+	},
+
+	getWordProblems: (params?: { level?: number; operation?: '+' | '-' | '×' | '÷' }) => {
+		const sp = new URLSearchParams();
+		if (params?.level) sp.set('level', String(params.level));
+		if (params?.operation) sp.set('operation', params.operation);
+		const qs = sp.toString();
+		return fetcher<{ items: WordProblemItem[]; count: number }>(
+			`/vault/catalog/word-problems${qs ? `?${qs}` : ''}`,
+		);
+	},
+
+	getMissingNumberItems: (params?: { level?: number }) => {
+		const sp = new URLSearchParams();
+		if (params?.level) sp.set('level', String(params.level));
+		const qs = sp.toString();
+		return fetcher<{ items: MissingNumberItem[]; count: number }>(
+			`/vault/catalog/missing-number${qs ? `?${qs}` : ''}`,
 		);
 	},
 

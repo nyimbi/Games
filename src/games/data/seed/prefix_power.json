@@ -1,0 +1,38 @@
+{
+	"_meta": {
+		"description": "Curated sentences with a missing prefix. Kid picks from 4 prefix options which one fits the context. Teaches prefixes as meaning-changers in real use.",
+		"level_key": {"1": "core", "2": "stretch", "3": "advanced"}
+	},
+	"items": [
+		{"id": "redo_1", "level": 1, "sentence": "The scientist wanted to ___do the experiment because it failed the first time.", "root": "do", "options": ["re", "un", "pre", "mis"], "correct": "re", "meaning": "re- means 'again'; she wants to do it again"},
+		{"id": "unlock_1", "level": 1, "sentence": "She had to ___lock the door to get inside.", "root": "lock", "options": ["re", "un", "pre", "over"], "correct": "un", "meaning": "un- means 'reverse'; the door was locked and she opened it"},
+		{"id": "preview_1", "level": 2, "sentence": "The teacher gave a ___view of tomorrow's lesson.", "root": "view", "options": ["re", "un", "pre", "mis"], "correct": "pre", "meaning": "pre- means 'before'; a view given before"},
+		{"id": "misplace_1", "level": 2, "sentence": "I keep ___placing my glasses around the house.", "root": "placing", "options": ["re", "un", "pre", "mis"], "correct": "mis", "meaning": "mis- means 'wrongly'; putting them in the wrong place"},
+		{"id": "rebuild_1", "level": 1, "sentence": "After the storm, we had to ___build the treehouse.", "root": "build", "options": ["re", "un", "pre", "dis"], "correct": "re", "meaning": "re- means 'again'; build it again after damage"},
+		{"id": "disagree_1", "level": 1, "sentence": "The twins often ___agree about which movie to watch.", "root": "agree", "options": ["re", "un", "pre", "dis"], "correct": "dis", "meaning": "dis- means 'not'; they don't agree"},
+		{"id": "unpack_1", "level": 1, "sentence": "When we got to the hotel, we started to ___pack our suitcases.", "root": "pack", "options": ["re", "un", "over", "dis"], "correct": "un", "meaning": "un- means 'reverse'; take things out of the pack"},
+		{"id": "prepay_1", "level": 3, "sentence": "You need to ___pay for the ticket before boarding.", "root": "pay", "options": ["re", "un", "pre", "mis"], "correct": "pre", "meaning": "pre- means 'before'; pay before you go"},
+		{"id": "misspell_1", "level": 2, "sentence": "It's easy to ___spell words with double letters.", "root": "spell", "options": ["re", "un", "pre", "mis"], "correct": "mis", "meaning": "mis- means 'wrongly'; spell them incorrectly"},
+		{"id": "rewrite_1", "level": 1, "sentence": "The editor asked me to ___write my story with a stronger ending.", "root": "write", "options": ["re", "un", "pre", "over"], "correct": "re", "meaning": "re- means 'again'; write it again"},
+		{"id": "unhappy_1", "level": 1, "sentence": "The puppy was ___happy when its owner left for work.", "root": "happy", "options": ["re", "un", "pre", "dis"], "correct": "un", "meaning": "un- means 'not'; not happy"},
+		{"id": "preschool_1", "level": 2, "sentence": "My little brother goes to ___school before he starts kindergarten.", "root": "school", "options": ["re", "un", "pre", "over"], "correct": "pre", "meaning": "pre- means 'before'; school before regular school"},
+		{"id": "overheat_1", "level": 2, "sentence": "The car began to ___heat after driving up the mountain.", "root": "heat", "options": ["re", "un", "pre", "over"], "correct": "over", "meaning": "over- means 'too much'; heat too much"},
+		{"id": "disappear_1", "level": 2, "sentence": "The magician made the coin ___appear right before our eyes.", "root": "appear", "options": ["re", "un", "pre", "dis"], "correct": "dis", "meaning": "dis- means 'not'; stop appearing"},
+		{"id": "misread_1", "level": 2, "sentence": "I ___read the sign and turned the wrong way.", "root": "read", "options": ["re", "un", "pre", "mis"], "correct": "mis", "meaning": "mis- means 'wrongly'; read it wrong"},
+		{"id": "unbutton_1", "level": 1, "sentence": "It was so hot that he had to ___button his jacket.", "root": "button", "options": ["re", "un", "pre", "over"], "correct": "un", "meaning": "un- means 'reverse'; undo the buttons"},
+		{"id": "recount_1", "level": 3, "sentence": "The election was so close they had to ___count the votes.", "root": "count", "options": ["re", "un", "mis", "over"], "correct": "re", "meaning": "re- means 'again'; count them again to be sure"},
+		{"id": "predict_1", "level": 2, "sentence": "The weather report tries to ___dict what tomorrow will be like.", "root": "dict", "options": ["re", "un", "pre", "mis"], "correct": "pre", "meaning": "pre- + dict = 'say before'; forecast the future"},
+		{"id": "distrust_1", "level": 3, "sentence": "After being lied to, she began to ___trust her friend.", "root": "trust", "options": ["re", "un", "pre", "dis"], "correct": "dis", "meaning": "dis- means 'not'; stop trusting"},
+		{"id": "overeat_1", "level": 2, "sentence": "Try not to ___eat at Thanksgiving dinner or you'll feel sick.", "root": "eat", "options": ["re", "un", "pre", "over"], "correct": "over", "meaning": "over- means 'too much'; eat too much"},
+		{"id": "return_1", "level": 1, "sentence": "The birds ___turn to their nests every spring.", "root": "turn", "options": ["re", "un", "pre", "over"], "correct": "re", "meaning": "re- means 'back'; turn back to the nest"},
+		{"id": "unwrap_1", "level": 1, "sentence": "On my birthday, I get to ___wrap all my presents.", "root": "wrap", "options": ["re", "un", "pre", "dis"], "correct": "un", "meaning": "un- means 'reverse'; take the wrapping off"},
+		{"id": "misjudge_1", "level": 3, "sentence": "Don't ___judge someone before you get to know them.", "root": "judge", "options": ["re", "un", "pre", "mis"], "correct": "mis", "meaning": "mis- means 'wrongly'; judge incorrectly"},
+		{"id": "prewash_1", "level": 3, "sentence": "The label says to ___wash new jeans in cold water.", "root": "wash", "options": ["re", "un", "pre", "over"], "correct": "pre", "meaning": "pre- means 'before'; wash before you wear them"},
+		{"id": "disconnect_1", "level": 3, "sentence": "Please ___connect the printer before you move it.", "root": "connect", "options": ["re", "un", "pre", "dis"], "correct": "dis", "meaning": "dis- means 'apart'; take apart the connection"},
+		{"id": "overreact_1", "level": 3, "sentence": "Try not to ___react over small things.", "root": "react", "options": ["re", "un", "pre", "over"], "correct": "over", "meaning": "over- means 'too much'; react more than needed"},
+		{"id": "restart_1", "level": 1, "sentence": "When the computer freezes, you can ___start it.", "root": "start", "options": ["re", "un", "pre", "dis"], "correct": "re", "meaning": "re- means 'again'; start it once more"},
+		{"id": "unable_1", "level": 2, "sentence": "The turtle was ___able to reach the leaves on the top of the plant.", "root": "able", "options": ["re", "un", "pre", "dis"], "correct": "un", "meaning": "un- means 'not'; not able to do it"},
+		{"id": "misbehave_1", "level": 2, "sentence": "Puppies sometimes ___behave when they get too excited.", "root": "behave", "options": ["re", "un", "pre", "mis"], "correct": "mis", "meaning": "mis- means 'wrongly'; behave badly"},
+		{"id": "prepay_2", "level": 3, "sentence": "This restaurant lets you ___order your food online.", "root": "order", "options": ["re", "un", "pre", "mis"], "correct": "pre", "meaning": "pre- means 'before'; order in advance"}
+	]
+}

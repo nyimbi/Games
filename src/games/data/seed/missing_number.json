@@ -1,0 +1,38 @@
+{
+	"_meta": {
+		"description": "Detective-themed word problems with a blank inside the story. Kid must reason about the whole scenario to find the missing number. Trains INVERSE thinking (the hardest part of subtraction/division word problems).",
+		"level_key": {"1": "core", "2": "stretch", "3": "advanced"}
+	},
+	"items": [
+		{"id": "mystery_marbles", "level": 1, "story": "Sam had ___ marbles. He gave 8 away, and now he has 15 left. How many did he start with?", "answer": 23, "options": [22, 23, 24, 25], "hint": "Think: 15 + 8 gets you back to the start."},
+		{"id": "mystery_candles", "level": 1, "story": "The birthday cake had ___ candles. 5 blew out and 12 are still lit. How many candles were there?", "answer": 17, "options": [16, 17, 18, 20], "hint": "Add the ones still lit to the ones blown out."},
+		{"id": "mystery_cookies", "level": 1, "story": "Grandma baked some cookies. After she gave 9 to us, ___ were left on the tray. She had baked 24. How many are on the tray?", "answer": 15, "options": [13, 14, 15, 16], "hint": "24 total minus the 9 she gave away."},
+		{"id": "mystery_stickers", "level": 1, "story": "Maya bought stickers. She used ___ on her folder and had 18 left. She bought 30. How many did she use?", "answer": 12, "options": [10, 11, 12, 13], "hint": "30 total minus 18 leftover."},
+		{"id": "mystery_apples", "level": 1, "story": "The store had ___ apples. After they sold 46 during the day, 24 were left. How many apples did they have that morning?", "answer": 70, "options": [70, 68, 72, 74], "hint": "The morning count = leftover + sold."},
+		{"id": "mystery_dolphins", "level": 2, "story": "A pod of dolphins had ___ members. 7 swam away and 14 stayed. How many were in the pod?", "answer": 21, "options": [20, 21, 22, 23], "hint": "The two groups together give you the total."},
+		{"id": "mystery_pages", "level": 2, "story": "Alex read ___ pages on Monday and 32 pages on Tuesday. That's 60 pages in two days. How many pages did he read on Monday?", "answer": 28, "options": [26, 27, 28, 30], "hint": "60 total minus Tuesday's 32."},
+		{"id": "mystery_seats", "level": 2, "story": "The theater had ___ seats. 89 were filled and 34 were empty. How many seats total?", "answer": 123, "options": [122, 123, 124, 125], "hint": "Filled + empty = all seats."},
+		{"id": "mystery_boxes", "level": 2, "story": "A truck had ___ boxes. 27 fell off during the trip and 45 arrived at the store. How many started the trip?", "answer": 72, "options": [70, 71, 72, 73], "hint": "Everything that was on the truck adds up."},
+		{"id": "mystery_ducks", "level": 1, "story": "There were ___ ducks in the pond. 4 flew away, and 9 stayed. How many ducks were there before any flew?", "answer": 13, "options": [12, 13, 14, 15], "hint": "The ones that flew plus the ones that stayed."},
+		{"id": "mystery_lego", "level": 2, "story": "The Lego set had ___ pieces. Kai lost 18, but he still has 132 left. How many pieces came with the set?", "answer": 150, "options": [148, 149, 150, 152], "hint": "Lost + still have = started with."},
+		{"id": "mystery_coins", "level": 2, "story": "Nia's piggy bank had ___ coins. She spent 24 at the fair and has 51 left. How many coins were in the bank?", "answer": 75, "options": [73, 74, 75, 76], "hint": "Spent + saved = starting amount."},
+		{"id": "mystery_flowers", "level": 1, "story": "A garden had ___ flowers. 6 wilted and 14 are still beautiful. How many flowers were there?", "answer": 20, "options": [19, 20, 21, 22], "hint": "Wilted + still beautiful = total."},
+		{"id": "mystery_class", "level": 1, "story": "There were ___ kids in class today. 3 went home sick, and 22 stayed. How many were there originally?", "answer": 25, "options": [24, 25, 26, 27], "hint": "Left + stayed = original."},
+		{"id": "mystery_cars", "level": 2, "story": "The parking lot had ___ cars in the morning. 39 left during lunch and 52 remained. How many were there?", "answer": 91, "options": [89, 90, 91, 92], "hint": "Left + remained = morning total."},
+		{"id": "mystery_marbles2", "level": 2, "story": "Kim had ___ marbles. She lost 12 and won 8, and now has 46. How many did she start with?", "answer": 50, "options": [48, 49, 50, 52], "hint": "Start = current + lost - won."},
+		{"id": "mystery_years", "level": 2, "story": "Aunt Rosa is ___ years old. Her son is 24, and she was 30 when he was born. How old is Aunt Rosa?", "answer": 54, "options": [52, 54, 56, 58], "hint": "Her age when he was born + his current age."},
+		{"id": "mystery_score", "level": 2, "story": "The team scored a total of 78 points. First half they scored ___ points. Second half they scored 45. How many did they score in the first half?", "answer": 33, "options": [31, 32, 33, 34], "hint": "78 total minus 45."},
+		{"id": "mystery_shells", "level": 2, "story": "Tia found ___ shells at the beach. She gave 17 to her sister and kept 25 for her collection. How many did she find?", "answer": 42, "options": [40, 41, 42, 43], "hint": "Gave + kept = found."},
+		{"id": "mystery_length", "level": 3, "story": "The rope was ___ meters long. After cutting off 14 meters, 27 meters were left. How long was the rope?", "answer": 41, "options": [40, 41, 42, 43], "hint": "Cut + left = original length."},
+		{"id": "mystery_prints", "level": 3, "story": "The gallery has ___ prints. 68 are landscapes and 47 are portraits. There are no other kinds. How many prints total?", "answer": 115, "options": [114, 115, 116, 117], "hint": "The two kinds together are all of them."},
+		{"id": "mystery_kids", "level": 1, "story": "There were ___ kids at the birthday party. 5 arrived late, and 13 were already there. How many kids came in all?", "answer": 18, "options": [17, 18, 19, 20], "hint": "Already there + late arrivals."},
+		{"id": "mystery_beads", "level": 1, "story": "The bracelet needs ___ beads. 12 are already strung and 8 more are needed. How many beads total?", "answer": 20, "options": [19, 20, 21, 22], "hint": "Strung + still needed."},
+		{"id": "mystery_water", "level": 2, "story": "A tank held ___ liters of water. 47 liters were used and 63 liters remained. How much water did the tank hold?", "answer": 110, "options": [108, 109, 110, 112], "hint": "Used + remained = held."},
+		{"id": "mystery_bugs", "level": 1, "story": "A jar has ___ ladybugs. Kim released 4 into the garden and 6 are still in the jar. How many did she start with?", "answer": 10, "options": [9, 10, 11, 12], "hint": "Released + still in jar."},
+		{"id": "mystery_wall", "level": 2, "story": "A wall is ___ bricks tall. 23 are gray and 18 are red, with no others. How tall is the wall?", "answer": 41, "options": [39, 40, 41, 42], "hint": "Gray + red = all bricks."},
+		{"id": "mystery_trip", "level": 2, "story": "The road trip was ___ miles. They drove 137 miles before lunch and 96 miles after. How long was the trip?", "answer": 233, "options": [231, 232, 233, 234], "hint": "Before lunch + after lunch = total."},
+		{"id": "mystery_pen", "level": 3, "story": "There are ___ animals in the pen. If you take away 14 sheep, 22 goats remain. How many animals started there?", "answer": 36, "options": [34, 35, 36, 38], "hint": "Sheep taken away + goats remaining."},
+		{"id": "mystery_songs", "level": 3, "story": "The playlist has ___ songs. Rae skipped 8 and listened to 27. How many songs are on the playlist?", "answer": 35, "options": [33, 34, 35, 36], "hint": "Skipped + listened to = total."},
+		{"id": "mystery_puzzle", "level": 3, "story": "The puzzle box says it has ___ pieces. Rin has connected 89 and 46 are still loose. How many pieces are in the puzzle?", "answer": 135, "options": [133, 134, 135, 136], "hint": "Connected + loose = total pieces."}
+	]
+}

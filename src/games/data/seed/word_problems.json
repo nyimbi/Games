@@ -1,0 +1,38 @@
+{
+	"_meta": {
+		"description": "Word problems for grade 3-4. Each item has a story, the operation kids should identify (+ - x /), the numbers involved, and the final answer. Story Sorter uses these directly.",
+		"level_key": {"1": "core (small numbers, one step)", "2": "stretch (larger numbers or two steps)", "3": "advanced"}
+	},
+	"items": [
+		{"id": "add_marbles", "level": 1, "story": "Sam has 14 marbles. His friend gives him 8 more. How many does he have now?", "operation": "+", "numbers": [14, 8], "answer": 22, "keywords": ["gives", "more", "have now"]},
+		{"id": "add_stickers", "level": 1, "story": "Maya had 25 stickers. She got 17 more for her birthday. How many stickers does she have?", "operation": "+", "numbers": [25, 17], "answer": 42, "keywords": ["more", "have"]},
+		{"id": "sub_cookies", "level": 1, "story": "There were 20 cookies on the plate. The class ate 12 of them. How many cookies are left?", "operation": "-", "numbers": [20, 12], "answer": 8, "keywords": ["ate", "left"]},
+		{"id": "sub_pencils", "level": 1, "story": "Jaya had 32 pencils. She gave 15 to her brother. How many pencils does she have left?", "operation": "-", "numbers": [32, 15], "answer": 17, "keywords": ["gave", "left"]},
+		{"id": "mul_bags", "level": 1, "story": "There are 6 bags. Each bag has 4 apples. How many apples in total?", "operation": "×", "numbers": [6, 4], "answer": 24, "keywords": ["each", "in total"]},
+		{"id": "mul_rows", "level": 2, "story": "A classroom has 7 rows of desks with 8 desks in each row. How many desks are there?", "operation": "×", "numbers": [7, 8], "answer": 56, "keywords": ["rows", "each", "how many"]},
+		{"id": "div_share", "level": 1, "story": "24 candies are shared equally among 6 kids. How many candies does each kid get?", "operation": "÷", "numbers": [24, 6], "answer": 4, "keywords": ["shared equally", "each"]},
+		{"id": "div_teams", "level": 2, "story": "There are 36 players in the soccer tournament. If each team has 9 players, how many teams are there?", "operation": "÷", "numbers": [36, 9], "answer": 4, "keywords": ["each", "how many teams"]},
+		{"id": "add_reading", "level": 2, "story": "Tia read 47 pages on Monday and 38 pages on Tuesday. How many pages did she read altogether?", "operation": "+", "numbers": [47, 38], "answer": 85, "keywords": ["and", "altogether"]},
+		{"id": "sub_train", "level": 2, "story": "The train had 84 passengers. 27 got off at the first stop. How many are still on the train?", "operation": "-", "numbers": [84, 27], "answer": 57, "keywords": ["got off", "still on"]},
+		{"id": "mul_flowers", "level": 2, "story": "A florist arranges 9 vases with 6 flowers in each vase. How many flowers did she use?", "operation": "×", "numbers": [9, 6], "answer": 54, "keywords": ["each", "how many"]},
+		{"id": "div_boxes", "level": 2, "story": "48 cupcakes are packed into boxes of 8. How many boxes are needed?", "operation": "÷", "numbers": [48, 8], "answer": 6, "keywords": ["into boxes of", "how many boxes"]},
+		{"id": "add_savings", "level": 2, "story": "Marcus saved $56 in January and $47 in February. How much has he saved so far?", "operation": "+", "numbers": [56, 47], "answer": 103, "keywords": ["and", "so far"]},
+		{"id": "sub_change", "level": 2, "story": "A toy costs $23. If Kai gives the cashier $50, how much change does he get?", "operation": "-", "numbers": [50, 23], "answer": 27, "keywords": ["gives", "change"]},
+		{"id": "mul_wheels", "level": 1, "story": "There are 5 bicycles at the shop. Each bike has 2 wheels. How many wheels are there in all?", "operation": "×", "numbers": [5, 2], "answer": 10, "keywords": ["each", "in all"]},
+		{"id": "div_lemonade", "level": 2, "story": "A pitcher holds 60 ounces of lemonade. If each cup holds 6 ounces, how many cups can be filled?", "operation": "÷", "numbers": [60, 6], "answer": 10, "keywords": ["each", "how many cups"]},
+		{"id": "add_library", "level": 1, "story": "The library received 33 new books in the morning and 28 more in the afternoon. How many new books did they get?", "operation": "+", "numbers": [33, 28], "answer": 61, "keywords": ["more", "how many"]},
+		{"id": "sub_gallery", "level": 2, "story": "There were 90 paintings on display. 34 were sold on opening night. How many are still on display?", "operation": "-", "numbers": [90, 34], "answer": 56, "keywords": ["sold", "still on"]},
+		{"id": "mul_seeds", "level": 2, "story": "Lila planted 8 rows of tomatoes. Each row has 12 plants. How many tomato plants did she plant?", "operation": "×", "numbers": [8, 12], "answer": 96, "keywords": ["each", "how many"]},
+		{"id": "div_hours", "level": 3, "story": "The zoo trip lasted 6 hours. That's the same as how many 30-minute periods?", "operation": "÷", "numbers": [6, 0.5], "answer": 12, "keywords": ["same as", "how many"]},
+		{"id": "add_class", "level": 1, "story": "Class 3A has 24 students. Class 3B has 26 students. How many students in both classes?", "operation": "+", "numbers": [24, 26], "answer": 50, "keywords": ["and", "both"]},
+		{"id": "sub_pizza", "level": 1, "story": "There were 16 slices of pizza. The kids ate 11. How many slices are left?", "operation": "-", "numbers": [16, 11], "answer": 5, "keywords": ["ate", "left"]},
+		{"id": "mul_days", "level": 1, "story": "Reo does 3 chores every day. How many chores does he do in one week?", "operation": "×", "numbers": [3, 7], "answer": 21, "keywords": ["every day", "week"]},
+		{"id": "div_pairs", "level": 2, "story": "40 shoes are sitting by the door. How many pairs is that?", "operation": "÷", "numbers": [40, 2], "answer": 20, "keywords": ["pairs"]},
+		{"id": "add_pond", "level": 2, "story": "The pond has 45 goldfish and 38 tadpoles. How many creatures live in the pond?", "operation": "+", "numbers": [45, 38], "answer": 83, "keywords": ["and", "how many"]},
+		{"id": "sub_book", "level": 2, "story": "A book has 128 pages. Ana has read 79 pages. How many pages does she have left to read?", "operation": "-", "numbers": [128, 79], "answer": 49, "keywords": ["has read", "left"]},
+		{"id": "mul_eggs", "level": 2, "story": "A carton holds 12 eggs. How many eggs are in 4 cartons?", "operation": "×", "numbers": [12, 4], "answer": 48, "keywords": ["how many", "in"]},
+		{"id": "div_stripes", "level": 3, "story": "A flag has 6 stripes for every 2 stars. If there are 24 stripes, how many stars are there?", "operation": "÷", "numbers": [24, 3], "answer": 8, "keywords": ["for every", "how many"]},
+		{"id": "add_field_trip", "level": 1, "story": "18 kids from one class and 22 kids from another class are going on a field trip. How many kids total?", "operation": "+", "numbers": [18, 22], "answer": 40, "keywords": ["and", "total"]},
+		{"id": "sub_leaves", "level": 1, "story": "A tree had 100 leaves. 46 blew away in the storm. How many leaves are still on the tree?", "operation": "-", "numbers": [100, 46], "answer": 54, "keywords": ["blew away", "still"]}
+	]
+}

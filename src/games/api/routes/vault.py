@@ -16,6 +16,10 @@ _SEED_DIR = Path(__file__).parent.parent.parent / "data" / "seed"
 _FACTS_CATALOG: list[dict] | None = None
 _WORDS_CATALOG: list[dict] | None = None
 _OOO_SETS: list[dict] | None = None
+_PREFIX_ITEMS: list[dict] | None = None
+_WRONG_WORD_ITEMS: list[dict] | None = None
+_WORD_PROBLEMS: list[dict] | None = None
+_MISSING_NUMBERS: list[dict] | None = None
 
 
 def _load_facts_catalog() -> list[dict]:
@@ -40,6 +44,38 @@ def _load_ooo_sets() -> list[dict]:
 		with open(_SEED_DIR / "odd_one_out.json") as f:
 			_OOO_SETS = json.load(f)["sets"]
 	return _OOO_SETS
+
+
+def _load_prefix_items() -> list[dict]:
+	global _PREFIX_ITEMS
+	if _PREFIX_ITEMS is None:
+		with open(_SEED_DIR / "prefix_power.json") as f:
+			_PREFIX_ITEMS = json.load(f)["items"]
+	return _PREFIX_ITEMS
+
+
+def _load_wrong_word_items() -> list[dict]:
+	global _WRONG_WORD_ITEMS
+	if _WRONG_WORD_ITEMS is None:
+		with open(_SEED_DIR / "wrong_word_hunt.json") as f:
+			_WRONG_WORD_ITEMS = json.load(f)["items"]
+	return _WRONG_WORD_ITEMS
+
+
+def _load_word_problems() -> list[dict]:
+	global _WORD_PROBLEMS
+	if _WORD_PROBLEMS is None:
+		with open(_SEED_DIR / "word_problems.json") as f:
+			_WORD_PROBLEMS = json.load(f)["items"]
+	return _WORD_PROBLEMS
+
+
+def _load_missing_numbers() -> list[dict]:
+	global _MISSING_NUMBERS
+	if _MISSING_NUMBERS is None:
+		with open(_SEED_DIR / "missing_number.json") as f:
+			_MISSING_NUMBERS = json.load(f)["items"]
+	return _MISSING_NUMBERS
 
 from games.core.database import get_connection
 from games.models import (
@@ -598,3 +634,44 @@ async def get_word_detail(word: str) -> dict[str, Any]:
 		if w["word"].lower() == needle:
 			return w
 	raise HTTPException(status_code=404, detail=f"Word '{word}' not in catalog")
+
+
+@router.get("/catalog/prefix-power")
+async def get_prefix_items(level: int | None = Query(None, ge=1, le=3)) -> dict[str, Any]:
+	"""Curated fill-a-prefix sentences for the Prefix Power game."""
+	items = _load_prefix_items()
+	if level is not None:
+		items = [i for i in items if i.get("level") == level]
+	return {"items": items, "count": len(items)}
+
+
+@router.get("/catalog/wrong-word-hunt")
+async def get_wrong_word_items(level: int | None = Query(None, ge=1, le=3)) -> dict[str, Any]:
+	"""Passages with one word swapped, for Wrong Word Hunt."""
+	items = _load_wrong_word_items()
+	if level is not None:
+		items = [i for i in items if i.get("level") == level]
+	return {"items": items, "count": len(items)}
+
+
+@router.get("/catalog/word-problems")
+async def get_word_problems(
+	level: int | None = Query(None, ge=1, le=3),
+	operation: str | None = Query(None, description="'+', '-', '×', or '÷'"),
+) -> dict[str, Any]:
+	"""Word problems for Story Sorter (identify operation) and beyond."""
+	items = _load_word_problems()
+	if level is not None:
+		items = [i for i in items if i.get("level") == level]
+	if operation:
+		items = [i for i in items if i.get("operation") == operation]
+	return {"items": items, "count": len(items)}
+
+
+@router.get("/catalog/missing-number")
+async def get_missing_number_items(level: int | None = Query(None, ge=1, le=3)) -> dict[str, Any]:
+	"""Detective-style missing-number word problems (Missing Number Mystery)."""
+	items = _load_missing_numbers()
+	if level is not None:
+		items = [i for i in items if i.get("level") == level]
+	return {"items": items, "count": len(items)}

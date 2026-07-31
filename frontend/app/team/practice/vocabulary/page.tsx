@@ -10,6 +10,8 @@ import {
 	GitBranch,
 	Sparkles,
 	Filter,
+	Zap,
+	Eye,
 } from 'lucide-react';
 
 import { useWordVault } from '@/lib/hooks/useVault';
@@ -50,6 +52,20 @@ const GAMES: GameTile[] = [
 		subtitle: 'Spot the word that doesn’t belong',
 		Icon: Filter,
 		minutes: 3,
+	},
+	{
+		slug: 'prefix-power',
+		title: 'Prefix Power',
+		subtitle: 'Pick the prefix that fits the sentence',
+		Icon: Zap,
+		minutes: 3,
+	},
+	{
+		slug: 'wrong-word-hunt',
+		title: 'Wrong Word Hunt',
+		subtitle: 'Spot the word that doesn’t fit — then fix it',
+		Icon: Eye,
+		minutes: 4,
 	},
 ];
 
