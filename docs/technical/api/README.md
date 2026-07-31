@@ -163,10 +163,100 @@ Authenticate a Pusher channel subscription.
 
 ---
 
+## Vault `/api/vault` (Practice)
+
+The vault backs the 17 grade 3–4 practice games. Every attempt POSTs here; games query due/wrong-recent to build sessions. All endpoints require `X-User-Id` except `/catalog/*` (same pool for every user).
+
+### Facts (math)
+
+#### `POST /api/vault/fact/attempt`
+Record an attempt, upsert the vault row, return the updated row. Handles SM-2-lite scheduling and status transitions.
+
+**Body:**
+```json
+{
+  "fact_id": "mult_7x8",
+  "fact_type": "mult",
+  "operands": [7, 8],
+  "answer": "56",
+  "game_id": "mult_ladder",
+  "correct": true,
+  "ms": 2400
+}
+```
+`fact_type` ∈ `mult | div | add | sub | frac_eq | frac_cmp`
+
+#### `GET /api/vault/fact/due?limit=20&fact_type=mult`
+Due items ordered sticky first, then earliest-due learning. Returns `{items, sticky_count, learning_count, mastered_count}`.
+
+#### `GET /api/vault/fact/wrong-recent?limit=10`
+Facts missed in the last 7 days, most-missed first. Powers Wrong Answer Journal.
+
+### Words (vocabulary)
+
+#### `POST /api/vault/word/encounter`
+**Body:**
+```json
+{ "word": "determined", "pos": "adj", "game_id": "cloze_detective", "mode": "cloze", "correct": true, "ms": 3200 }
+```
+`mode` ∈ `cloze | morph | network | prod | sound | defn`
+
+#### `GET /api/vault/word/due?limit=20`
+Due words, sticky first. Sticky = ≥3 encounters with <60% accuracy.
+
+### Aggregates
+
+#### `GET /api/vault/stats`
+Landing-page counters: `{facts_total, facts_mastered, facts_sticky, facts_learning, words_seen, words_mastered, words_sticky, last_practice_at}`.
+
+#### `GET /api/vault/warmup?facts=5&words=5`
+Personalized digest — most-in-need items across both vaults. Returns `{facts: [...], words: [...]}`.
+
+### Catalogs (no per-user data — same pool for everyone)
+
+| Method | Path | Notes |
+|---|---|---|
+| `GET` | `/api/vault/catalog/facts?fact_type=&tier=` | 277 math facts |
+| `GET` | `/api/vault/catalog/words?level=&pos=&has_morphology=` | 107 tier-2 words |
+| `GET` | `/api/vault/catalog/word/{word}` | Full metadata for one word |
+| `GET` | `/api/vault/catalog/odd-one-out?level=` | 30 curated 4-word sets |
+| `GET` | `/api/vault/catalog/prefix-power?level=` | 30 fill-a-prefix sentences |
+| `GET` | `/api/vault/catalog/wrong-word-hunt?level=` | 30 swapped-word passages |
+| `GET` | `/api/vault/catalog/word-problems?level=&operation=` | 30 word problems |
+| `GET` | `/api/vault/catalog/missing-number?level=` | 30 detective missing-number problems |
+
+Full engine detail in [Practice Engine](../practice-engine.md).
+
+---
+
+## AI `/api/ai` (Practice)
+
+Proxies to LiteLLM at `https://llm.lindela.io` (OpenAI-compatible, `sk-pjs-litellm-master-key`). Default model: `gemma4:cloud`.
+
+### `POST /api/ai/grade-sentence`
+Sentence Spinner — grade a kid's sentence for correct target-word usage.
+
+**Body:** `{ "sentence": "...", "target_word": "determined", "required_elements": ["a chef", "at the beach"] }`
+**Response:** `{ "used_correctly": bool, "included_all": bool, "feedback": "...", "score": 0-10 }`
+
+### `POST /api/ai/grade-story-problem`
+Build-a-Problem — grade a story that should represent a given equation.
+
+**Body:** `{ "kid_story": "...", "equation": "24 ÷ 6 = 4" }`
+**Response:** `{ "matches_equation": bool, "makes_sense": bool, "feedback": "...", "score": 0-10, "example_story": "..." }`
+
+### `POST /api/ai/generate-word-clues`
+Wordish Charades — 3 progressively easier clues for a word.
+
+**Body:** `{ "word": "determined", "pos": "adj", "definition": "..." }`
+**Response:** `{ "word": "determined", "clues": ["hardest", "medium", "easiest"] }`
+
+---
+
 ## Health
 
 ### `GET /health`
-`{ "status": "healthy", "app": "WSC Scholar Games" }` — no auth required.
+`{ "status": "healthy", "app": "Llocal Games" }` — no auth required.
 
 ---
 
