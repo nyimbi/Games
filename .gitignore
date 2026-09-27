@@ -684,3 +684,6 @@ webserver_config.py
 # UV
 uv.lock
 .uv-cache/
+
+# zvec-grep local workspace index
+.zvec-grep/
