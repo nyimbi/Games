@@ -135,12 +135,6 @@ h1 span{color:var(--sky-d)}
 .stars{display:flex;justify-content:center;gap:8px;margin:16px 0 4px;font-size:1.9rem}
 .stars span{opacity:.2;filter:grayscale(1);transition:.3s}
 .stars span.on{opacity:1;filter:none;transform:scale(1.1)}
-.toast{position:fixed;left:50%;top:16px;z-index:50;transform:translateX(-50%) translateY(-90px);
-  background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:900;
-  box-shadow:0 12px 30px rgba(25,28,58,.3);transition:transform .3s cubic-bezier(.22,1,.36,1);
-  font-size:.98rem;pointer-events:none;max-width:90vw;text-align:center}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.good{background:var(--good)}.toast.bad{background:var(--bad)}
 .hint{margin-top:14px;font-size:1rem;color:var(--ink-2);font-weight:700;min-height:1.5em;line-height:1.5;text-align:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (max-width:600px){
@@ -219,7 +213,6 @@ h1 span{color:var(--sky-d)}
     </div>
   </section>
 </div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (() => {
@@ -331,7 +324,7 @@ h1 span{color:var(--sky-d)}
 
   /* ---------------- state ---------------- */
   const state = {
-    lesson: 0, len: 0, text: '', pos: 0, input: '',
+    lesson: 0, len: 0, text: '', pos: 0,
     typed: 0, correct: 0, errors: 0, keyErr: {},
     started: false, startAt: 0, timer: null, done: false,
     progress: {}
@@ -409,16 +402,6 @@ h1 span{color:var(--sky-d)}
       s.innerHTML = `<i style="background:${f.color}"></i>${f.name}`;
       lg.appendChild(s);
     });
-  }
-
-  function fingerFor(ch) {
-    if (ch === ' ') return 'li';
-    for (const row of ROWS) for (const [label, finger] of row) {
-      if (label === ch) return finger;
-    }
-    const upper = ch.toUpperCase();
-    if (upper !== ch) return fingerFor(upper.toLowerCase()) || 'li';
-    return null;
   }
 
   function keyEl(ch) {
@@ -558,7 +541,7 @@ h1 span{color:var(--sky-d)}
   function startLesson(i) {
     state.lesson = i;
     state.text = buildText(i);
-    state.pos = 0; state.input = ''; state.typed = 0; state.correct = 0;
+    state.pos = 0; state.typed = 0; state.correct = 0;
     state.errors = 0; state.keyErr = {};
     state.started = false; state.done = false;
     clearInterval(state.timer);
@@ -623,15 +606,6 @@ h1 span{color:var(--sky-d)}
     if (next < LESSONS.length && unlocked(next)) startLesson(next);
     else toLessons();
   });
-
-  let toastTimer;
-  function toast(msg, kind) {
-    const t = $('toast');
-    t.textContent = msg;
-    t.className = 'toast show' + (kind ? ' ' + kind : '');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
-  }
 
   load(); buildKeyboard(); renderLessons();
 })();
