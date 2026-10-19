@@ -1,6 +1,6 @@
 # The Arcade: design and implementation notes
 
-Seven self-contained files in `frontend/public/arcade/`. No build step, no network, no accounts. Each game is one HTML file with inline CSS and JS; progress lives in `localStorage` under a per-game key.
+Eight self-contained games in `frontend/public/arcade/`. No build step, no network, no accounts. Each game is one HTML file with inline CSS and JS; progress lives in `localStorage` under a per-game key. The spelling bee carries its word bank in a separate `spelling-bank.js` (a single JSON array on `window.SPELL_BANK`), because a thousand annotated words inline would triple the file and make the engine unreadable.
 
 This document records what each game teaches, why the interaction is shaped the way it is, and the implementation that carries it. The reader it is written for is a teacher or a parent who wants to know why the screen looks like that — and the next person who has to change it.
 
@@ -184,9 +184,39 @@ The keyboard is drawn on screen, and every key carries a **finger colour** — e
 
 ---
 
+## 08 · Spelling Bee (`spelling-bee.html`)
+
+**Teaches:** the spelling of 1,239 competition words, and the reasons behind them.
+
+Most spelling software is a word list with a text box. That teaches one thing — whether you happen to know a word — and nothing about the word that would let you derive it the next time. This game is built on the opposite premise: a hard spelling is almost always the trace of a rule, a root, or a historical accident, and a learner who can name which one applies can reconstruct the word instead of recalling it.
+
+**Every word carries four explanations**, shown together on the study card and split across the feedback in the drills:
+
+- **Root.** The etymology, with the actual morphemes named and glossed. `photograph` is Greek *phos* (light) + *graphein* (to write), which is why it has two `ph` and no `f`. This is the highest-value field, because origin language predicts spelling: Greek says expect `ph`, `ch`, and `y`; French says expect a silent final consonant; Latin says expect the prefix to assimilate.
+- **Rule.** A reusable statement the child can apply to other words — not "remember the double m" but "`ad-` assimilates to the next consonant, and *commodus* already had `mm`". The rules sheet behind the header button collects twenty of these, from *i before e* to the `-cede/-ceed/-sede` split.
+- **Trap.** A chunked respelling or mnemonic with the hard letters capitalised: `acc-MM-odate`. It is shown as monospace because it is a sequence of letters, not a sentence.
+- **Sentence.** The word used correctly in a child-readable sentence, with the headword bolded. The definition alone does not tell `stationary` from `stationery`; a sentence about a parked car does.
+
+**Four modes, chosen for four different retrieval paths.** Recall is not one skill, and a spelling that is easy to produce from a definition can be impossible to produce from sound.
+
+- **Learn** — the study card. All four explanations at once, with speech for the word and the sentence. This is the presentation phase; it is not scored.
+- **Spell it** — the word is spoken and its definition is shown, and the learner types it. Fifty words. The definition is the retrieval cue, which is the cue that matters in writing.
+- **Tell them apart** — four spellings, one meaning, one right answer. This is the *differentiation* drill: the failure mode for a competent speller is not an unknown word, it is `principle` where they meant `principal`. Options are drawn only from words that are themselves in the bank, so a distractor is always a real word with a real meaning — never a misspelling, which would teach the wrong form by showing it. Most words carry one hand-written confusable, so the remaining slots are filled with near neighbours from the same tier, scored on a shared prefix, shared letters, a shared ending and a similar length. Without that fallback the drill was a two-option coin flip for 871 of the 1,239 words; with it, every question is four distinct real words and the discrimination is in the spelling.
+- **The Bee** — the competition format. The word is spoken and *not* shown; the learner may spend clues on the definition, the origin, or a sentence, and has three lives. Twenty words. The clue buttons are the metacognitive training: a bee speller who knows the word is French should ask for the origin, and this mode rewards knowing which question to ask.
+
+**Word count.** `BANK.length` drives the home screen, and the bank holds 1,239 entries, split 315 / 379 / 545 across the three tiers. Tier 1 is ages 8–9, tier 2 ages 10–11, tier 3 ages 12–14; the Bee draws from the chosen tier upward, so a champion-level learner is not served `pebble`.
+
+**Freshness.** The same `seen` map and `freshFirst`/`markSeen`/`newCycle` machinery as the maths drills, keyed by tier *and* mode, so a second visit meets words the child has not been shown. `markSeen` fires when a card is rendered, not when the deck is built.
+
+**Speech.** `speechSynthesis` reads the word twice at 0.78 rate, then the definition or sentence on request. This is the one feature that makes the Bee usable without a reader, and it is why the mode can exist at all.
+
+**Results.** Accuracy percentage, stars on the same `90 / 70` thresholds as the maths games, and a list of the words missed with what the child actually typed. That list is the study plan for the next session.
+
+---
+
 ## The index (`index.html`)
 
-Seven cards, each with an illustration, a one-sentence description, tags, and **0–3 stars read from that game's own storage**. Each game writes `{ level|mode: bestPct }`; the index scans the bucket, takes the maximum, and maps it to stars with the same thresholds the games use. The arena stores EMAs instead, so its card reads the maximum `ema × 100`.
+Eight cards, each with an illustration, a one-sentence description, tags, and **0–3 stars read from that game's own storage**. Each game writes `{ level|mode: bestPct }`; the index scans the bucket, takes the maximum, and maps it to stars with the same thresholds the games use. The arena stores EMAs instead, so its card reads the maximum `ema × 100`.
 
 Above the grid, a **Today's suggestion** lane lists the three games played least recently, with "Never played" or "N days ago" beside each. It is computed on load and hidden if the list is empty. The point is to make the choice of what to play next a decision the page can help with, rather than one the child makes by picking the same card every time.
 

@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spelling Bee — a thousand words, and why they are spelled that way</title>
+<meta name="description" content="A spelling learner and tester for a thousand competition words. Study the etymology, the rule, and the confusables; then spell from sound, from meaning, and from context.">
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
+  --paper:#fdf7ea;--card:#fffdf8;--line:#e7dcc4;
+  --sun:#ffb703;--coral:#ff6b6b;--teal:#0fb5a1;--indigo:#5b6cff;
+  --grape:#9b5de5;--lime:#7cb518;--sky:#2b8fd6;
+  --hard:6px 6px 0 var(--ink);
+  --wash-1:#efe3ff;--wash-2:#dbe2ff;--wash-3:#ffe9c9;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);font-size:1.05rem;line-height:1.5;
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(900px 540px at 4% -8%,var(--wash-1) 0%,transparent 62%),
+    radial-gradient(860px 540px at 102% 0%,var(--wash-2) 0%,transparent 58%),
+    radial-gradient(820px 600px at 50% 118%,var(--wash-3) 0%,transparent 64%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.10) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.3) 45%,transparent 78%);
+  mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.3) 45%,transparent 78%);
+}
+.shell{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:22px 18px 80px}
+
+/* ---------- chrome ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.02em;font-size:1rem;color:var(--ink);text-decoration:none}
+.brand .mark{
+  width:36px;height:36px;border-radius:12px;border:2.5px solid var(--ink);background:var(--grape);
+  color:#fff;display:grid;place-items:center;box-shadow:0 3px 0 var(--ink);font-size:1.05rem
+}
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2.5px solid var(--ink);
+  border-radius:999px;padding:7px 13px;font-weight:800;font-size:.82rem;box-shadow:0 3px 0 var(--ink);
+  color:var(--ink);font-family:inherit;cursor:pointer
+}
+.chip.ghost{background:#fffdf8}
+.chip:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.chip[aria-pressed="true"]{background:var(--grape);color:#fff}
+
+h1{font-size:clamp(1.8rem,5vw,2.5rem);letter-spacing:-.035em;line-height:1.1;margin:0 0 12px;font-weight:900;text-wrap:balance}
+h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-mix(in srgb,var(--grape) 32%,#fff) 62%)}
+.lede{margin:0 0 26px;color:var(--ink-2);font-size:1.04rem;line-height:1.6;font-weight:600;max-width:60ch}
+.lede b{color:var(--ink)}
+
+.sectlabel{font-size:.74rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+
+/* ---------- home choices ---------- */
+.grid{display:grid;gap:10px}
+.tiers{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.tierbtn{
+  display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;
+  background:var(--card);border:2.5px solid var(--ink);border-radius:16px;padding:13px 15px;
+  box-shadow:0 4px 0 var(--ink);cursor:pointer;font-family:inherit;color:var(--ink);
+  transition:transform .12s ease
+}
+.tierbtn:hover{transform:translateY(-2px)}
+.tierbtn[aria-pressed="true"]{background:color-mix(in srgb,var(--grape) 14%,#fff);border-color:var(--grape);box-shadow:0 4px 0 var(--grape)}
+.tierbtn b{font-size:1.02rem;font-weight:900}
+.tierbtn span{font-size:.82rem;color:var(--muted);font-weight:700}
+
+.modes{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.modebtn{
+  display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;text-align:left;
+  background:var(--card);border:2.5px solid var(--ink);border-radius:16px;padding:14px;
+  box-shadow:0 4px 0 var(--ink);cursor:pointer;font-family:inherit;color:var(--ink)
+}
+.modebtn:hover{background:color-mix(in srgb,var(--grape) 7%,#fff)}
+.modebtn .ic{
+  width:40px;height:40px;border-radius:12px;border:2.5px solid var(--ink);display:grid;place-items:center;
+  font-size:1.1rem;background:color-mix(in srgb,var(--grape) 18%,#fff)
+}
+.modebtn b{display:block;font-size:.98rem;font-weight:900;margin-bottom:2px}
+.modebtn small{display:block;font-size:.82rem;color:var(--muted);font-weight:700;line-height:1.45}
+
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:2px dashed var(--line)}
+.stat{display:flex;flex-direction:column}
+.stat b{font-size:1.4rem;font-weight:900;line-height:1.1}
+.stat span{font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- stage ---------- */
+.stage{display:none}
+.stage.on{display:block}
+.bar{height:12px;border:2.5px solid var(--ink);border-radius:999px;background:#fffdf8;overflow:hidden;margin:0 0 16px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--grape),var(--indigo));transition:width .3s ease}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.counter{font-size:.84rem;font-weight:800;color:var(--muted)}
+.counter b{color:var(--ink)}
+
+.panel{
+  background:var(--card);border:2.5px solid var(--ink);border-radius:22px;padding:24px 22px;
+  box-shadow:var(--hard)
+}
+.panel + .panel{margin-top:16px}
+
+.wordbig{
+  font-size:clamp(1.9rem,7vw,3rem);font-weight:900;letter-spacing:.04em;line-height:1.1;
+  margin:0 0 6px;word-break:break-word
+}
+.sayline{font-family:ui-monospace,Menlo,monospace;font-size:.95rem;color:var(--muted);font-weight:700;margin:0 0 14px;letter-spacing:.01em}
+.badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.badge{
+  font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;
+  border:2px solid var(--ink);border-radius:999px;padding:3px 10px;background:#fffdf8
+}
+.badge.origin{background:color-mix(in srgb,var(--sky) 18%,#fff)}
+.badge.tier{background:color-mix(in srgb,var(--sun) 26%,#fff)}
+.badge.pos{background:color-mix(in srgb,var(--teal) 16%,#fff)}
+
+.def{margin:0 0 12px;font-size:1.05rem;line-height:1.55;font-weight:700}
+.sent{margin:0 0 4px;font-size:1.02rem;line-height:1.6;color:var(--ink-2);font-style:italic}
+.sent b{color:var(--ink);font-style:normal;text-decoration:underline;text-decoration-color:var(--grape);text-decoration-thickness:3px;text-underline-offset:3px}
+.blankline{display:inline-block;min-width:9ch;border-bottom:3px solid var(--grape);vertical-align:baseline}
+
+.explain{margin-top:18px;padding-top:16px;border-top:2px dashed var(--line)}
+.exrow{display:grid;grid-template-columns:auto 1fr;gap:12px;margin-bottom:14px;align-items:start}
+.exrow:last-child{margin-bottom:0}
+.extag{
+  font-size:.68rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
+  border:2px solid var(--ink);border-radius:8px;padding:3px 8px;white-space:nowrap;margin-top:2px
+}
+.extag.origin{background:color-mix(in srgb,var(--sky) 20%,#fff)}
+.extag.rule{background:color-mix(in srgb,var(--lime) 24%,#fff)}
+.extag.trick{background:color-mix(in srgb,var(--sun) 30%,#fff)}
+.exrow p{margin:0;font-size:.96rem;line-height:1.55;font-weight:600;color:var(--ink-2)}
+.exrow p b{color:var(--ink)}
+.trickline{font-family:ui-monospace,Menlo,monospace;font-size:.95rem;letter-spacing:.06em}
+
+.pairs{margin-top:16px;padding-top:14px;border-top:2px dashed var(--line)}
+.pairs h4{margin:0 0 9px;font-size:.74rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pairrow{display:flex;gap:8px;flex-wrap:wrap}
+.pairchip{
+  font-family:ui-monospace,Menlo,monospace;font-size:.9rem;font-weight:800;
+  border:2.5px solid var(--ink);border-radius:10px;padding:5px 11px;background:#fffdf8;color:var(--ink);
+  cursor:pointer
+}
+.pairchip:hover{background:color-mix(in srgb,var(--coral) 14%,#fff)}
+.pairchip.mine{background:color-mix(in srgb,var(--grape) 16%,#fff)}
+
+/* ---------- input ---------- */
+.answerbox{margin:20px 0 0}
+.answerbox label{display:block;font-size:.74rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+#spell{
+  width:100%;font-family:inherit;font-size:1.5rem;font-weight:800;letter-spacing:.12em;
+  padding:14px 16px;border:2.5px solid var(--ink);border-radius:14px;background:#fffdf8;color:var(--ink);
+  box-shadow:inset 0 2px 0 rgba(25,28,58,.06);text-align:center
+}
+#spell:focus{outline:3px solid var(--grape);outline-offset:2px}
+#spell::placeholder{color:#c4bda9;letter-spacing:.06em;font-weight:700}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{
+  font-family:inherit;font-size:1rem;font-weight:900;border:2.5px solid var(--ink);border-radius:14px;
+  padding:12px 20px;cursor:pointer;background:var(--card);color:var(--ink);box-shadow:0 4px 0 var(--ink);
+  transition:transform .1s ease;min-height:48px;display:inline-flex;align-items:center;gap:8px
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn.primary{background:var(--grape);color:#fff}
+.btn.soft{background:#fffdf8}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:0 4px 0 var(--ink)}
+.btn.small{font-size:.86rem;padding:9px 14px;min-height:42px}
+
+.feedback{margin-top:18px;border-radius:16px;padding:16px;border:2.5px solid var(--ink);display:none}
+.feedback.on{display:block}
+.feedback.good{background:color-mix(in srgb,var(--teal) 14%,#fff)}
+.feedback.bad{background:color-mix(in srgb,var(--coral) 14%,#fff)}
+.feedback h3{margin:0 0 8px;font-size:1rem;font-weight:900}
+.diff{font-family:ui-monospace,Menlo,monospace;font-size:1.25rem;letter-spacing:.08em;margin:0 0 8px;word-break:break-word}
+.diff .ok{color:var(--ink)}
+.diff .bad{color:var(--coral);text-decoration:underline wavy var(--coral);text-underline-offset:4px}
+.yours{font-family:ui-monospace,Menlo,monospace;font-size:.9rem;color:var(--muted);margin:0 0 10px}
+.feedback p{margin:0 0 8px;font-size:.94rem;line-height:1.55;font-weight:600;color:var(--ink-2)}
+.feedback p:last-child{margin-bottom:0}
+.feedback p b{color:var(--ink)}
+
+/* ---------- differ ---------- */
+.optgrid{display:grid;gap:10px;margin-top:18px}
+.opt{
+  font-family:ui-monospace,Menlo,monospace;font-size:1.08rem;font-weight:800;letter-spacing:.04em;
+  border:2.5px solid var(--ink);border-radius:14px;padding:14px 16px;background:#fffdf8;color:var(--ink);
+  cursor:pointer;text-align:left;box-shadow:0 3px 0 var(--ink)
+}
+.opt:hover{background:color-mix(in srgb,var(--grape) 8%,#fff)}
+.opt.right{background:color-mix(in srgb,var(--teal) 22%,#fff);border-color:var(--teal);box-shadow:0 3px 0 var(--teal)}
+.opt.wrong{background:color-mix(in srgb,var(--coral) 20%,#fff);border-color:var(--coral);box-shadow:0 3px 0 var(--coral);text-decoration:line-through}
+.opt:disabled{cursor:default;transform:none}
+
+/* ---------- bee ---------- */
+.beeheard{
+  text-align:center;padding:22px 0 8px;
+}
+.beeheard .ear{font-size:2.6rem;line-height:1;margin-bottom:10px}
+.beeheard p{margin:0;color:var(--muted);font-weight:700;font-size:.95rem}
+.lives{display:flex;gap:5px;font-size:1.1rem;letter-spacing:.05em}
+.lives .dead{opacity:.22}
+.reveal{margin-top:14px;display:grid;gap:8px}
+.reveal .row{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:.94rem;font-weight:600;color:var(--ink-2)}
+.reveal .row b{color:var(--ink);font-weight:900;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding-top:3px;min-width:5.4em}
+
+/* ---------- results ---------- */
+.result{text-align:center;padding:34px 22px}
+.result .big{font-size:clamp(2.4rem,9vw,3.6rem);font-weight:900;line-height:1;margin:0 0 6px}
+.result .sub{color:var(--muted);font-weight:700;margin:0 0 22px}
+.stars{font-size:1.7rem;letter-spacing:.16em;margin-bottom:18px;color:#d6cdb6}
+.stars .on{color:var(--sun);text-shadow:0 1px 0 rgba(25,28,58,.25)}
+.missed{margin:22px 0 0;text-align:left;max-height:320px;overflow:auto}
+.missed h4{font-size:.74rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.missed ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.missed li{
+  display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border:2px solid var(--line);
+  border-radius:10px;background:#fffdf8;font-size:.94rem;font-weight:700
+}
+.missed li .corr{font-family:ui-monospace,Menlo,monospace;font-weight:900}
+.missed li .tried{font-family:ui-monospace,Menlo,monospace;color:var(--coral);text-decoration:line-through;font-weight:700}
+
+/* ---------- rules sheet ---------- */
+.sheet{
+  position:fixed;inset:0;z-index:50;background:rgba(25,28,58,.42);display:none;
+  padding:24px 16px;overflow:auto
+}
+.sheet.on{display:block}
+.sheetbox{
+  max-width:760px;margin:0 auto;background:var(--paper);border:2.5px solid var(--ink);
+  border-radius:22px;padding:24px 22px;box-shadow:var(--hard)
+}
+.sheetbox header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.sheetbox h2{margin:0;font-size:1.35rem;letter-spacing:-.02em}
+.ruleslist{display:grid;gap:12px;margin-top:16px}
+.ruleitem{border:2.5px solid var(--ink);border-radius:14px;padding:13px 15px;background:var(--card)}
+.ruleitem h3{margin:0 0 5px;font-size:.98rem;font-weight:900}
+.ruleitem p{margin:0;font-size:.92rem;line-height:1.55;color:var(--ink-2);font-weight:600}
+.ruleitem .ex{font-family:ui-monospace,Menlo,monospace;font-size:.88rem;color:var(--ink);font-weight:700;margin-top:6px;display:block}
+
+.empty{padding:30px;text-align:center;color:var(--muted);font-weight:700}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+@media (max-width:520px){
+  .shell{padding:16px 14px 60px}
+  .panel{padding:20px 16px}
+  .actions .btn{flex:1 1 auto;justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <a class="brand" href="./index.html"><span class="mark" aria-hidden="true">✎</span>Spelling Bee</a>
+    <div class="hud">
+      <span class="chip" id="hudBest">Best 0</span>
+      <button class="chip ghost" id="rulesBtn" type="button">Rules &amp; roots</button>
+    </div>
+  </header>
+
+  <!-- ============ HOME ============ -->
+  <section id="home" class="stage on">
+    <h1>A thousand words, and <em>why</em> they are spelled that way</h1>
+    <p class="lede">English spelling is not random — it is a fossil record. Every hard word carries a <b>rule</b>, a <b>root</b>, and a <b>trap</b>. Learn the three, and the spelling stops being something to memorise and starts being something to <b>derive</b>.</p>
+
+    <div class="sectlabel">Choose your level</div>
+    <div class="grid tiers" id="tiers" role="group" aria-label="Difficulty"></div>
+
+    <div class="sectlabel">Choose how to practise</div>
+    <div class="grid modes" id="modes"></div>
+
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <!-- ============ STUDY ============ -->
+  <section id="study" class="stage">
+    <div class="qhead">
+      <span class="counter">Card <b id="sNum">1</b> of <b id="sTot">50</b></span>
+      <button class="btn small soft" id="sExit" type="button">Leave</button>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="sBar"><i id="sProg"></i></div>
+    <div class="panel" id="sCard"></div>
+    <div class="actions">
+      <button class="btn soft" id="sPrev" type="button">← Back</button>
+      <button class="btn soft" id="sAgain" type="button">Practise this one</button>
+      <button class="btn primary" id="sNext" type="button">Next card →</button>
+    </div>
+  </section>
+
+  <!-- ============ DRILL ============ -->
+  <section id="drill" class="stage">
+    <div class="qhead">
+      <span class="counter">Question <b id="dNum">1</b> of <b id="dTot">50</b></span>
+      <span class="chip" id="dScore">0 right</span>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="dBar"><i id="dProg"></i></div>
+    <div class="panel">
+      <div class="badges" id="dBadges"></div>
+      <p class="def" id="dDef"></p>
+      <p class="sent" id="dSent"></p>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn soft small" id="dSay" type="button">🔊 Hear it</button>
+        <button class="btn soft small" id="dHint" type="button">Hint</button>
+      </div>
+      <div id="dHintBox"></div>
+      <div class="answerbox">
+        <label for="spell">Spell the word</label>
+        <input id="spell" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="type it here">
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="dCheck" type="button">Check</button>
+        <button class="btn soft" id="dNext" type="button" hidden>Next →</button>
+      </div>
+      <div class="feedback" id="dFb" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ DIFFER ============ -->
+  <section id="differ" class="stage">
+    <div class="qhead">
+      <span class="counter">Question <b id="fNum">1</b> of <b id="fTot">50</b></span>
+      <span class="chip" id="fScore">0 right</span>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="fBar"><i id="fProg"></i></div>
+    <div class="panel">
+      <p class="def" id="fDef"></p>
+      <p class="sent" id="fSent"></p>
+      <div class="optgrid" id="fOpts" role="group" aria-label="Which spelling"></div>
+      <div class="feedback" id="fFb" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn primary" id="fNext" type="button" hidden>Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BEE ============ -->
+  <section id="bee" class="stage">
+    <div class="qhead">
+      <span class="counter">Word <b id="bNum">1</b> of <b id="bTot">20</b></span>
+      <span class="lives" id="bLives" aria-label="lives left"></span>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bBar"><i id="bProg"></i></div>
+    <div class="panel">
+      <div class="beeheard">
+        <div class="ear" aria-hidden="true">👂</div>
+        <p>The word is spoken. Listen, then spell it.</p>
+      </div>
+      <div class="actions" style="justify-content:center">
+        <button class="btn soft small" id="bSay" type="button">🔊 Say it again</button>
+        <button class="btn soft small" id="bDefBtn" type="button">Definition</button>
+        <button class="btn soft small" id="bOrgBtn" type="button">Origin</button>
+        <button class="btn soft small" id="bSentBtn" type="button">Sentence</button>
+      </div>
+      <div class="reveal" id="bReveal"></div>
+      <div class="answerbox">
+        <label for="spellBee">Your spelling</label>
+        <input id="spellBee" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="type it here">
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="bCheck" type="button">Check</button>
+        <button class="btn soft" id="bNext" type="button" hidden>Next →</button>
+      </div>
+      <div class="feedback" id="bFb" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="done" class="stage">
+    <div class="panel result">
+      <div class="stars" id="rStars"></div>
+      <p class="big" id="rPct">0%</p>
+      <p class="sub" id="rSub"></p>
+      <div class="actions" style="justify-content:center">
+        <button class="btn primary" id="rAgain" type="button">Play again</button>
+        <button class="btn soft" id="rHome" type="button">Back to start</button>
+      </div>
+      <div class="missed" id="rMissed"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ RULES SHEET ============ -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheetbox">
+    <header>
+      <h2 id="sheetTitle">Rules &amp; roots</h2>
+      <button class="chip ghost" id="sheetClose" type="button">Close</button>
+    </header>
+    <p class="lede" style="margin-bottom:0;font-size:.94rem">Twenty rules that cover most of English spelling, and the origin languages that tell you which one to reach for.</p>
+    <div class="ruleslist" id="rulesList"></div>
+  </div>
+</div>
+
+<script src="./spelling-bank.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const KEY = 'arcade.spelling.v1';
+  const TOTAL = 50;
+  const BEE_RUN = 20;
+  const SEEN_CAP = 1400;
+
+  const BANK = Array.isArray(window.SPELL_BANK) ? window.SPELL_BANK : [];
+  const BY_WORD = new Map(BANK.map(w => [w.w.toLowerCase(), w]));
+
+  /* ---------------- persisted state ---------------- */
+  const state = {
+    best: 0, perTier: {}, review: {}, seen: {},
+    tier: 1, mode: 'study', queue: [], index: 0, input: '',
+    right: 0, misses: [], streak: 0, lives: 3, reveals: {},
+  };
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (!s) return;
+      state.best = s.best || 0;
+      state.perTier = s.perTier || {};
+      state.review = s.review || {};
+      state.seen = s.seen || {};
+      state.tier = s.tier || 1;
+    } catch (_) {}
+  }
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        best: state.best, perTier: state.perTier, review: state.review,
+        seen: state.seen, tier: state.tier,
+      }));
+    } catch (_) {}
+  };
+
+  /* ---------------- freshness ---------------- */
+  const tierKey = t => 'tier' + t;
+
+  function freshFirst(pool, key) {
+    const bucket = state.seen[key] || {};
+    const fresh = [], stale = [];
+    pool.forEach(w => ((bucket[w.w] || 0) === 0 ? fresh : stale).push(w));
+    shuffle(stale).sort((x, y) => (bucket[x.w] || 0) - (bucket[y.w] || 0));
+    shuffle(fresh);
+    return fresh.concat(stale);
+  }
+  function markSeen(key, word) {
+    const bucket = state.seen[key] || (state.seen[key] = {});
+    if (!bucket[word] && Object.keys(bucket).length >= SEEN_CAP) {
+      const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
+      if (oldest) delete bucket[oldest[0]];
+    }
+    bucket[word] = Date.now();
+  }
+  function newCycle(pool, key) {
+    const bucket = state.seen[key] || {};
+    return pool.slice().sort((x, y) => (bucket[x.w] || 0) - (bucket[y.w] || 0));
+  }
+
+  const shuffle = a => {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ---------------- speech ---------------- */
+  let voice = null;
+  function pickVoice() {
+    if (!('speechSynthesis' in window)) return;
+    const vs = speechSynthesis.getVoices();
+    if (!vs.length) return;
+    voice = vs.find(v => /en-GB|en-US/.test(v.lang) && /female|Samantha|Google UK|Google US/i.test(v.name))
+         || vs.find(v => v.lang.startsWith('en')) || null;
+  }
+  if ('speechSynthesis' in window) {
+    pickVoice();
+    speechSynthesis.addEventListener('voiceschanged', pickVoice);
+  }
+  function say(text, rate) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = rate || .82; u.pitch = 1;
+      if (voice) u.voice = voice;
+      speechSynthesis.speak(u);
+    } catch (_) {}
+  }
+  const sayWord = w => { say(w.w, .78); setTimeout(() => say(w.w, .78), 700); };
+
+  /* ---------------- pools ---------------- */
+  const hasConfusable = w => (w.pairs || []).some(p =>
+    p.toLowerCase() !== w.w.toLowerCase() && BY_WORD.has(p.toLowerCase()));
+  const poolFor = tier => BANK.filter(w => w.tier === tier);
+  const differPool = tier => BANK.filter(w => w.tier === tier && hasConfusable(w));
+
+  /* ---------------- queue builder ----------------
+     Unseen words first, then least recently seen. A pool smaller than a deck
+     cycles instead of repeating inside one deck: the first sweep is unique,
+     later sweeps only forbid an immediate repeat. */
+  function buildQueue(pool, key, total) {
+    const out = [];
+    const due = Object.entries(state.review)
+      .filter(([, r]) => r.due)
+      .map(([w]) => BY_WORD.get(w))
+      .filter(w => w && pool.includes(w))
+      .slice(0, 3);
+    due.forEach(w => { if (!out.some(o => o.w === w.w)) out.push(w); });
+
+    let order = freshFirst(pool, key);
+    let i = 0, pass = 0, guard = 0;
+    while (out.length < total && guard++ < total * 400) {
+      if (i >= order.length) { order = newCycle(pool, key); i = 0; pass++; }
+      const w = order[i++];
+      if (pass === 0 && out.some(o => o.w === w.w)) continue;
+      if (out.length && out[out.length - 1].w === w.w) continue;
+      out.push(w);
+    }
+    return out;
+  }
+
+  /* ---------------- study ---------------- */
+  function renderStudy() {
+    const w = state.queue[state.index];
+    if (!w) return finish('study');
+    $('sNum').textContent = state.index + 1;
+    $('sTot').textContent = state.queue.length;
+    $('sProg').style.width = (state.index / state.queue.length * 100) + '%';
+    $('sBar').setAttribute('aria-valuenow', Math.round(state.index / state.queue.length * 100));
+
+    // Only words that are actually in the bank can be offered as confusables;
+    // a misspelling shown beside the right spelling teaches the wrong one.
+    const pairs = (w.pairs || [])
+      .filter(p => p.toLowerCase() !== w.w.toLowerCase() && BY_WORD.has(p.toLowerCase()))
+      .map(p => `<button class="pairchip" type="button" data-pair="${esc(p)}">${esc(p)}</button>`)
+      .join('');
+
+    $('sCard').innerHTML = `
+      <div class="badges">
+        <span class="badge tier">Tier ${w.tier}</span>
+        <span class="badge pos">${esc(w.pos)}</span>
+        <span class="badge origin">${esc(w.origin)}</span>
+      </div>
+      <p class="wordbig">${esc(w.w)}</p>
+      <p class="sayline">${esc(w.say)}</p>
+      <div class="actions" style="margin-top:0;margin-bottom:16px">
+        <button class="btn soft small" type="button" data-say="word">🔊 Say the word</button>
+        <button class="btn soft small" type="button" data-say="sent">🔊 Say the sentence</button>
+      </div>
+      <p class="def">${esc(w.def)}</p>
+      <p class="sent">${sentenceHTML(w)}</p>
+      <div class="explain">
+        <div class="exrow"><span class="extag origin">Root</span><p>${esc(w.ety)}</p></div>
+        <div class="exrow"><span class="extag rule">Rule</span><p>${esc(w.rule)}</p></div>
+        <div class="exrow"><span class="extag trick">Trap</span><p class="trickline">${esc(w.tricky)}</p></div>
+      </div>
+      ${pairs ? `<div class="pairs"><h4>Do not confuse with</h4><div class="pairrow">${pairs}</div></div>` : ''}
+    `;
+    $('sCard').querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.say === 'word') sayWord(w);
+      else say(w.sent, .88);
+    }));
+    $('sCard').querySelectorAll('[data-pair]').forEach(b => b.addEventListener('click', () => {
+      showPair(b.dataset.pair);
+    }));
+    $('sPrev').disabled = state.index === 0;
+  }
+
+  /* The sentence may inflect the headword ("idiosyncrasies" for
+     "idiosyncrasy"), so match the longest prefix of the word that actually
+     occurs, down to four letters, and bold what is there. */
+  function sentenceHTML(w) {
+    const s = w.sent || '', low = s.toLowerCase(), head = w.w.toLowerCase();
+    for (let n = head.length; n >= 4; n--) {
+      const i = low.indexOf(head.slice(0, n));
+      if (i >= 0) {
+        let end = i + n;
+        while (end < s.length && /[a-z']/i.test(s[end])) end++;
+        return esc(s.slice(0, i)) + '<b>' + esc(s.slice(i, end)) + '</b>' + esc(s.slice(end));
+      }
+    }
+    return esc(s);
+  }
+
+  function showPair(p) {
+    const other = BY_WORD.get(p.toLowerCase());
+    const card = $('sCard');
+    card.querySelectorAll('.pairchip').forEach(b => b.classList.toggle('mine', b.dataset.pair === p));
+    if (other) {
+      state.queue.splice(state.index + 1, 0, other);
+      card.querySelector('.pairs').insertAdjacentHTML('afterend',
+        `<div class="feedback on good" style="margin-top:14px">
+           <h3>${esc(other.w)}</h3>
+           <p>${esc(other.def)}</p>
+           <p class="trickline">${esc(other.tricky)}</p>
+           <p>${esc(other.rule)}</p>
+         </div>`);
+    } else {
+      say(p, .85);
+    }
+  }
+
+  /* ---------------- drill ---------------- */
+  function renderDrill() {
+    const w = state.queue[state.index];
+    if (!w) return finish('drill');
+    state.input = '';
+    $('dNum').textContent = state.index + 1;
+    $('dTot').textContent = state.queue.length;
+    $('dScore').textContent = state.right + ' right';
+    $('dProg').style.width = (state.index / state.queue.length * 100) + '%';
+    $('dBar').setAttribute('aria-valuenow', Math.round(state.index / state.queue.length * 100));
+    $('dBadges').innerHTML = `<span class="badge tier">Tier ${w.tier}</span><span class="badge pos">${esc(w.pos)}</span>`;
+    $('dDef').textContent = w.def;
+    $('dSent').innerHTML = blankSentence(w);
+    $('dHintBox').innerHTML = '';
+    $('dFb').className = 'feedback';
+    $('dFb').innerHTML = '';
+    $('dNext').hidden = true;
+    $('dCheck').disabled = false;
+    $('spell').value = '';
+    $('spell').disabled = false;
+    $('spell').focus();
+    markSeen(tierKey(w.tier), w.w);
+    sayWord(w);
+    state.hints = 0;
+  }
+
+  function blankSentence(w) {
+    const s = w.sent || '', low = s.toLowerCase(), head = w.w.toLowerCase();
+    for (let n = head.length; n >= 4; n--) {
+      const i = low.indexOf(head.slice(0, n));
+      if (i >= 0) {
+        let end = i + n;
+        while (end < s.length && /[a-z']/i.test(s[end])) end++;
+        return esc(s.slice(0, i)) + '<span class="blankline"></span>' + esc(s.slice(end));
+      }
+    }
+    return esc(s);
+  }
+
+  function diffHTML(typed, correct) {
+    const a = typed, b = correct;
+    let p = 0;
+    while (p < a.length && p < b.length && a[p] === b[p]) p++;
+    let s = 0;
+    while (s < a.length - p && s < b.length - p && a[a.length - 1 - s] === b[b.length - 1 - s]) s++;
+    const mid = b.slice(p, b.length - s);
+    return esc(b.slice(0, p)) + '<span class="bad">' + esc(mid || ' ') + '</span>' + esc(b.slice(b.length - s));
+  }
+
+  function checkDrill() {
+    const w = state.queue[state.index];
+    if (!w || $('dCheck').disabled) return;
+    const typed = $('spell').value.trim();
+    if (!typed) { $('spell').focus(); return; }
+    const ok = typed.toLowerCase() === w.w.toLowerCase();
+    state.right += ok ? 1 : 0;
+    if (!ok) state.misses.push({ w: w.w, typed });
+    noteFact(w, ok);
+    $('dScore').textContent = state.right + ' right';
+    $('dCheck').disabled = true;
+    $('spell').disabled = true;
+
+    const fb = $('dFb');
+    if (ok) {
+      fb.className = 'feedback on good';
+      fb.innerHTML = `<h3>Correct</h3>
+        <p class="diff">${diffHTML(typed, w.w)}</p>
+        <p>${esc(w.rule)}</p>`;
+      setTimeout(() => { if (!$('dNext').hidden) return; $('dNext').click(); }, 900);
+    } else {
+      fb.className = 'feedback on bad';
+      fb.innerHTML = `<h3>Not quite</h3>
+        <p class="diff">${diffHTML(typed, w.w)}</p>
+        <p class="yours">you wrote: ${esc(typed)}</p>
+        <p><b>${esc(w.tricky)}</b></p>
+        <p>${esc(w.rule)}</p>
+        <p>${esc(w.ety)}</p>`;
+      $('spell').value = w.w;
+    }
+    $('dNext').hidden = false;
+    $('dNext').focus();
+    save();
+  }
+
+  function hintDrill() {
+    const w = state.queue[state.index];
+    if (!w) return;
+    state.hints = (state.hints || 0) + 1;
+    const n = w.w.length;
+    const shown = w.w.split('').map((c, i) => {
+      if (c === ' ' || c === '-') return c;
+      if (i < state.hints) return c;
+      return '·';
+    }).join(' ');
+    $('dHintBox').innerHTML = `<div class="feedback on" style="background:color-mix(in srgb,var(--sun) 18%,#fff)">
+      <h3>Hint ${state.hints}</h3>
+      <p class="trickline">${esc(shown)} <span style="color:var(--muted);font-size:.8rem">(${n} letters)</span></p>
+      <p>${esc(w.say)}</p>
+    </div>`;
+  }
+
+  /* ---------------- differ ---------------- */
+  function buildDiffer() {
+    // Near-neighbour distractors exist for every word, so the whole tier is
+    // fair game; a hand-written confusable only sharpens the question.
+    const src = poolFor(state.tier);
+    state.queue = buildQueue(src, tierKey(state.tier) + ':differ', TOTAL);
+    state.index = 0; state.right = 0; state.misses = [];
+    state.mode = 'differ';
+    show('differ');
+    renderDiffer();
+  }
+
+  /* A hand-written confusable is the best distractor, but most words have
+     only one, and a two-option choice is a coin flip. Fill the rest with
+     near neighbours from the same tier, so the child has to read the
+     difference rather than recognise the answer. */
+  function nearMiss(w, taken, n) {
+    const head = w.w.toLowerCase();
+    const body = head.slice(0, Math.max(3, head.length - 2));
+    const scored = [];
+    for (const o of BANK) {
+      const other = o.w.toLowerCase();
+      if (other === head || taken.has(other)) continue;
+      const shared = [...new Set(other)].filter(c => head.includes(c)).length;
+      const sameHead = other.slice(0, body.length) === body ? 6 : 0;
+      const sameTail = other.slice(-2) === head.slice(-2) ? 2 : 0;
+      const closeLen = Math.abs(other.length - head.length) <= 1 ? 1 : 0;
+      const score = sameHead + shared * 0.5 + sameTail + closeLen
+        - Math.abs(o.tier - w.tier) * 3;
+      scored.push({ other: o.w, score });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, n).map(s => s.other);
+  }
+
+  function pickDistractors(w, real) {
+    const taken = new Set([w.w.toLowerCase()]);
+    const out = [];
+    for (const p of shuffle(real.slice())) {
+      if (out.length >= 3) break;
+      if (taken.has(p.toLowerCase())) continue;
+      taken.add(p.toLowerCase());
+      out.push(p);
+    }
+    if (out.length < 3) out.push(...nearMiss(w, taken, 3 - out.length));
+    return out;
+  }
+
+  function renderDiffer() {
+    const w = state.queue[state.index];
+    if (!w) return finish('differ');
+    $('fNum').textContent = state.index + 1;
+    $('fTot').textContent = state.queue.length;
+    $('fScore').textContent = state.right + ' right';
+    $('fProg').style.width = (state.index / state.queue.length * 100) + '%';
+    $('fBar').setAttribute('aria-valuenow', Math.round(state.index / state.queue.length * 100));
+    $('fDef').textContent = w.def;
+    $('fSent').innerHTML = blankSentence(w);
+    $('fFb').className = 'feedback';
+    $('fFb').innerHTML = '';
+    $('fNext').hidden = true;
+
+    // Only real bank words make usable distractors; a "pairs" entry may be a
+    // common misspelling, and a misspelling must never be offered as an option.
+    const real = (w.pairs || []).filter(p => BY_WORD.has(p.toLowerCase()) && p.toLowerCase() !== w.w.toLowerCase());
+    const opts = shuffle([w.w, ...pickDistractors(w, real)]);
+    $('fOpts').innerHTML = opts.map(o =>
+      `<button class="opt" type="button" data-opt="${esc(o)}">${esc(o)}</button>`).join('');
+    $('fOpts').querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
+      pickOption(b.dataset.opt, w);
+    }));
+    markSeen(tierKey(w.tier) + ':differ', w.w);
+  }
+
+  function pickOption(choice, w) {
+    if ($('fNext').hidden === false) return;
+    const ok = choice.toLowerCase() === w.w.toLowerCase();
+    state.right += ok ? 1 : 0;
+    if (!ok) state.misses.push({ w: w.w, typed: choice });
+    noteFact(w, ok);
+    $('fScore').textContent = state.right + ' right';
+    $('fOpts').querySelectorAll('[data-opt]').forEach(b => {
+      b.disabled = true;
+      if (b.dataset.opt.toLowerCase() === w.w.toLowerCase()) b.classList.add('right');
+      else if (b.dataset.opt === choice) b.classList.add('wrong');
+    });
+    const fb = $('fFb');
+    fb.className = 'feedback on ' + (ok ? 'good' : 'bad');
+    fb.innerHTML = `<h3>${ok ? 'Correct' : 'The right one is ' + esc(w.w)}</h3>
+      <p>${esc(w.rule)}</p>
+      <p class="trickline">${esc(w.tricky)}</p>
+      <p>${esc(w.ety)}</p>`;
+    $('fNext').hidden = false;
+    $('fNext').focus();
+    save();
+  }
+
+  /* ---------------- bee ---------------- */
+  function buildBee() {
+    const pool = BANK.filter(w => w.tier >= state.tier);
+    state.queue = buildQueue(pool, tierKey(state.tier) + ':bee', BEE_RUN);
+    state.index = 0; state.right = 0; state.misses = []; state.lives = 3;
+    state.mode = 'bee';
+    show('bee');
+    renderBee();
+  }
+
+  function renderBee() {
+    const w = state.queue[state.index];
+    if (!w) return finish('bee');
+    state.reveals = {};
+    $('bNum').textContent = state.index + 1;
+    $('bTot').textContent = state.queue.length;
+    $('bProg').style.width = (state.index / state.queue.length * 100) + '%';
+    $('bBar').setAttribute('aria-valuenow', Math.round(state.index / state.queue.length * 100));
+    paintLives();
+    $('bReveal').innerHTML = '';
+    $('bFb').className = 'feedback';
+    $('bFb').innerHTML = '';
+    $('bNext').hidden = true;
+    $('bCheck').disabled = false;
+    $('spellBee').value = '';
+    $('spellBee').disabled = false;
+    $('spellBee').focus();
+    markSeen(tierKey(w.tier) + ':bee', w.w);
+    sayWord(w);
+  }
+
+  function paintLives() {
+    $('bLives').innerHTML = [0, 1, 2]
+      .map(i => `<span class="${i < state.lives ? '' : 'dead'}">♥</span>`).join('');
+  }
+
+  function beeReveal(kind) {
+    const w = state.queue[state.index];
+    if (!w || state.reveals[kind]) return;
+    state.reveals[kind] = true;
+    const row = $('bReveal');
+    if (kind === 'def') {
+      row.insertAdjacentHTML('beforeend', `<div class="row"><b>Means</b><span>${esc(w.def)}</span></div>`);
+      say(w.def, .9);
+    } else if (kind === 'origin') {
+      row.insertAdjacentHTML('beforeend', `<div class="row"><b>From</b><span>${esc(w.origin)} — ${esc(w.ety)}</span></div>`);
+    } else {
+      row.insertAdjacentHTML('beforeend', `<div class="row"><b>Used</b><span>${esc(w.sent)}</span></div>`);
+      say(w.sent, .88);
+    }
+  }
+
+  function checkBee() {
+    const w = state.queue[state.index];
+    if (!w || $('bCheck').disabled) return;
+    const typed = $('spellBee').value.trim();
+    if (!typed) { $('spellBee').focus(); return; }
+    const ok = typed.toLowerCase() === w.w.toLowerCase();
+    $('bCheck').disabled = true;
+    $('spellBee').disabled = true;
+    $('bNext').hidden = false;
+
+    if (ok) {
+      state.right++;
+      noteFact(w, true);
+      $('bFb').className = 'feedback on good';
+      $('bFb').innerHTML = `<h3>Correct — ${esc(w.w)}</h3>
+        <p>${esc(w.rule)}</p><p class="trickline">${esc(w.tricky)}</p>`;
+      setTimeout(() => { if (!$('bNext').hidden) $('bNext').click(); }, 1000);
+    } else {
+      state.lives--;
+      state.misses.push({ w: w.w, typed });
+      noteFact(w, false);
+      paintLives();
+      $('bFb').className = 'feedback on bad';
+      $('bFb').innerHTML = `<h3>Out — the word was ${esc(w.w)}</h3>
+        <p class="yours">you wrote: ${esc(typed)}</p>
+        <p>${esc(w.ety)}</p><p>${esc(w.rule)}</p><p class="trickline">${esc(w.tricky)}</p>`;
+      say(w.w, .75);
+      $('spellBee').value = w.w;
+    }
+    $('bNext').focus();
+    save();
+    if (state.lives <= 0) {
+      state.queue = state.queue.slice(0, state.index + 1);
+    }
+  }
+
+  /* ---------------- review ---------------- */
+  function noteFact(w, right) {
+    const r = state.review[w.w] || { n: 0, miss: 0, due: false };
+    r.n++;
+    if (!right) { r.miss++; r.due = true; }
+    else if (r.due && r.n >= 2) r.due = false;
+    state.review[w.w] = r;
+  }
+
+  /* ---------------- results ---------------- */
+  function finish(mode) {
+    const total = state.queue.length || 1;
+    const pct = Math.round(state.right / total * 100);
+    const key = 'tier' + state.tier;
+    if (pct > (state.perTier[key] || 0)) state.perTier[key] = pct;
+    if (pct > state.best) state.best = pct;
+
+    $('rStars').innerHTML = [1, 2, 3].map(i =>
+      `<span class="${pct >= [0, 70, 90][i] ? 'on' : ''}">★</span>`).join('');
+    $('rPct').textContent = pct + '%';
+    $('rSub').textContent = `${state.right} of ${total} correct${mode === 'bee' ? ' · ' + (3 - state.lives) + ' strike' + (3 - state.lives === 1 ? '' : 's') : ''}`;
+
+    const uniq = new Map();
+    state.misses.forEach(m => uniq.set(m.w, m));
+    $('rMissed').innerHTML = uniq.size
+      ? `<h4>Words to look at again</h4><ul>${[...uniq.values()].map(m =>
+          `<li><span class="corr">${esc(m.w)}</span><span class="tried">${esc(m.typed)}</span></li>`).join('')}</ul>`
+      : '';
+    show('done');
+    save();
+    paintHud();
+  }
+
+  /* ---------------- navigation ---------------- */
+  function show(id) {
+    document.querySelectorAll('.stage').forEach(s => s.classList.toggle('on', s.id === id));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function startStudy() {
+    const pool = poolFor(state.tier);
+    state.queue = buildQueue(pool, tierKey(state.tier) + ':study', TOTAL);
+    state.index = 0; state.mode = 'study';
+    show('study');
+    renderStudy();
+  }
+
+  function startDrill() {
+    const pool = poolFor(state.tier);
+    state.queue = buildQueue(pool, tierKey(state.tier) + ':drill', TOTAL);
+    state.index = 0; state.right = 0; state.misses = []; state.hints = 0;
+    state.mode = 'drill';
+    show('drill');
+    renderDrill();
+  }
+
+  function nextItem(kind) {
+    state.index++;
+    if (state.index >= state.queue.length) return finish(kind);
+    if (kind === 'study') renderStudy();
+    else if (kind === 'drill') renderDrill();
+    else if (kind === 'differ') renderDiffer();
+    else renderBee();
+  }
+
+  function paintHud() {
+    $('hudBest').textContent = 'Best ' + state.best + '%';
+  }
+
+  function paintHome() {
+    $('tiers').innerHTML = [1, 2, 3].map(t => {
+      const n = poolFor(t).length;
+      const name = ['Starter', 'Middle', 'Champion'][t - 1];
+      const age = ['ages 8–9', 'ages 10–11', 'ages 12–14'][t - 1];
+      return `<button class="tierbtn" type="button" data-tier="${t}" aria-pressed="${state.tier === t}">
+        <b>${name}</b><span>${age} · ${n} words</span></button>`;
+    }).join('');
+    $('tiers').querySelectorAll('[data-tier]').forEach(b => b.addEventListener('click', () => {
+      state.tier = +b.dataset.tier;
+      save();
+      paintHome();
+    }));
+
+    const modes = [
+      ['study', '📖', 'Learn', 'Word, meaning, sentence, root, rule, trap — and what not to confuse it with.'],
+      ['drill', '⌨️', 'Spell it', 'You hear the word and see its meaning. Type the spelling. Fifty words.'],
+      ['differ', '⚖️', 'Tell them apart', 'Four spellings, one meaning. Pick the right one and learn why.'],
+      ['bee', '🏆', 'The Bee', 'The word is spoken, never shown. Ask for clues if you must. Three lives.'],
+    ];
+    $('modes').innerHTML = modes.map(([k, ic, name, desc]) =>
+      `<button class="modebtn" type="button" data-mode="${k}">
+        <span class="ic" aria-hidden="true">${ic}</span>
+        <span><b>${name}</b><small>${desc}</small></span></button>`).join('');
+    $('modes').querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+      const m = b.dataset.mode;
+      if (m === 'study') startStudy();
+      else if (m === 'drill') startDrill();
+      else if (m === 'differ') buildDiffer();
+      else buildBee();
+    }));
+
+    const known = Object.values(state.review).filter(r => r.n > 0).length;
+    const due = Object.values(state.review).filter(r => r.due).length;
+    const mastered = Object.values(state.review).filter(r => r.n >= 3 && r.miss === 0).length;
+    $('stats').innerHTML = `
+      <div class="stat"><b>${BANK.length}</b><span>words in the bank</span></div>
+      <div class="stat"><b>${known}</b><span>met so far</span></div>
+      <div class="stat"><b>${mastered}</b><span>known clean</span></div>
+      <div class="stat"><b>${due}</b><span>to revisit</span></div>`;
+    paintHud();
+  }
+
+  /* ---------------- rules sheet ---------------- */
+  const RULES = [
+    ['i before e', 'Write <b>ie</b> except after <b>c</b> when the sound is long <i>ee</i>.', 'believe, field, piece — but receive, ceiling, deceive.'],
+    ['…and the exceptions', 'The rule fails for about forty words. Learn them as a set.', 'either, neither, leisure, seize, weird, protein, foreign, height, forfeit, sovereign, counterfeit.'],
+    ['The silent e rule', 'A silent <b>e</b> makes the vowel before it long, and the vowel before that short.', 'hop → hope, kit → kite, plan → plane.'],
+    ['Drop the e', 'Drop a silent <b>e</b> before a vowel suffix; keep it before a consonant suffix.', 'make + ing = making; hope + ful = hopeful; notice + able = noticeable.'],
+    ['Double the consonant', 'One-syllable word, one vowel, one final consonant → double before a vowel suffix.', 'run + ing = running; big + er = bigger; stop + ed = stopped.'],
+    ['Keep the double', 'A word that already ends in a doubled consonant keeps both when a suffix is added.', 'call + ing = calling; full + ness = fullness.'],
+    ['Y to i', 'Consonant + <b>y</b> → change <b>y</b> to <b>i</b> before any suffix except <b>-ing</b>.', 'happy → happiness; carry → carried; but carrying.'],
+    ['-ible or -able', '<b>-able</b> attaches to complete words; <b>-ible</b> is usually the Latin one you cannot split.', 'comfort + able = comfortable; but visible, horrible, possible, edible.'],
+    ['-ance or -ence', 'Nouns from <b>-ant</b> verbs take <b>-ance</b>; the rest are usually <b>-ence</b>.', 'attend → attendance; exist → existence; differ → difference.'],
+    ['-tion, -sion, -cian', '<b>-tion</b> after a root ending in <b>t</b>; <b>-sion</b> after <b>ss</b>, <b>mit</b>, <b>vert</b>, <b>pel</b>; <b>-cian</b> for a person.', 'action, permission, submission, version, expulsion, musician.'],
+    ['-cede, -ceed, -sede', 'Only three take <b>-ceed</b>; one takes <b>-sede</b>; everything else takes <b>-cede</b>.', 'succeed, proceed, exceed — supersede — concede, precede, recede.'],
+    ['-ary, -ery, -ory', '<b>-ery</b> marks a place or trade; <b>-ary</b> marks a thing; <b>-ory</b> marks an adjective.', 'bakery, grocery — library, dictionary — sensory, compulsory.'],
+    ['Doubled consonants after a prefix', 'A prefix keeps its last letter when the root begins with the same one.', 'dissatisfied, unnatural, illegible, irregular, immobile.'],
+    ['in- becomes il-, im-, ir-', 'The prefix assimilates to the first letter of the root.', 'illegal, impossible, irregular, irrelevant.'],
+    ['Greek <b>ph</b> = /f/', 'Greek roots write the /f/ sound as <b>ph</b>.', 'philosophy, telephone, photograph, graph, sphere.'],
+    ['Greek <b>ch</b> = /k/', 'Greek roots write /k/ as <b>ch</b> before a consonant or at the end.', 'chorus, school, echo, chaos, character, orchestra.'],
+    ['Greek <b>y</b> in the middle', 'Greek roots use <b>y</b> where Latin uses <b>i</b>.', 'physics, mystery, sympathy, system, gymnasium.'],
+    ['French silent endings', 'French loanwords drop the final consonant sound and often double it in spelling.', 'ballet, bouquet, debris, rendezvous, restaurant, silhouette.'],
+    ['-our and -re', 'British English keeps the French <b>-our</b> and <b>-re</b>.', 'colour, honour, favour — centre, theatre, metre.'],
+    ['One word or two', 'A compound that has become a single idea closes up; one still felt as two stays open.', 'nevertheless, nonetheless, altogether (entirely) vs all together (in a group).'],
+  ];
+
+  function openSheet() {
+    $('rulesList').innerHTML = RULES.map(([h, body, ex]) =>
+      `<div class="ruleitem"><h3>${h}</h3><p>${body}</p><span class="ex">${ex}</span></div>`).join('');
+    $('sheet').classList.add('on');
+    $('sheetClose').focus();
+  }
+  function closeSheet() {
+    $('sheet').classList.remove('on');
+    $('rulesBtn').focus();
+  }
+
+  /* ---------------- wiring ---------------- */
+  $('rulesBtn').addEventListener('click', openSheet);
+  $('sheetClose').addEventListener('click', closeSheet);
+  $('sheet').addEventListener('click', e => { if (e.target === $('sheet')) closeSheet(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+  $('sPrev').addEventListener('click', () => { if (state.index > 0) { state.index--; renderStudy(); } });
+  $('sNext').addEventListener('click', () => nextItem('study'));
+  $('sExit').addEventListener('click', () => { show('home'); paintHome(); });
+  $('sAgain').addEventListener('click', () => {
+    const w = state.queue[state.index];
+    if (!w) return;
+    noteFact(w, false);
+    save();
+    $('sNext').click();
+  });
+
+  $('dCheck').addEventListener('click', checkDrill);
+  $('dNext').addEventListener('click', () => nextItem('drill'));
+  $('dSay').addEventListener('click', () => { const w = state.queue[state.index]; if (w) sayWord(w); });
+  $('dHint').addEventListener('click', hintDrill);
+  $('spell').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { if ($('dNext').hidden) checkDrill(); else $('dNext').click(); }
+  });
+
+  $('fNext').addEventListener('click', () => nextItem('differ'));
+
+  $('bCheck').addEventListener('click', checkBee);
+  $('bNext').addEventListener('click', () => nextItem('bee'));
+  $('bSay').addEventListener('click', () => { const w = state.queue[state.index]; if (w) sayWord(w); });
+  $('bDefBtn').addEventListener('click', () => beeReveal('def'));
+  $('bOrgBtn').addEventListener('click', () => beeReveal('origin'));
+  $('bSentBtn').addEventListener('click', () => beeReveal('sent'));
+  $('spellBee').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { if ($('bNext').hidden) checkBee(); else $('bNext').click(); }
+  });
+
+  $('rAgain').addEventListener('click', () => {
+    if (state.mode === 'study') startStudy();
+    else if (state.mode === 'drill') startDrill();
+    else if (state.mode === 'differ') buildDiffer();
+    else buildBee();
+  });
+  $('rHome').addEventListener('click', () => { show('home'); paintHome(); });
+
+  /* ---------------- boot ---------------- */
+  load();
+  paintHome();
+  if (!BANK.length) {
+    document.querySelector('#home .lede').innerHTML =
+      '<b>The word bank did not load.</b> spelling-bank.js is missing or empty.';
+  }
+})();
+</script>
+</body>
+</html>
