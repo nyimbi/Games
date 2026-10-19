@@ -193,6 +193,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
 .key.del{font-size:1.12rem}
 .key.go:disabled{opacity:.4;cursor:not-allowed;box-shadow:0 2px 0 var(--ink)}
 .hint{margin-top:14px;font-size:1rem;color:var(--ink-2);font-weight:700;min-height:1.5em;line-height:1.5}
+.plaus{margin:6px auto 0;max-width:46ch;font-size:.94rem;font-weight:700;color:var(--indigo-d);
+  background:#eef0ff;border:2px dashed var(--indigo);border-radius:12px;padding:8px 12px;line-height:1.45}
 .helprow{margin-top:8px}
 .help{
   font-family:inherit;font-weight:900;font-size:.78rem;cursor:pointer;color:var(--ink);
@@ -342,6 +344,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       <button class="btn nextbtn" id="nextBtn" type="button" hidden>Next →</button>
       <div class="pad" id="pad"></div>
       <p class="hint" id="hint">Type the answer, then tap ✓.</p>
+      <p class="plaus" id="plaus" hidden></p>
     </div>
 
     <div class="done" id="done">
@@ -720,6 +723,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     $('worked').classList.remove('show');
     $('worked').innerHTML = '';
     $('nextBtn').hidden = true;
+    $('plaus').hidden = true;
+    $('plaus').textContent = '';
     paintGo();
     $('qnum').textContent = state.index + 1;
     $('qtot').textContent = TOTAL;
@@ -734,6 +739,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       : q.level === '1'
         ? 'Count on from the larger number.'
         : 'Add the ones first. Regroup ten ones into a ten, then add the tens.';
+    // Three-digit sums are where a carried digit goes wrong unnoticed.
+    if (state.index >= 2 && q.level === '3') checkPlausible(q, false);
   }
 
   function paintAnswer() {
@@ -769,6 +776,22 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     return lines.join('<br>');
   }
 
+  /* Before the answer is checked, ask whether the size of it is plausible.
+     Estimation is the check a child can run without a teacher, and it is
+     the one that catches a carried-wrong digit. */
+  function checkPlausible(q, after) {
+    const h = $('plaus');
+    if (!h) return;
+    const near = Math.round(q.sum / 10) * 10;
+    h.hidden = false;
+    if (after) {
+      h.textContent = `About ${near}? Yes — ${q.sum} is close to that.`;
+    } else {
+      h.textContent = `Rough check: ${q.a} is about ${Math.round(q.a / 10) * 10}, ` +
+        `${q.b} is about ${Math.round(q.b / 10) * 10}, so the answer should be around ${near}.`;
+    }
+  }
+
   function submit() {
     if (state.answered || !state.queue[state.index]) return;
     if (state.input === '') { toast('Type a number first', 'bad'); return; }
@@ -786,6 +809,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       burst(26 + Math.min(state.streak, 6) * 4);
       toast(['Correct!', 'Sum-sational.', 'Carried perfectly.', 'Boom.'][rnd(4)], 'good');
       $('hint').textContent = `Fact family: ${q.sum} − ${q.a} = ${q.b}, and ${q.sum} − ${q.b} = ${q.a}.`;
+      checkPlausible(q, true);
     } else {
       ans.className = 'ans no';
       state.streak = 0;

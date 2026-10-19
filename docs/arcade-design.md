@@ -84,6 +84,8 @@ The Explore frame is clickable. Tapping the fifth cell sets the split to 5; the 
 
 **The worked panel.** Large, rounded, bold — `1.02rem` at weight 700 in the rounded face, not the small monospace block the first build used. It opens with **Watch me.** on questions 1 and 2 and is available by button on every other question.
 
+**The plausibility check.** Three-digit questions show a dashed prompt before the answer is entered: *580 is about 600, 240 is about 240, so the answer should be around 840.* After a correct answer it confirms: *About 840? Yes — 823 is close to that.* Estimation is the only error check a child can run alone, and a mis-carried digit is exactly the error it catches — the answer is wrong by a hundred and looks plausible only to someone who never estimated. The prompt appears on three-digit sums only, because on `7 + 8` it would be noise.
+
 **Fact family.** After a correct answer the hint names the two subtraction inverses: `75 − 47 = 28`, `75 − 28 = 47`. Addition and subtraction are one structure seen from two sides, and the moment to say so is the moment the child has just produced the sum. Facts are stored as relations, not as isolated equations.
 
 **Keypad.** `⌫ Del` and `✓ Check`, with Check disabled until a digit exists. The first build's unlabelled icons were a guessing game, and a Check that fires on an empty box is a free miss.
