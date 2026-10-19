@@ -74,7 +74,18 @@ h1 span{color:var(--amber-d)}
 .counter{font-weight:900;font-size:1rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .counter b{color:var(--ink)}
 
+.models{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.model{font-family:inherit;font-weight:900;font-size:.98rem;cursor:pointer;color:var(--ink);background:#fbf5e6;
+  border:2.5px solid var(--ink);border-radius:999px;padding:10px 18px;box-shadow:0 3px 0 var(--ink);
+  transition:transform .1s,background .15s;min-height:44px}
+.model:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.model[aria-pressed="true"]{background:var(--amber);color:var(--ink)}
+
 .plates{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:18px 8px;min-height:150px}
+.plates.grouping{align-items:flex-start}
+.groupbox{border:3px dashed var(--amber-d);border-radius:16px;padding:12px 14px;background:#fffaf0;
+  display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;justify-content:center;max-width:130px}
+.groupbox .cap{width:100%;text-align:center;font-size:.82rem;font-weight:900;color:var(--amber-d);margin-bottom:2px}
 .plate{width:104px;height:104px;border-radius:50%;border:3px solid var(--ink);background:#fffdf8;
   box-shadow:inset 0 0 0 9px #fbf5e6,0 4px 0 var(--ink);position:relative;display:flex;
   flex-wrap:wrap;align-content:center;justify-content:center;gap:4px;padding:16px}
@@ -189,15 +200,20 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabLearn" aria-selected="true" aria-controls="learn">Share</button>
+    <button class="tab" role="tab" id="tabGroup" aria-selected="false" aria-controls="learn">Group</button>
     <button class="tab" role="tab" id="tabPractice" aria-selected="false" aria-controls="practice">Practise · 10</button>
   </div>
 
   <section class="panel" id="learn" role="tabpanel" aria-labelledby="tabLearn">
-    <div class="hintline"><span class="dot"></span><span>Pick the cookies and the plates, then deal. Every plate gets the same number — the leftover is the remainder.</span></div>
+    <div class="models" role="group" aria-label="Which model of division">
+      <button class="model" data-model="share" aria-pressed="true">Share</button>
+      <button class="model" data-model="group" aria-pressed="false">Group</button>
+    </div>
+    <div class="hintline"><span class="dot"></span><span id="modelHint">Pick the cookies and the plates, then deal. Every plate gets the same number — the leftover is the remainder.</span></div>
 
     <div class="controls">
       <div class="ctl"><label>Cookies <input type="range" id="cookies" min="1" max="60" value="12"><span class="val" id="cookiesVal">12</span></label></div>
-      <div class="ctl"><label>Plates <input type="range" id="plates" min="1" max="10" value="3"><span class="val" id="platesVal">3</span></label></div>
+      <div class="ctl"><label id="platesLabel">Plates <input type="range" id="plates" min="1" max="10" value="3"><span class="val" id="platesVal">3</span></label></div>
     </div>
     <div class="dealrow">
       <button class="btn" id="deal">🍪 Deal</button>
@@ -321,17 +337,30 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   }
 
   /* ================= SHARE ================= */
-  const S = { cookies: 12, plates: 3, dealt: false };
+  const S = { cookies: 12, plates: 3, dealt: false, model: 'share' };
 
   function buildPlates() {
     const area = $('plateArea');
     area.innerHTML = '';
+    area.classList.toggle('grouping', S.model === 'group');
     for (let i = 0; i < S.plates; i++) {
       const p = document.createElement('div');
-      p.className = 'plate';
+      p.className = S.model === 'group' ? 'groupbox' : 'plate';
       p.dataset.plate = i;
       area.appendChild(p);
     }
+  }
+
+  function setModel(m) {
+    if (S.model === m) return;
+    S.model = m;
+    document.querySelectorAll('.model').forEach(b =>
+      b.setAttribute('aria-pressed', String(b.dataset.model === m)));
+    $('platesLabel').firstChild.textContent = m === 'group' ? 'Group size ' : 'Plates ';
+    $('modelHint').textContent = m === 'group'
+      ? 'Pick the cookies and how many go in each bag, then pack. The answer is how many bags you fill.'
+      : 'Pick the cookies and the plates, then deal. Every plate gets the same number — the leftover is the remainder.';
+    resetShare();
   }
 
   function resetShare() {
@@ -341,7 +370,9 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     $('subtractLine').innerHTML = '';
     $('family').innerHTML = '';
     $('dealStatus').textContent = 'Ready';
-    $('note').innerHTML = '<b>Deal the cookies</b> to see the sharing. The quotient is how many land on each plate.';
+    $('note').innerHTML = S.model === 'group'
+      ? '<b>Pack the cookies</b> into bags of a fixed size. The quotient is how many bags you fill.'
+      : '<b>Deal the cookies</b> to see the sharing. The quotient is how many land on each plate.';
     updateCounts();
   }
 
@@ -352,6 +383,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
 
   function deal() {
     if (S.dealt) return;
+    if (S.model === 'group') return pack();
     S.dealt = true;
     buildPlates();
     const q = Math.floor(S.cookies / S.plates);
@@ -412,8 +444,68 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     }, totalToDeal * per + 120);
   }
 
+  /* Grouping: the same division read the other way round. The size of each
+     group is fixed and the unknown is how many groups the cookies make. */
+  function pack() {
+    S.dealt = true;
+    const size = S.plates;
+    const q = Math.floor(S.cookies / size);
+    const r = S.cookies % size;
+    buildPlates();
+    const boxes = [...document.querySelectorAll('.groupbox')];
+    let k = 0;
+    const per = 55;
+    for (let g = 0; g < q; g++) {
+      for (let j = 0; j < size; j++) {
+        const box = boxes[g];
+        setTimeout(() => {
+          const c = document.createElement('div');
+          c.className = 'cookie';
+          box.appendChild(c);
+          plopSound();
+        }, (k++) * per);
+      }
+    }
+    setTimeout(() => {
+      if (r > 0) {
+        const box = document.createElement('div');
+        box.className = 'leftoverbox';
+        box.innerHTML = '<div class="cap">Not enough for a full group</div>';
+        for (let i = 0; i < r; i++) {
+          const c = document.createElement('div');
+          c.className = 'cookie leftover';
+          box.appendChild(c);
+        }
+        $('plateArea').appendChild(box);
+      }
+      $('dealStatus').textContent = r ? `Packed · ${r} left over` : 'Packed evenly';
+      $('quotient').innerHTML = `${S.cookies} ÷ ${size} = <span class="q">${q}</span>` +
+        (r ? ` <span class="r">r ${r}</span>` : '');
+      let line = `${S.cookies}`;
+      for (let i = 0; i < q; i++) line += ` − ${size}`;
+      line += ` = <span class="${r ? 'rem' : 'done'}">${r}</span>`;
+      $('subtractLine').innerHTML = line +
+        `<br><span style="font-size:.78rem;color:#6d7194">Take out one group of ${size} at a time. The count of groups is the answer.</span>`;
+      const fam = $('family');
+      fam.innerHTML = '';
+      [[`${q} × ${size}`, q * size], [`${size} × ${q}`, q * size],
+       [`${S.cookies} ÷ ${size}`, q], [`${S.cookies} ÷ ${q}`, size]].forEach(([l, v], i) => {
+        const d = document.createElement('div');
+        d.className = 'fact' + (i >= 2 ? ' hl' : '');
+        d.textContent = `${l} = ${v}`;
+        fam.appendChild(d);
+      });
+      $('note').innerHTML = r
+        ? `<b>${S.cookies} makes ${q} full groups of ${size}, with ${r} left over.</b> The leftover is not enough for another group — that is the remainder.`
+        : `<b>${S.cookies} ÷ ${size} = ${q}</b> means ${q} groups of ${size} make ${S.cookies}. Sharing and grouping are the same division: one fixes the number of groups, the other fixes the size.`;
+      if (r === 0) { goodSound(2); burst(30); }
+    }, q * size * per + 120);
+  }
+
   $('cookies').addEventListener('input', e => { S.cookies = Number(e.target.value); resetShare(); });
   $('plates').addEventListener('input', e => { S.plates = Number(e.target.value); resetShare(); });
+  document.querySelectorAll('.model').forEach(b =>
+    b.addEventListener('click', () => { setModel(b.dataset.model); selectTab('learn'); }));
   $('deal').addEventListener('click', deal);
   $('reset').addEventListener('click', () => { resetShare(); clickSound(); });
 
@@ -599,13 +691,15 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
 
   function selectTab(which) {
     const isLearn = which === 'learn';
-    $('tabLearn').setAttribute('aria-selected', String(isLearn));
+    $('tabLearn').setAttribute('aria-selected', String(isLearn && S.model === 'share'));
+    $('tabGroup').setAttribute('aria-selected', String(isLearn && S.model === 'group'));
     $('tabPractice').setAttribute('aria-selected', String(!isLearn));
     $('learn').hidden = !isLearn;
     $('practice').hidden = isLearn;
     if (!isLearn && !state.queue.length) start('1-5');
   }
-  $('tabLearn').addEventListener('click', () => selectTab('learn'));
+  $('tabLearn').addEventListener('click', () => { setModel('share'); selectTab('learn'); });
+  $('tabGroup').addEventListener('click', () => { setModel('group'); selectTab('learn'); });
   $('tabPractice').addEventListener('click', () => selectTab('practice'));
 
   document.querySelectorAll('#practice .lv[data-level]').forEach(b =>

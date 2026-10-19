@@ -128,6 +128,8 @@ The Explore tab is a table with plates. The child sets the cookie count and the 
 
 **Both directions.** The drill's worked panel asks *how many 3s fit in 12?* and then checks the other way: `4 × 3 = 12`. Division is presented as the inverse of a known multiplication rather than as a separate operation with its own rules.
 
+**Two models, one operation.** A **Share / Group** switch sits above the plates. Share fixes the number of plates and asks how many cookies each gets; Group fixes the size of each bag and asks how many bags you fill. Both run the same animation with the same numbers, and both end at the same quotient. Division has two meanings in ordinary language — *deal these out* and *how many of these fit in that* — and a child who has only met the first cannot use the second, which is the one word problems ask for. Showing them side by side, with the same cookies and the same quotient, is the cheapest way to make the equivalence visible.
+
 **Repeated subtraction.** Below the plates the Explore tab writes the division out as repeated subtraction — `12 − 3 − 3 − 3 − 3 = 0` — with the remainder in its own colour. This is the bridge between the two models: sharing says *deal the cookies*, repeated subtraction says *how many plates can I fill*, and they give the same number.
 
 **The fact family.** After a deal, four facts appear together: `3 × 4 = 12`, `4 × 3 = 12`, `12 ÷ 3 = 4`, `12 ÷ 4 = 3`. One fact, four faces. The point is that knowing any one of them is knowing all four, which halves what the multiplication tables have to carry.
