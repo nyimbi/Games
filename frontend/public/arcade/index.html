@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Math Arcade — Seven Games</title>
+<meta name="description" content="Seven self-contained games: number bonds, addition, subtraction, times tables to 20, division, an endless mixed arena, and a typing tutor.">
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
+  --paper:#fdf7ea;--card:#fffdf8;--line:#e7dcc4;
+  --sun:#ffb703;--coral:#ff6b6b;--teal:#0fb5a1;--indigo:#5b6cff;
+  --grape:#9b5de5;--lime:#7cb518;--sky:#2b8fd6;
+  --hard:6px 6px 0 var(--ink);--soft:0 22px 48px rgba(25,28,58,.14);
+  --wash-1:#ffe6b0;--wash-2:#dbe2ff;--wash-3:#cdf5ec;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);font-size:1.05rem;line-height:1.5;
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(900px 540px at 6% -10%,var(--wash-1) 0%,transparent 62%),
+    radial-gradient(860px 540px at 102% 0%,var(--wash-2) 0%,transparent 58%),
+    radial-gradient(820px 600px at 50% 118%,var(--wash-3) 0%,transparent 64%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.10) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 45%,transparent 78%);
+  mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 45%,transparent 78%);
+}
+.shell{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:26px 20px 72px}
+
+/* ---------- hero ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.02em;font-size:1.02rem}
+.brand .mark{
+  width:36px;height:36px;border-radius:12px;border:2.5px solid var(--ink);background:var(--sun);
+  display:grid;place-items:center;box-shadow:0 3px 0 var(--ink);font-size:1rem
+}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2.5px solid var(--ink);
+  padding:8px 14px;border-radius:999px;font-size:.82rem;font-weight:900;
+  box-shadow:0 3px 0 var(--ink)
+}
+.hero{text-align:center;padding:18px 0 6px}
+.eyebrow{
+  display:inline-block;font-size:.82rem;font-weight:900;letter-spacing:.04em;
+  color:var(--ink);background:var(--sun);border:2.5px solid var(--ink);border-radius:999px;
+  padding:7px 14px;box-shadow:0 3px 0 var(--ink);margin:0 0 22px
+}
+h1{
+  margin:0;font-size:clamp(2.8rem,8vw,5.4rem);line-height:.92;letter-spacing:-.055em;font-weight:900;
+  text-wrap:balance;
+}
+h1 .under{position:relative;display:inline-block;z-index:0}
+h1 .under::after{
+  content:"";position:absolute;left:-.04em;right:-.04em;bottom:.06em;height:.30em;
+  background:linear-gradient(90deg,var(--sun),var(--coral));border-radius:.2em;z-index:-1;
+  transform:rotate(-1.4deg)
+}
+.lede{
+  max-width:620px;margin:22px auto 0;color:var(--ink-2);font-size:clamp(1.02rem,2.4vw,1.16rem);
+  line-height:1.6;text-wrap:pretty;font-weight:600
+}
+.lede b{color:var(--ink)}
+
+/* ---------- today's suggestion ---------- */
+.suggest{
+  margin-top:38px;background:var(--card);border:2.5px solid var(--ink);border-radius:24px;
+  padding:20px 22px 22px;box-shadow:var(--hard)
+}
+.suggest h3{margin:0 0 2px;font-size:1.15rem;letter-spacing:-.02em}
+.suggest .sub{margin:0 0 14px;color:var(--muted);font-size:.92rem;font-weight:700}
+.suggests{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.sg{
+  display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);
+  border:2.5px solid var(--ink);border-radius:14px;padding:11px 13px;background:#fffdf8;
+  box-shadow:0 3px 0 var(--ink);transition:transform .12s;min-height:60px
+}
+.sg:hover{transform:translate(-2px,-2px)}
+.sg .dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);flex:0 0 12px}
+.sg .t{font-weight:900;font-size:.95rem;line-height:1.25}
+.sg .why{font-size:.8rem;color:var(--muted);font-weight:700;display:block;margin-top:1px}
+.sg .arw{margin-left:auto;font-weight:900;color:var(--muted)}
+
+/* ---------- cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px;margin-top:34px}
+.card{
+  position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  background:var(--card);border:2.5px solid var(--ink);border-radius:26px;padding:22px 22px 20px;
+  box-shadow:var(--hard);transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s ease;
+  overflow:hidden
+}
+.card:hover,.card:focus-visible{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink);outline:none}
+.card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.card:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.card .art{
+  height:118px;border:2.5px solid var(--ink);border-radius:18px;margin-bottom:18px;overflow:hidden;
+  background:color-mix(in srgb,var(--accent) 14%,#fff);position:relative
+}
+.card .art svg{display:block;width:100%;height:100%}
+.card .num{
+  position:absolute;right:14px;top:10px;font-size:.78rem;font-weight:900;letter-spacing:.1em;
+  color:var(--ink);opacity:.55
+}
+.card h2{margin:0 0 6px;font-size:1.42rem;letter-spacing:-.025em;font-weight:900}
+.card p{margin:0 0 14px;color:var(--ink-2);font-size:.98rem;line-height:1.55;flex:1;text-wrap:pretty;font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tag{
+  font-size:.72rem;font-weight:900;
+  border:2px solid color-mix(in srgb,var(--accent) 60%,var(--ink));
+  background:color-mix(in srgb,var(--accent) 16%,#fff);
+  padding:4px 10px;border-radius:999px;color:var(--ink)
+}
+.prog{display:flex;align-items:center;gap:9px;margin-bottom:14px;min-height:22px}
+.prog .st{font-size:1.02rem;letter-spacing:.12em;color:#d6cdb6;line-height:1}
+.prog .st .on{color:var(--accent);text-shadow:0 1px 0 rgba(25,28,58,.25)}
+.prog .lb{font-size:.8rem;font-weight:800;color:var(--muted)}
+.playrow{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:.98rem}
+.playrow .go{
+  display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;
+  border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;box-shadow:0 3px 0 var(--ink);
+  transition:transform .12s ease
+}
+.card:hover .playrow .go{transform:translateX(3px)}
+.playrow .go svg{width:14px;height:14px}
+
+/* ---------- how it works ---------- */
+.strip{
+  margin-top:56px;background:var(--card);border:2.5px solid var(--ink);border-radius:26px;
+  padding:26px 26px 24px;box-shadow:var(--hard)
+}
+.strip h3{margin:0 0 4px;font-size:1.2rem;letter-spacing:-.02em}
+.strip .sub{margin:0 0 20px;color:var(--muted);font-size:.92rem;font-weight:700}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step .n{
+  flex:0 0 30px;width:30px;height:30px;border-radius:10px;border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-weight:900;font-size:.9rem;background:var(--sun);
+  box-shadow:0 2px 0 var(--ink)
+}
+.step p{margin:0;font-size:.95rem;line-height:1.55;color:var(--ink-2);font-weight:600}
+.step p b{color:var(--ink)}
+footer{margin-top:44px;text-align:center;color:var(--muted);font-size:.88rem;line-height:1.8;font-weight:600}
+footer .dot{opacity:.45;margin:0 8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:560px){
+  .shell{padding:18px 14px 54px}
+  .grid{gap:20px;margin-top:26px}
+  .card{padding:18px}
+  .suggest{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand"><span class="mark">✳</span> Llocal Arcade</div>
+    <span class="pill">Offline · no accounts</span>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">Seven games · one number sense</p>
+    <h1>Math, <span class="under">playable</span>.</h1>
+    <p class="lede">Bonds first. Then the four operations, one honest step at a time. Every deck is <b>ten questions</b> — short enough to finish, long enough to mean something. The arena never runs out.</p>
+  </header>
+
+  <section class="suggest" id="suggest" hidden>
+    <h3>Today's suggestion</h3>
+    <p class="sub">Three games you haven't opened in a while.</p>
+    <div class="suggests" id="suggestList"></div>
+  </section>
+
+  <div class="grid" id="grid">
+    <a class="card" href="./number-bonds.html" style="--accent:var(--teal)" data-key="arcade.bonds.v4" data-bucket="perMode">
+      <div class="art">
+        <span class="num">01</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g fill="none" stroke="#191c3a" stroke-width="2">
+            <rect x="26" y="26" width="118" height="66" rx="12" fill="#fffdf8"/>
+            <rect x="156" y="26" width="118" height="66" rx="12" fill="#fffdf8"/>
+          </g>
+          <g fill="#0fb5a1">
+            <circle cx="46" cy="46" r="9"/><circle cx="70" cy="46" r="9"/><circle cx="94" cy="46" r="9"/>
+            <circle cx="46" cy="70" r="9"/><circle cx="70" cy="70" r="9"/><circle cx="94" cy="70" r="9"/>
+          </g>
+          <g fill="none" stroke="#0fb5a1" stroke-width="3" stroke-dasharray="5 6">
+            <circle cx="176" cy="46" r="9"/><circle cx="200" cy="46" r="9"/>
+            <circle cx="176" cy="70" r="9"/><circle cx="200" cy="70" r="9"/>
+          </g>
+          <text x="150" y="112" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="13" font-weight="700" fill="#191c3a">6 + 4 = 10</text>
+        </svg>
+      </div>
+      <h2>Number Bonds</h2>
+      <p>See how a number splits. The ten-frame makes the missing part visible, then your memory takes over.</p>
+      <div class="tags"><span class="tag">Make 5</span><span class="tag">Make 10</span><span class="tag">Make 20</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Start here</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+
+    <a class="card" href="./addition-quest.html" style="--accent:var(--indigo)" data-key="arcade.addition.v3" data-bucket="perLevel">
+      <div class="art">
+        <span class="num">02</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g font-family="ui-monospace,Menlo,monospace" font-weight="800" font-size="34" fill="#191c3a">
+            <text x="38" y="72">47</text><text x="112" y="72" fill="#5b6cff">+</text><text x="152" y="72">28</text>
+            <text x="226" y="72" fill="#5b6cff">=</text><text x="256" y="72" fill="#5b6cff">75</text>
+          </g>
+          <g stroke="#5b6cff" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M44 84h44"/><path d="M158 84h44"/>
+          </g>
+          <text x="66" y="30" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="15" font-weight="800" fill="#e08b00">1</text>
+          <text x="180" y="30" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="15" font-weight="800" fill="#e08b00">1</text>
+        </svg>
+      </div>
+      <h2>Addition Quest</h2>
+      <p>Warm up on ten-pairs, then add one, two and three-digit numbers. The carry is explained, never given away.</p>
+      <div class="tags"><span class="tag">1-digit</span><span class="tag">2-digit</span><span class="tag">3-digit</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Climb the levels</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+
+    <a class="card" href="./subtraction-safari.html" style="--accent:var(--coral)" data-key="arcade.subtraction.v3" data-bucket="perLevel">
+      <div class="art">
+        <span class="num">03</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <line x1="24" y1="66" x2="276" y2="66" stroke="#191c3a" stroke-width="2.5" stroke-linecap="round"/>
+          <g stroke="#191c3a" stroke-width="2">
+            <line x1="24" y1="58" x2="24" y2="74"/><line x1="108" y1="58" x2="108" y2="74"/>
+            <line x1="192" y1="58" x2="192" y2="74"/><line x1="276" y1="58" x2="276" y2="74"/>
+          </g>
+          <path d="M192 48c-18 0-30 8-42 8" stroke="#ff6b6b" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="1 7"/>
+          <circle cx="192" cy="66" r="7" fill="#ff6b6b"/>
+          <circle cx="108" cy="66" r="7" fill="#ffb703"/>
+          <g font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#191c3a" text-anchor="middle">
+            <text x="24" y="92">0</text><text x="108" y="92">7</text><text x="192" y="92">14</text><text x="276" y="92">21</text>
+          </g>
+          <text x="150" y="30" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="13" font-weight="700" fill="#191c3a">14 − 7 = 7</text>
+        </svg>
+      </div>
+      <h2>Subtraction Safari</h2>
+      <p>Count back along a number line, then borrow across columns. Every answer has a visible path.</p>
+      <div class="tags"><span class="tag">From 10</span><span class="tag">Borrowing</span><span class="tag">3-digit</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Follow the trail</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+
+    <a class="card" href="./times-table-academy.html" style="--accent:var(--lime)" data-key="arcade.times.v2" data-bucket="perMode">
+      <div class="art">
+        <span class="num">04</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g fill="#7cb518">
+            <circle cx="42" cy="38" r="7"/><circle cx="66" cy="38" r="7"/><circle cx="90" cy="38" r="7"/><circle cx="114" cy="38" r="7"/>
+            <circle cx="42" cy="62" r="7"/><circle cx="66" cy="62" r="7"/><circle cx="90" cy="62" r="7"/><circle cx="114" cy="62" r="7"/>
+            <circle cx="42" cy="86" r="7"/><circle cx="66" cy="86" r="7"/><circle cx="90" cy="86" r="7"/><circle cx="114" cy="86" r="7"/>
+          </g>
+          <g stroke="#191c3a" stroke-width="1.6" stroke-dasharray="3 4" opacity=".45">
+            <line x1="30" y1="24" x2="126" y2="24"/><line x1="30" y1="100" x2="126" y2="100"/>
+          </g>
+          <text x="196" y="52" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="800" fill="#191c3a">4 × 3</text>
+          <text x="196" y="80" font-family="ui-monospace,Menlo,monospace" font-size="20" font-weight="800" fill="#7cb518">= 12</text>
+        </svg>
+      </div>
+      <h2>Times Table Academy</h2>
+      <p>Every table to twenty as an array, a skip-count and a fact — plus thirty-odd patterns and a memory hook for each table.</p>
+      <div class="tags"><span class="tag">Tables 1–20</span><span class="tag">Patterns</span><span class="tag">Mnemonics</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Explore + drill</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+
+    <a class="card" href="./division-diner.html" style="--accent:var(--sun)" data-key="arcade.division.v1" data-bucket="perLevel">
+      <div class="art">
+        <span class="num">05</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g fill="none" stroke="#191c3a" stroke-width="2">
+            <circle cx="70" cy="60" r="30"/><circle cx="150" cy="60" r="30"/><circle cx="230" cy="60" r="30"/>
+          </g>
+          <g fill="#e08b00">
+            <circle cx="60" cy="52" r="5"/><circle cx="78" cy="52" r="5"/><circle cx="60" cy="68" r="5"/><circle cx="78" cy="68" r="5"/>
+            <circle cx="140" cy="52" r="5"/><circle cx="158" cy="52" r="5"/><circle cx="140" cy="68" r="5"/><circle cx="158" cy="68" r="5"/>
+            <circle cx="220" cy="52" r="5"/><circle cx="238" cy="52" r="5"/><circle cx="220" cy="68" r="5"/><circle cx="238" cy="68" r="5"/>
+          </g>
+          <text x="150" y="110" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="700" fill="#191c3a">12 ÷ 3 = 4</text>
+        </svg>
+      </div>
+      <h2>Division Diner</h2>
+      <p>Share cookies onto equal plates. Division is multiplication read backwards — see the sharing, then know the fact.</p>
+      <div class="tags"><span class="tag">÷2–5</span><span class="tag">÷6–10</span><span class="tag">÷11–20</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Set the tables</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+
+    <a class="card" href="./infinite-arena.html" style="--accent:var(--grape)" data-key="arcade.arena.v1" data-bucket="skill">
+      <div class="art">
+        <span class="num">06</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g fill="none" stroke="#9b5de5" stroke-width="2.4" opacity=".9">
+            <ellipse cx="150" cy="59" rx="86" ry="30"/>
+            <ellipse cx="150" cy="59" rx="56" ry="20"/>
+            <ellipse cx="150" cy="59" rx="26" ry="10"/>
+          </g>
+          <circle cx="150" cy="59" r="5" fill="#9b5de5"/>
+          <g font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="800" fill="#191c3a">
+            <text x="30" y="28">+</text><text x="258" y="34">×</text><text x="36" y="100">÷</text><text x="252" y="98">−</text>
+          </g>
+        </svg>
+      </div>
+      <h2>Infinite Arena</h2>
+      <p>Endless, adaptive, never the same fact twice in a row. It climbs as you climb — bonds to division and back.</p>
+      <div class="tags"><span class="tag">Endless</span><span class="tag">Adaptive</span><span class="tag">Mixed</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>No finish line</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+
+    <a class="card" href="./typing-tutor.html" style="--accent:var(--sky)" data-key="arcade.typing.v1" data-bucket="progress">
+      <div class="art">
+        <span class="num">07</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <rect x="22" y="30" width="256" height="58" rx="10" fill="#fffdf8" stroke="#191c3a" stroke-width="2"/>
+          <g fill="#2b8fd6" stroke="#191c3a" stroke-width="1.6">
+            <rect x="34" y="42" width="22" height="18" rx="4"/><rect x="62" y="42" width="22" height="18" rx="4"/>
+            <rect x="90" y="42" width="22" height="18" rx="4"/><rect x="118" y="42" width="22" height="18" rx="4"/>
+            <rect x="146" y="42" width="22" height="18" rx="4"/><rect x="174" y="42" width="22" height="18" rx="4"/>
+            <rect x="202" y="42" width="22" height="18" rx="4"/><rect x="230" y="42" width="22" height="18" rx="4"/>
+          </g>
+          <g fill="#e7dcc4" stroke="#191c3a" stroke-width="1.4">
+            <rect x="34" y="66" width="22" height="14" rx="4"/><rect x="62" y="66" width="22" height="14" rx="4"/>
+            <rect x="90" y="66" width="22" height="14" rx="4"/><rect x="118" y="66" width="22" height="14" rx="4"/>
+            <rect x="146" y="66" width="22" height="14" rx="4"/><rect x="174" y="66" width="22" height="14" rx="4"/>
+            <rect x="202" y="66" width="22" height="14" rx="4"/><rect x="230" y="66" width="22" height="14" rx="4"/>
+          </g>
+          <text x="150" y="24" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="800" fill="#191c3a">asdf · jkl;</text>
+        </svg>
+      </div>
+      <h2>Typing Tutor</h2>
+      <p>Home row first, then top, bottom, capitals and numbers. Eight fingers, a colour each, and a lesson that unlocks when you're ready.</p>
+      <div class="tags"><span class="tag">Home row</span><span class="tag">Finger map</span><span class="tag">WPM</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Learn the keys</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+  </div>
+
+  <section class="strip">
+    <h3>How the arcade teaches</h3>
+    <p class="sub">Five rules, borrowed from how memory actually works.</p>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><p><b>See it first.</b> Ten-frames, arrays, plates and number lines show the structure before the symbol.</p></div>
+      <div class="step"><span class="n">2</span><p><b>Recall, don't reread.</b> Every question asks you to produce the answer, not recognise it.</p></div>
+      <div class="step"><span class="n">3</span><p><b>Miss it, see it.</b> A wrong answer holds and opens the worked method for that exact fact.</p></div>
+      <div class="step"><span class="n">4</span><p><b>Ten per deck.</b> Short enough to finish in one sitting, so the finish line is reachable.</p></div>
+      <div class="step"><span class="n">5</span><p><b>Misses come back.</b> Facts you get wrong return at the front of the next deck until they stick.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    Each file is self-contained: no network, no accounts, no tracking.
+    <span class="dot">·</span> Progress is stored in this browser only.
+    <span class="dot">·</span> Built for the Llocal Games practice shelf.
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const DAY = 86400000;
+  const LAST = 'arcade.lastplay';
+
+  function read(key) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) { return null; }
+  }
+
+  /* A card's stars come from the best percentage it has stored. Every game
+     keeps a bucket of {level -> pct}; the arena keeps {skill -> {ema, n}}. */
+  function bestPct(card) {
+    const s = read(card.dataset.key);
+    if (!s) return 0;
+    const bucket = s[card.dataset.bucket] || {};
+    let best = 0;
+    for (const v of Object.values(bucket)) {
+      if (typeof v === 'number') best = Math.max(best, v);
+      else if (v && typeof v.ema === 'number') best = Math.max(best, v.ema * 100);
+    }
+    return best;
+  }
+
+  function paintProgress() {
+    document.querySelectorAll('.card').forEach(card => {
+      const box = card.querySelector('.prog');
+      if (!box) return;
+      const pct = bestPct(card);
+      const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct > 0 ? 1 : 0;
+      const st = document.createElement('span');
+      st.className = 'st';
+      st.innerHTML = [0, 1, 2].map(i => `<span class="${i < stars ? 'on' : ''}">★</span>`).join('');
+      st.setAttribute('aria-hidden', 'true');
+      const lb = document.createElement('span');
+      lb.className = 'lb';
+      lb.textContent = stars === 0 ? 'Not started'
+        : stars === 3 ? 'Three stars — mastered'
+        : `${stars} of 3 stars · best ${Math.round(pct)}%`;
+      box.append(st, lb);
+      card.setAttribute('aria-label',
+        `${card.querySelector('h2').textContent}. ${lb.textContent}.`);
+    });
+  }
+
+  function lastPlayed() {
+    const m = read(LAST) || {};
+    return m;
+  }
+
+  function paintSuggest() {
+    const played = lastPlayed();
+    const cards = [...document.querySelectorAll('.card')];
+    const ranked = cards.map(c => ({
+      card: c,
+      at: played[c.getAttribute('href')] || 0,
+      pct: bestPct(c)
+    })).sort((a, b) => (a.at - b.at) || (a.pct - b.pct)).slice(0, 3);
+
+    const list = $('suggestList');
+    list.innerHTML = '';
+    ranked.forEach(({ card, at }) => {
+      const a = document.createElement('a');
+      a.className = 'sg';
+      a.href = card.getAttribute('href');
+      const accent = getComputedStyle(card).getPropertyValue('--accent').trim() || 'var(--sun)';
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = accent;
+      const t = document.createElement('span');
+      t.className = 't';
+      t.textContent = card.querySelector('h2').textContent;
+      const why = document.createElement('span');
+      why.className = 'why';
+      why.textContent = at === 0 ? 'Never played'
+        : at > Date.now() - DAY ? 'Played today'
+        : `${Math.floor((Date.now() - at) / DAY)} day${Date.now() - at > 2 * DAY ? 's' : ''} ago`;
+      t.appendChild(why);
+      const arw = document.createElement('span');
+      arw.className = 'arw';
+      arw.textContent = '→';
+      a.append(dot, t, arw);
+      list.appendChild(a);
+    });
+    $('suggest').hidden = false;
+  }
+
+  document.getElementById('grid').addEventListener('click', e => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    const played = lastPlayed();
+    played[card.getAttribute('href')] = Date.now();
+    try { localStorage.setItem(LAST, JSON.stringify(played)); } catch (_) {}
+  });
+
+  paintProgress();
+  paintSuggest();
+})();
+</script>
+</body>
+</html>

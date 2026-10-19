@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Number Bonds — Math Arcade</title>
+<style>
+:root{
+  --ink:#14172e;--ink-2:#2f3557;--muted:#5f6588;--paper:#fdf8ec;--card:#fffdf7;--line:#e4d9c0;
+  --teal:#0aa392;--teal-d:#07756a;--amber:#f5a300;--amber-d:#a86f00;
+  --indigo:#4a5cf0;--grape:#8b46d9;--lime:#6aa312;--coral:#f0554f;
+  --good:#127d54;--bad:#c53030;--hard:7px 7px 0 var(--ink);
+  --fs-body:1.05rem;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{margin:0;min-height:100vh;color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  font-size:var(--fs-body);line-height:1.5;
+  background:
+    radial-gradient(820px 520px at 2% -8%,#d6f5ef 0%,transparent 62%),
+    radial-gradient(760px 520px at 102% 4%,#ffe7b3 0%,transparent 58%),
+    radial-gradient(760px 560px at 50% 118%,#e0e4ff 0%,transparent 62%),var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(20,23,46,.075) 1px,transparent 1.3px);background-size:24px 24px;
+  -webkit-mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.28) 50%,transparent 84%);
+  mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.28) 50%,transparent 84%)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.shell{position:relative;z-index:1;max-width:840px;margin:0 auto;padding:18px 16px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);font-weight:900;
+  font-size:.92rem;background:var(--card);border:2.5px solid var(--ink);padding:9px 15px;border-radius:999px;
+  box-shadow:0 3px 0 var(--ink);transition:transform .12s}
+.back:hover{transform:translate(-1px,-1px)}.back:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.hud{display:flex;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;background:var(--card);border:2.5px solid var(--ink);
+  border-radius:999px;padding:8px 15px;font-size:.9rem;font-weight:900;box-shadow:0 3px 0 var(--ink);font-variant-numeric:tabular-nums}
+.chip .k{color:var(--muted);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase}
+.chip .v{font-size:1.05rem}
+.head{margin:0 0 18px}
+.kicker{display:inline-block;font-size:.74rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+  color:#fff;background:var(--teal);border:2.5px solid var(--ink);border-radius:999px;
+  padding:7px 14px;box-shadow:0 2px 0 var(--ink);margin-bottom:14px}
+h1{margin:0;font-size:clamp(2.1rem,7vw,3rem);line-height:.98;letter-spacing:-.04em;font-weight:900}
+h1 span{color:var(--teal-d)}
+.sub{margin:12px 0 0;color:var(--ink-2);font-size:1.06rem;line-height:1.55;max-width:50ch;font-weight:600}
+.card{background:var(--card);border:2.5px solid var(--ink);border-radius:24px;padding:22px;box-shadow:var(--hard);margin-bottom:20px}
+.card h2{margin:0 0 4px;font-size:1.3rem;letter-spacing:-.02em}
+.card .lede{margin:0 0 18px;font-size:.95rem;color:var(--muted);font-weight:700}
+
+/* ---------- whole picker ---------- */
+.wholerow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.wholerow .cap{font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px;width:100%}
+.wbtn{min-width:52px;height:52px;padding:0 8px;border-radius:14px;border:2.5px solid var(--ink);background:#fffdf8;
+  font-family:inherit;font-weight:900;font-size:1.15rem;cursor:pointer;box-shadow:0 3px 0 var(--ink);
+  transition:transform .08s,background .15s;color:var(--ink);font-variant-numeric:tabular-nums}
+.wbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.wbtn[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* ---------- split bar ---------- */
+.barwrap{position:relative;margin:0 0 4px}
+.bar{position:relative;display:flex;height:104px;border:3.5px solid var(--ink);border-radius:18px;
+  overflow:hidden;touch-action:none;cursor:ew-resize;box-shadow:0 5px 0 var(--ink);user-select:none;
+  background:#f3ecda}
+.seg{display:flex;align-items:center;justify-content:center;font-family:ui-rounded,system-ui,sans-serif;
+  font-weight:900;font-size:clamp(2.2rem,9vw,3.2rem);transition:width .12s cubic-bezier(.22,1,.36,1);
+  overflow:hidden;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 rgba(0,0,0,.12)}
+.seg.a{background:var(--teal);color:#fff}
+.seg.b{background:var(--amber);color:var(--ink)}
+.handle{position:absolute;top:-8px;bottom:-8px;width:30px;transform:translateX(-50%);
+  background:#fffdf8;border:3.5px solid var(--ink);border-radius:999px;cursor:ew-resize;
+  box-shadow:0 3px 0 rgba(20,23,46,.4);z-index:3;transition:left .12s cubic-bezier(.22,1,.36,1);
+  display:flex;align-items:center;justify-content:center;gap:3px}
+.handle::before,.handle::after{content:"";width:2.5px;height:20px;background:var(--muted);border-radius:2px}
+.handle:focus-visible{outline:4px solid var(--indigo);outline-offset:4px}
+.handle.grab{transition:none}
+.ticks{position:relative;height:30px;margin-top:8px}
+.ticks span{position:absolute;top:0;transform:translateX(-50%);font-size:.78rem;font-weight:900;
+  color:var(--muted);font-variant-numeric:tabular-nums}
+.ticks span::before{content:"";position:absolute;left:50%;top:-8px;width:2px;height:7px;background:#cfc3a4;transform:translateX(-50%)}
+.ticks span.end{color:var(--ink)}.ticks span.end::before{background:var(--ink);height:9px}
+
+/* ---------- fact line ---------- */
+.factline{text-align:center;margin:20px 0 2px;font-family:ui-rounded,system-ui,sans-serif;
+  font-weight:900;font-size:clamp(2rem,8vw,2.9rem);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.factline .plus{color:var(--muted);font-weight:800}
+.factline .a{color:var(--teal-d)}
+.factline .b{color:var(--amber-d)}
+.say{margin:6px 0 0;text-align:center;font-size:1rem;font-weight:800;color:var(--ink-2)}
+.say b{color:var(--teal-d)}
+.subfacts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.subfacts span{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:.92rem;color:var(--ink-2);
+  background:#fbf5e6;border:2px solid #ddd2b6;border-radius:999px;padding:7px 14px;font-variant-numeric:tabular-nums}
+
+/* ---------- counters ---------- */
+.framewrap{display:flex;justify-content:center;margin-top:22px}
+.frame{display:grid;gap:6px}
+.frame .cell{padding:0;cursor:pointer;font:inherit}
+.cell{width:42px;height:42px;border:2.5px solid #b9ad8e;border-radius:8px;background:#fbf5e6;
+  display:flex;align-items:center;justify-content:center;transition:background .18s,border-color .18s}
+.cell .dot{width:26px;height:26px;transition:background .18s,transform .18s}
+.cell.a{border-color:var(--teal-d);background:#dff6f2}
+.cell.a .dot{background:var(--teal);border-radius:50%}
+.cell.b{border-color:var(--amber-d);background:#fff2d4}
+.cell.b .dot{background:var(--amber);border-radius:6px}
+.cell .dot{transform:scale(0)}
+.cell.a .dot,.cell.b .dot{transform:scale(1)}
+.framelegend{display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:.84rem;font-weight:800;color:var(--ink-2)}
+.framelegend i{display:inline-block;width:14px;height:14px;margin-right:6px;vertical-align:-2px;border:2px solid var(--ink)}
+.framelegend .la i{background:var(--teal);border-radius:50%}
+.framelegend .lb i{background:var(--amber);border-radius:4px}
+@media (max-width:560px){.cell{width:32px;height:32px}.cell .dot{width:20px;height:20px}}
+
+/* ---------- ladder ---------- */
+.ladderhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.ladderhead p{margin:0;font-size:.86rem;font-weight:700;color:var(--muted)}
+.ladder{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}
+@media (max-width:660px){.ladder{grid-template-columns:1fr}}
+.lrow{display:grid;grid-template-columns:30px 1fr 30px;gap:10px;align-items:center;padding:6px 8px;
+  border-radius:10px;cursor:pointer;border:2.5px solid transparent;transition:background .15s,border-color .15s}
+.lrow:hover{background:#fbf5e6}
+.lrow.on{background:#e6faf6;border-color:var(--teal)}
+.lrow:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.lrow .lbl{font-family:ui-monospace,Menlo,monospace;font-weight:900;font-size:.95rem;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.lrow .lbl.r{text-align:right}
+.mini{position:relative;height:20px;border:2.5px solid var(--ink);border-radius:999px;overflow:hidden;
+  background:var(--amber);box-shadow:0 2px 0 rgba(20,23,46,.25)}
+.mini i{position:absolute;inset:0 auto 0 0;background:var(--teal);border-right:2.5px solid var(--ink);
+  border-radius:999px 0 0 999px;transition:width .18s}
+
+/* ---------- play button ---------- */
+.playbtn{display:block;width:100%;font-family:inherit;font-weight:900;font-size:1.15rem;
+  cursor:pointer;border:3px solid var(--ink);border-radius:18px;padding:18px 20px;background:var(--teal);
+  color:#fff;box-shadow:0 6px 0 var(--ink);transition:transform .07s,box-shadow .07s;letter-spacing:-.01em}
+.playbtn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+
+/* ---------- drill ---------- */
+.playpanel{display:none}
+.playpanel.show{display:block}
+.playtop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.modes{display:flex;gap:8px;flex-wrap:wrap}
+.mode{font-family:inherit;font-weight:900;font-size:.9rem;color:var(--ink);cursor:pointer;background:#fbf5e6;
+  border:2.5px solid var(--ink);border-radius:999px;padding:9px 16px;box-shadow:0 3px 0 var(--ink);
+  transition:transform .1s,background .15s}
+.mode:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.mode[aria-pressed="true"]{background:var(--teal);color:#fff}
+.counter{font-weight:900;font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counter b{color:var(--ink)}
+.bar2{height:14px;border:2.5px solid var(--ink);border-radius:999px;background:#f3ecda;margin:0 0 12px;overflow:hidden}
+.bar2>i{display:block;height:100%;width:0;border-radius:999px;
+  background:repeating-linear-gradient(135deg,var(--teal) 0 10px,#07756a 10px 20px);transition:width .35s cubic-bezier(.22,1,.36,1)}
+.ask{text-align:center;font-size:1.02rem;font-weight:900;color:var(--ink-2);margin:10px 0 2px}
+.bonds{display:block;width:min(330px,90vw);height:auto;margin:4px auto 0}
+.bonds .edge{stroke:var(--ink);stroke-width:4;stroke-linecap:round}
+.bonds .node{stroke:var(--ink);stroke-width:4}
+.bonds .node.whole{fill:var(--indigo)}
+.bonds .node.partA{fill:var(--teal)}
+.bonds .node.partB{fill:var(--amber)}
+.bonds .node.blank{fill:#fff;stroke:var(--ink);stroke-dasharray:9 7;stroke-width:4}
+.bonds .nt{font-family:ui-rounded,system-ui,sans-serif;font-size:36px;font-weight:900;
+  text-anchor:middle;dominant-baseline:central;fill:#fff}
+.bonds .nt.dark{fill:var(--ink)}
+.bonds .nt.ask{fill:var(--ink);font-size:40px}
+.answerbox{display:flex;justify-content:center;margin:6px 0 0}
+.answerbox span{min-width:2.2ch;min-height:1.2em;padding:2px 16px;border-bottom:6px solid #d7cba9;
+  font-family:ui-monospace,Menlo,monospace;font-size:2.4rem;font-weight:900;color:var(--teal-d);
+  text-align:center;font-variant-numeric:tabular-nums}
+.answerbox span.ok{color:var(--good);border-color:var(--good)}
+.answerbox span.no{color:var(--bad);border-color:var(--bad)}
+.caret{display:inline-block;width:2.5px;height:.85em;background:var(--teal);vertical-align:-.06em;
+  animation:blink 1s steps(2) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;max-width:390px;margin:20px auto 0}
+.key{height:64px;border-radius:16px;border:2.5px solid var(--ink);background:#fffdf8;font-family:inherit;
+  font-size:1.6rem;font-weight:900;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 var(--ink);
+  transition:transform .07s,box-shadow .07s,background .15s;font-variant-numeric:tabular-nums}
+.key:hover{background:#fff}.key:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.key.del{background:#fff1f0;color:#b93a3d}.key.go{background:var(--teal);color:#fff;font-size:1.12rem}
+.key.del{font-size:1.12rem}
+.key.go:disabled{opacity:.4;cursor:not-allowed;box-shadow:0 2px 0 var(--ink)}
+.drillframe{display:none;flex-wrap:wrap;justify-content:center;max-width:340px;margin:14px auto 0}
+.drillframe.show{display:flex}
+.drillframe .cell{width:26px;height:26px;border-radius:6px;border:2px solid var(--ink);background:#fffdf8;margin:2px}
+.drillframe .cell.on{background:var(--teal);border-color:var(--teal-d)}
+.drillframe .cell.partb{background:var(--amber);border-color:var(--amber-d)}
+.nextbtn{margin-top:14px}
+.hint{margin:14px auto 0;text-align:center;font-size:.98rem;color:var(--ink-2);font-weight:800;min-height:1.5em;line-height:1.5;max-width:44ch}
+.showme{display:block;margin:14px auto 0;font-family:inherit;font-weight:900;font-size:.9rem;cursor:pointer;
+  background:#fffdf8;border:2.5px solid var(--ink);border-radius:12px;padding:10px 18px;box-shadow:0 3px 0 var(--ink)}
+.showme:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+
+/* ---------- done ---------- */
+.done{display:none;text-align:center;padding:10px 4px 4px}
+.done.show{display:block;animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.done .badge{font-size:3.6rem;line-height:1}
+.done h2{margin:12px 0 8px;font-size:2rem;letter-spacing:-.03em}
+.done p{margin:0;color:var(--ink-2);font-weight:700;font-size:1.02rem}
+.stars{display:flex;justify-content:center;gap:8px;margin:16px 0 4px;font-size:1.9rem}
+.stars span{opacity:.2;filter:grayscale(1);transition:.3s}
+.stars span.on{opacity:1;filter:none;transform:scale(1.1)}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.btn{font-family:inherit;font-weight:900;font-size:1rem;cursor:pointer;border:2.5px solid var(--ink);border-radius:14px;
+  padding:13px 20px;background:var(--teal);color:#fff;box-shadow:0 4px 0 var(--ink);transition:transform .07s,box-shadow .07s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fffdf8;color:var(--ink)}
+.toast{position:fixed;left:50%;top:16px;z-index:50;transform:translateX(-50%) translateY(-100px);
+  background:var(--ink);color:#fff;padding:13px 24px;border-radius:999px;font-weight:900;
+  box-shadow:0 12px 30px rgba(20,23,46,.3);transition:transform .3s cubic-bezier(.22,1,.36,1);
+  font-size:1rem;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.good{background:var(--good)}.toast.bad{background:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:480px){.card{padding:16px;border-radius:18px}.shell{padding:14px 12px 52px}.bar{height:86px}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.speak{display:block;margin:12px auto 0;font-family:inherit;
+  font-weight:900;font-size:.95rem;cursor:pointer;background:#fffdf8;border:2.5px solid var(--ink);
+  border-radius:999px;padding:9px 16px;box-shadow:0 3px 0 var(--ink);color:var(--ink)}
+.speak:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="shell">
+  <div class="top">
+    <a class="back" href="./index.html">← Arcade</a>
+    <div class="hud">
+      <div class="chip"><span class="k">Score</span><span class="v" id="score">0</span></div>
+      <div class="chip"><span class="k">Streak</span><span class="v" id="streak">0</span></div>
+    </div>
+  </div>
+
+  <header class="head">
+    <span class="kicker">Game 01 · Making 10</span>
+    <h1>Number <span>Bonds</span></h1>
+    <p class="sub">A bond is one whole made of two parts. Slide the divider. The whole stays the same — only the two parts change.</p>
+  </header>
+
+  <!-- ============ EXPLORE ============ -->
+  <div id="explore">
+    <section class="card">
+      <h2>Slide the divider</h2>
+      <p class="lede">Pick a whole, then drag the white handle.</p>
+
+      <div class="wholerow" id="wholerow" role="group" aria-label="Choose the whole"></div>
+
+      <div class="barwrap">
+        <div class="bar" id="bar">
+          <div class="seg a" id="segA">5</div>
+          <div class="seg b" id="segB">5</div>
+          <div class="handle" id="handle" role="slider" tabindex="0"
+               aria-label="Split point" aria-valuemin="1" aria-valuemax="9" aria-valuenow="5"></div>
+        </div>
+        <div class="ticks" id="ticks"></div>
+      </div>
+
+      <div class="factline" id="factline"></div>
+      <p class="say" id="say"></p>
+      <div class="subfacts" id="subfacts"></div>
+
+      <div class="framewrap"><div class="frame" id="frame" aria-hidden="true"></div></div>
+      <div class="framelegend">
+        <span class="la"><i></i>first part</span>
+        <span class="lb"><i></i>second part</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ladderhead">
+        <h2>Every way to split <span id="ladderWhole">10</span></h2>
+        <p>Tap a row to jump there.</p>
+      </div>
+      <div class="ladder" id="ladder"></div>
+    </section>
+
+    <button class="playbtn" id="playBtn">Play 10 questions →</button>
+  </div>
+
+  <!-- ============ DRILL ============ -->
+  <div class="playpanel" id="playpanel">
+    <section class="card">
+      <div class="playtop">
+        <div class="modes" role="group" aria-label="Choose a set">
+          <button class="mode" data-mode="ten" aria-pressed="true">Make 10</button>
+          <button class="mode" data-mode="teen" aria-pressed="false">11 to 20</button>
+          <button class="mode" data-mode="mixed" aria-pressed="false">Mixed</button>
+        </div>
+        <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">10</b></div>
+      </div>
+      <div class="bar2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pbar"><i id="progress"></i></div>
+
+      <div id="stage">
+        <div class="ask" id="ask">What is the missing part?</div>
+        <div class="sr-only" id="qsay" aria-live="polite"></div>
+      <svg class="bonds" viewBox="0 0 300 186">
+          <line class="edge" x1="150" y1="66" x2="68" y2="116"/>
+          <line class="edge" x1="150" y1="66" x2="232" y2="116"/>
+          <circle class="node whole" id="cWhole" cx="150" cy="40" r="34"/>
+          <text class="nt" id="nWhole" x="150" y="42">10</text>
+          <circle class="node partA" id="cA" cx="68" cy="134" r="34"/>
+          <text class="nt" id="nA" x="68" y="136">4</text>
+          <circle class="node partB" id="cB" cx="232" cy="134" r="34"/>
+          <text class="nt" id="nB" x="232" y="136">6</text>
+        </svg>
+        <div class="answerbox"><span id="qans"></span></div>
+        <div class="drillframe" id="drillFrame" aria-hidden="true"></div>
+        <div class="pad" id="pad"></div>
+        <button class="showme" id="showMe" type="button">Show me with counters</button>
+        <button class="speak" id="speakBtn" type="button">🔊 Say it</button>
+        <button class="btn nextbtn" id="nextBtn" type="button" hidden>Next →</button>
+        <p class="hint" id="hint">Type the number, then tap ✓.</p>
+      </div>
+
+      <div class="done" id="done">
+        <div class="badge" id="medal">🏅</div>
+        <h2 id="doneTitle">Bonds mastered!</h2>
+        <p id="doneText"></p>
+        <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+        <div class="actions">
+          <button class="btn" id="again">Play again</button>
+          <button class="btn ghost" id="backBtn">Back to the split</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+  const KEY = 'arcade.bonds.v4';
+  const TOTAL = 10;
+  const $ = id => document.getElementById(id);
+  const rnd = n => Math.floor(Math.random() * n);
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const shuffle = a => {
+    for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  };
+
+  /* ---------------- audio ---------------- */
+  let ctx = null;
+  function tone(freq, dur = .12, type = 'sine', gain = .05) {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(gain, ctx.currentTime + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + dur);
+      o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + .02);
+    } catch (_) {}
+  }
+  const goodSound = s => {
+    const b = 523.25 * Math.pow(2, Math.min(s, 7) / 12);
+    tone(b, .1, 'sine', .045); setTimeout(() => tone(b * 1.25, .12, 'sine', .04), 70);
+    if (s >= 5) setTimeout(() => tone(b * 1.5, .16, 'triangle', .035), 150);
+  };
+  const badSound = () => { tone(196, .16, 'triangle', .045); setTimeout(() => tone(155, .2, 'triangle', .04), 110); };
+  const tickSound = () => tone(780, .035, 'square', .015);
+
+  /* ---------------- confetti ---------------- */
+  const canvas = $('confetti'), cx = canvas.getContext('2d');
+  let bits = [], raf = null;
+  function sizeCanvas() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+    canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', sizeCanvas); sizeCanvas();
+  const COLORS = ['#0aa392', '#f5a300', '#f0554f', '#4a5cf0', '#8b46d9', '#6aa312'];
+  function burst(n = 30) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (let i = 0; i < n; i++) bits.push({
+      x: innerWidth / 2 + (Math.random() - .5) * 160, y: innerHeight * .34 + (Math.random() - .5) * 40,
+      vx: (Math.random() - .5) * 9, vy: -Math.random() * 10 - 2, r: 3 + Math.random() * 5,
+      rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3, c: COLORS[i % COLORS.length], life: 1
+    });
+    if (!raf) tick();
+  }
+  function tick() {
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const b of bits) {
+      b.vy += .32; b.vx *= .992; b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.life -= .008;
+      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.rot); cx.globalAlpha = Math.max(b.life, 0);
+      cx.fillStyle = b.c; cx.fillRect(-b.r / 2, -b.r / 2, b.r, b.r * 1.7); cx.restore();
+    }
+    bits = bits.filter(b => b.life > 0 && b.y < innerHeight + 40);
+    if (bits.length) raf = requestAnimationFrame(tick);
+    else { cx.clearRect(0, 0, innerWidth, innerHeight); raf = null; }
+  }
+
+  /* ================= EXPLORE ================= */
+  const WHOLES = [5, 6, 7, 8, 9, 10, 11, 12, 15, 20];
+  const E = { whole: 10, partA: 5 };
+
+  function buildWholes() {
+    const row = $('wholerow');
+    row.innerHTML = '';
+    const cap = document.createElement('span');
+    cap.className = 'cap'; cap.textContent = 'Choose the whole';
+    row.appendChild(cap);
+    WHOLES.forEach(w => {
+      const b = document.createElement('button');
+      b.className = 'wbtn'; b.type = 'button'; b.textContent = w; b.dataset.w = w;
+      b.setAttribute('aria-pressed', String(w === E.whole));
+      b.setAttribute('aria-label', `Whole ${w}`);
+      b.addEventListener('click', () => {
+        E.whole = w;
+        E.partA = clamp(E.partA, 1, w - 1);
+        tickSound(); renderAll();
+      });
+      row.appendChild(b);
+    });
+  }
+
+  function buildTicks() {
+    const t = $('ticks');
+    t.innerHTML = '';
+    const w = E.whole;
+    const step = w <= 12 ? 1 : 5;
+    for (let i = 0; i <= w; i += step) {
+      const s = document.createElement('span');
+      s.textContent = i;
+      s.style.left = (i / w * 100) + '%';
+      if (i === 0 || i === w) s.className = 'end';
+      t.appendChild(s);
+    }
+  }
+
+  function buildFrame() {
+    const f = $('frame');
+    f.innerHTML = '';
+    const w = E.whole;
+    const cols = w <= 5 ? 5 : w <= 10 ? 5 : 10;
+    f.style.gridTemplateColumns = `repeat(${cols}, auto)`;
+    for (let i = 0; i < w; i++) {
+      const c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'cell';
+      c.dataset.part = String(i + 1);
+      c.setAttribute('aria-label', `Split after ${i + 1}`);
+      const d = document.createElement('span');
+      d.className = 'dot';
+      c.appendChild(d);
+      c.addEventListener('click', () => {
+        E.partA = i + 1;
+        tickSound(); renderAll();
+      });
+      f.appendChild(c);
+    }
+  }
+
+  function paintFrame() {
+    const cells = [...$('frame').children];
+    cells.forEach((c, i) => {
+      c.classList.toggle('a', i < E.partA);
+      c.classList.toggle('b', i >= E.partA);
+    });
+  }
+
+  function buildLadder() {
+    const box = $('ladder');
+    box.innerHTML = '';
+    const w = E.whole;
+    for (let k = 1; k < w; k++) {
+      const row = document.createElement('div');
+      row.className = 'lrow';
+      row.dataset.k = k;
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+      row.setAttribute('aria-label', `${k} and ${w - k} make ${w}`);
+      const l = document.createElement('span');
+      l.className = 'lbl'; l.textContent = k;
+      const m = document.createElement('div');
+      m.className = 'mini';
+      const fill = document.createElement('i');
+      fill.style.width = (k / w * 100) + '%';
+      m.appendChild(fill);
+      const r = document.createElement('span');
+      r.className = 'lbl r'; r.textContent = w - k;
+      row.append(l, m, r);
+      const go = () => { E.partA = k; tickSound(); paintAll(); };
+      row.addEventListener('click', go);
+      row.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
+      box.appendChild(row);
+    }
+  }
+
+  function paintLadder() {
+    [...$('ladder').children].forEach(row => {
+      row.classList.toggle('on', Number(row.dataset.k) === E.partA);
+    });
+  }
+
+  function paintBar() {
+    const w = E.whole, a = E.partA, b = w - a;
+    const segA = $('segA'), segB = $('segB'), handle = $('handle');
+    segA.style.width = (a / w * 100) + '%';
+    segB.style.width = (b / w * 100) + '%';
+    segA.textContent = a;
+    segB.textContent = b;
+    handle.style.left = (a / w * 100) + '%';
+    handle.setAttribute('aria-valuemax', String(w - 1));
+    handle.setAttribute('aria-valuenow', String(a));
+    handle.setAttribute('aria-valuetext', `${a} and ${b} make ${w}`);
+    $('factline').innerHTML =
+      `<span class="a">${a}</span> <span class="plus">+</span> ` +
+      `<span class="b">${b}</span> <span class="plus">=</span> ${w}`;
+    $('say').innerHTML = `<b>${a}</b> and <b>${b}</b> make <b>${w}</b>.`;
+    $('subfacts').innerHTML = `<span>${w} − ${a} = ${b}</span><span>${w} − ${b} = ${a}</span>`;
+  }
+
+  function paintAll() {
+    paintBar(); paintFrame(); paintLadder();
+    document.querySelectorAll('#wholerow .wbtn').forEach(b =>
+      b.setAttribute('aria-pressed', String(Number(b.dataset.w) === E.whole)));
+  }
+
+  function renderAll() {
+    $('ladderWhole').textContent = E.whole;
+    buildTicks(); buildFrame(); buildLadder(); paintAll();
+  }
+
+  /* ---- drag ---- */
+  function partFromX(clientX) {
+    const r = $('bar').getBoundingClientRect();
+    const t = (clientX - r.left) / r.width;
+    return clamp(Math.round(t * E.whole), 1, E.whole - 1);
+  }
+  const bar = $('bar');
+  let dragging = false;
+  bar.addEventListener('pointerdown', e => {
+    dragging = true;
+    $('handle').classList.add('grab');
+    try { bar.setPointerCapture(e.pointerId); } catch (_) {}
+    E.partA = partFromX(e.clientX);
+    paintAll(); tickSound();
+    e.preventDefault();
+  });
+  bar.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const next = partFromX(e.clientX);
+    if (next !== E.partA) { E.partA = next; paintAll(); tickSound(); }
+  });
+  const endDrag = () => { dragging = false; $('handle').classList.remove('grab'); };
+  bar.addEventListener('pointerup', endDrag);
+  bar.addEventListener('pointercancel', endDrag);
+
+  $('handle').addEventListener('keydown', e => {
+    const w = E.whole;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+      E.partA = clamp(E.partA - 1, 1, w - 1); paintAll(); tickSound(); e.preventDefault();
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+      E.partA = clamp(E.partA + 1, 1, w - 1); paintAll(); tickSound(); e.preventDefault();
+    } else if (e.key === 'Home') {
+      E.partA = 1; paintAll(); e.preventDefault();
+    } else if (e.key === 'End') {
+      E.partA = w - 1; paintAll(); e.preventDefault();
+    }
+  });
+
+  /* ================= DRILL ================= */
+  const state = {
+    mode: 'ten', queue: [], index: 0, input: '', score: 0, streak: 0,
+    best: 0, right: 0, answered: false, perMode: {}, review: {}
+  };
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; }
+    } catch (_) {}
+  }
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review }));
+    } catch (_) {}
+  };
+
+  const factKey = q => `${q.whole}|${q.a}|${q.blank}`;
+  function noteFact(q, right) {
+    const k = factKey(q);
+    const r = state.review[k] || { n: 0, miss: 0, due: false };
+    r.n++; if (!right) { r.miss++; r.due = true; } else if (r.due) r.due = false;
+    state.review[k] = r;
+  }
+
+  function wholesFor(mode) {
+    if (mode === 'ten') return [10];
+    if (mode === 'teen') return [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    return [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+  }
+
+  function buildQueue() {
+    const ws = wholesFor(state.mode);
+    const out = Object.entries(state.review)
+      .filter(([k, r]) => r.due)
+      .slice(0, 2)
+      .map(([k]) => {
+        const [whole, a, blank] = k.split('|');
+        return { whole: +whole, a: +a, b: +whole - +a, blank, review: true };
+      })
+      .filter(q => ws.includes(q.whole));
+    const pool = [];
+    ws.forEach(w => { for (let a = 1; a < w; a++) pool.push({ whole: w, a, b: w - a }); });
+    shuffle(pool);
+    let i = 0;
+    while (out.length < TOTAL) {
+      if (i >= pool.length) { shuffle(pool); i = 0; }
+      const f = pool[i++];
+      const blank = Math.random() < .3 ? 'whole' : (Math.random() < .5 ? 'a' : 'b');
+      if (out.some(o => o.whole === f.whole && o.a === f.a && o.blank === blank)) continue;
+      out.push({ ...f, blank });
+    }
+    return out;
+  }
+
+  function renderQuestion() {
+    const q = state.queue[state.index];
+    if (!q) return finish();
+    state.answered = false; state.input = '';
+    const { whole, a, b, blank } = q;
+    const setNode = (circle, text, val, isBlank, dark) => {
+      circle.classList.toggle('blank', isBlank);
+      text.textContent = isBlank ? '?' : val;
+      text.classList.toggle('dark', dark);
+      text.classList.toggle('ask', isBlank);
+    };
+    setNode($('cWhole'), $('nWhole'), whole, blank === 'whole', false);
+    setNode($('cA'), $('nA'), a, blank === 'a', false);
+    setNode($('cB'), $('nB'), b, blank === 'b', true);
+
+    const ans = $('qans');
+    ans.className = ''; ans.textContent = '';
+    $('drillFrame').classList.remove('show');
+    $('drillFrame').innerHTML = '';
+    $('nextBtn').hidden = true;
+    paintGo();
+    $('qnum').textContent = state.index + 1;
+    $('progress').style.width = (state.index / TOTAL * 100) + '%';
+    $('pbar').setAttribute('aria-valuenow', String(state.index));
+    $('ask').textContent = blank === 'whole' ? 'What is the whole?' : 'What is the missing part?';
+    $('qsay').textContent = blank === 'whole'
+      ? `${a} and ${b}. What is the whole?`
+      : `${whole} split into ${a} and what?`;
+    $('hint').textContent = blank === 'whole'
+      ? `Count both parts together.`
+      : `Count up from ${a} to ${whole}.`;
+  }
+
+  function paintInput() {
+    const a = $('qans');
+    a.className = '';
+    a.textContent = state.input || '';
+    if (state.input) {
+      const c = document.createElement('span'); c.className = 'caret'; a.appendChild(c);
+    }
+  }
+
+  function answerFor(q) {
+    return q.blank === 'whole' ? q.whole : (q.blank === 'a' ? q.a : q.b);
+  }
+
+  function submit() {
+    if (state.answered || !state.queue[state.index]) return;
+    if (state.input === '') { toast('Type the number first', 'bad'); return; }
+    const q = state.queue[state.index];
+    const answer = answerFor(q);
+    const right = Number(state.input) === answer;
+    const box = $('qans');
+    state.answered = true;
+    if (right) {
+      box.className = 'ok';
+      state.score += 10 + Math.min(state.streak, 5) * 2;
+      state.streak++; state.right++;
+      state.best = Math.max(state.best, state.streak);
+      goodSound(state.streak); burst(22 + Math.min(state.streak, 6) * 4);
+      toast(['Correct!', 'That bond is solid.', 'Yes!', 'Locked in.'][rnd(4)], 'good');
+    } else {
+      box.className = 'no';
+      state.streak = 0; badSound();
+      toast(`The answer is ${answer}`, 'bad');
+      $('hint').textContent = q.blank === 'whole'
+        ? `${q.a} + ${q.b} = ${q.whole}.`
+        : `${q.a} + ${q.b} = ${q.whole}, so the missing part is ${answer}.`;
+    }
+    noteFact(q, right);
+    paintStats(); save();
+    if (right) {
+      setTimeout(advance, 620);
+    } else {
+      $('nextBtn').hidden = false;
+      $('nextBtn').focus();
+    }
+  }
+
+  function advance() {
+    state.index++;
+    if (state.index >= TOTAL) finish(); else renderQuestion();
+  }
+
+  const paintStats = () => { $('score').textContent = state.score; $('streak').textContent = state.streak; };
+
+  function finish() {
+    $('stage').style.display = 'none';
+    $('done').classList.add('show');
+    $('progress').style.width = '100%';
+    $('pbar').setAttribute('aria-valuenow', String(TOTAL));
+    const pct = Math.round(state.right / TOTAL * 100);
+    state.perMode[state.mode] = Math.max(state.perMode[state.mode] || 0, pct);
+    save();
+    $('doneText').textContent = `${state.right} of ${TOTAL} correct · ${state.score} points · best streak ${state.best}`;
+    const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
+    [...$('stars').children].forEach((s, i) => s.classList.toggle('on', i < stars));
+    $('medal').textContent = stars === 3 ? '🏆' : stars === 2 ? '🥇' : stars === 1 ? '🥈' : '🌱';
+    $('doneTitle').textContent = stars === 3 ? 'Bonds mastered!' : stars === 2 ? 'Strong bonds!' : stars === 1 ? 'Getting there!' : 'Keep practising!';
+    if (stars >= 2) burst(80);
+    goodSound(6);
+  }
+
+  function start(mode) {
+    state.mode = mode;
+    state.queue = buildQueue();
+    state.index = 0; state.score = 0; state.streak = 0; state.right = 0;
+    $('stage').style.display = '';
+    $('done').classList.remove('show');
+    document.querySelectorAll('#playpanel .mode').forEach(b =>
+      b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    paintStats(); renderQuestion();
+  }
+
+  function buildPad() {
+    const pad = $('pad'); pad.innerHTML = '';
+    for (let d = 1; d <= 9; d++) pad.appendChild(key(String(d)));
+    pad.appendChild(key('0'));
+    pad.appendChild(key('⌫ Del', 'del', () => { state.input = state.input.slice(0, -1); paintInput(); paintGo(); }));
+    pad.appendChild(key('✓ Check', 'go', submit));
+  }
+
+  function paintGo() {
+    const g = $('goBtn');
+    if (g) g.disabled = state.input === '';
+  }
+
+  function key(label, cls, handler) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'key' + (cls ? ' ' + cls : ''); b.textContent = label;
+    b.setAttribute('aria-label', cls === 'del' ? 'Delete' : cls === 'go' ? 'Check answer' : label);
+    b.addEventListener('click', handler || (() => {
+      if (state.input.length < 2) { state.input += label; paintInput(); paintGo(); }
+    }));
+    if (cls === 'go') { b.id = 'goBtn'; b.disabled = true; }
+    return b;
+  }
+
+  /* ================= ROUTING ================= */
+  function showPlay() {
+    $('explore').style.display = 'none';
+    $('playpanel').classList.add('show');
+    start(state.mode || 'ten');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function showExplore() {
+    $('playpanel').classList.remove('show');
+    $('explore').style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  $('playBtn').addEventListener('click', showPlay);
+  $('backBtn').addEventListener('click', showExplore);
+  $('again').addEventListener('click', () => start(state.mode));
+  $('nextBtn').addEventListener('click', advance);
+  document.querySelectorAll('#playpanel .mode').forEach(b =>
+    b.addEventListener('click', () => start(b.dataset.mode)));
+
+  /* show-me draws the counters. It never types the answer. */
+  $('showMe').addEventListener('click', () => {
+    if (state.answered) return;
+    const q = state.queue[state.index];
+    if (!q) return;
+    const frame = $('drillFrame');
+    frame.innerHTML = '';
+    frame.classList.add('show');
+    for (let i = 1; i <= q.whole; i++) {
+      const c = document.createElement('div');
+      c.className = 'cell on' + (i > q.a ? ' partb' : '');
+      c.style.transitionDelay = (i * 30) + 'ms';
+      frame.appendChild(c);
+    }
+    $('hint').textContent = q.blank === 'whole'
+      ? `Count every counter: ${q.a} teal and ${q.b} amber.`
+      : `The whole is ${q.whole}. Count the ${q.blank === 'a' ? 'amber' : 'teal'} counters.`;
+    tickSound();
+  });
+
+
+  function say() {
+    const text = ($('qsay') && $('qsay').textContent || '').trim();
+    if (!text || !('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = .9; u.pitch = 1.1;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
+  $('speakBtn').addEventListener('click', say);
+
+  document.addEventListener('keydown', e => {
+    if (!$('playpanel').classList.contains('show') || state.answered) return;
+    if (/^[0-9]$/.test(e.key) && state.input.length < 2) { state.input += e.key; paintInput(); e.preventDefault(); }
+    else if (e.key === 'Backspace') { state.input = state.input.slice(0, -1); paintInput(); e.preventDefault(); }
+    else if (e.key === 'Enter') { submit(); e.preventDefault(); }
+  });
+
+  let toastTimer;
+  function toast(msg, kind) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (kind ? ' ' + kind : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+  }
+
+  load(); buildWholes(); buildPad(); renderAll();
+})();
+</script>
+</body>
+</html>

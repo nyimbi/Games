@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Division Diner — Math Arcade</title>
+<style>
+:root{
+  --op-plus:#5b6cff;--op-minus:#ff6b6b;--op-times:#7cb518;--op-div:#ffb703;
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;--paper:#fdf7ea;--card:#fffdf8;--line:#e7dcc4;
+  --amber:#ffb703;--amber-d:#c98a00;--teal:#0fb5a1;--coral:#ff6b6b;--indigo:#5b6cff;
+  --good:#1e9e6a;--bad:#e5484d;--hard:6px 6px 0 var(--ink);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{margin:0;min-height:100vh;color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(840px 520px at 2% -8%,#fff0c4 0%,transparent 62%),
+    radial-gradient(780px 520px at 102% 4%,#d5f7ef 0%,transparent 58%),
+    radial-gradient(760px 560px at 50% 118%,#ffe0dc 0%,transparent 62%),var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.09) 1px,transparent 1.3px);background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);
+  mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.shell{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:20px 18px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);font-weight:900;
+  font-size:.95rem;background:var(--card);border:2.5px solid var(--ink);padding:9px 15px;border-radius:999px;
+  box-shadow:0 3px 0 var(--ink);transition:transform .12s}
+.back:hover{transform:translate(-1px,-1px)}.back:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.hud{display:flex;gap:8px}
+.chip{display:flex;align-items:center;gap:7px;background:var(--card);border:2.5px solid var(--ink);
+  border-radius:999px;padding:8px 15px;font-size:.9rem;font-weight:900;box-shadow:0 3px 0 var(--ink);font-variant-numeric:tabular-nums}
+.chip .k{color:var(--muted);font-size:.78rem;font-weight:800}
+.chip .v{font-size:1.05rem}
+.head{margin:0 0 18px}
+.kicker{display:inline-block;font-size:.8rem;font-weight:900;letter-spacing:.06em;
+  background:var(--teal);color:#fff;border:2.5px solid var(--ink);border-radius:999px;
+  padding:7px 14px;box-shadow:0 2px 0 var(--ink);margin-bottom:14px}
+h1{margin:0;font-size:clamp(2rem,6vw,2.9rem);line-height:.98;letter-spacing:-.045em;font-weight:900}
+h1 span{color:var(--amber-d)}
+.sub{margin:12px 0 0;color:var(--ink-2);font-size:1.06rem;line-height:1.55;max-width:52ch;font-weight:600}
+.tabs{display:flex;gap:8px;margin:20px 0 0}
+.tab{font-family:inherit;font-weight:900;font-size:1rem;cursor:pointer;color:var(--ink);background:#fbf5e6;
+  border:2.5px solid var(--ink);border-radius:14px 14px 0 0;padding:11px 20px 12px;transition:background .15s,transform .1s;margin-bottom:-2px}
+.tab[aria-selected="true"]{background:var(--card);border-bottom-color:var(--card);transform:translateY(-2px)}
+.panel{background:var(--card);border:2.5px solid var(--ink);border-radius:0 22px 26px 26px;padding:22px;box-shadow:var(--hard)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.levels{display:flex;gap:7px;flex-wrap:wrap}
+.lv{font-family:inherit;font-weight:900;font-size:1rem;color:var(--ink);cursor:pointer;background:#fbf5e6;
+  border:2.5px solid var(--ink);border-radius:999px;padding:10px 16px;box-shadow:0 3px 0 var(--ink);
+  transition:transform .1s,background .15s;font-variant-numeric:tabular-nums}
+.lv:hover{background:#fff}.lv:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.lv[aria-pressed="true"]{background:var(--amber);color:var(--ink)}
+.hintline{display:flex;align-items:center;gap:10px;background:#fff8e6;border:2px dashed #f0cd7a;
+  border-radius:14px;padding:13px 16px;margin:0 0 18px;font-size:1rem;font-weight:700;color:#7a5a00}
+.hintline .dot{flex:0 0 9px;width:9px;height:9px;border-radius:50%;background:var(--amber)}
+
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media (max-width:620px){.controls{grid-template-columns:1fr}}
+.ctl{background:#fbf5e6;border:2.5px solid var(--ink);border-radius:16px;padding:14px 16px}
+.ctl label{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1rem;color:var(--ink-2);min-height:44px}
+.ctl input[type=range]{flex:1;accent-color:var(--amber-d)}
+.ctl .val{font-family:ui-monospace,Menlo,monospace;min-width:2.4ch;text-align:right;color:var(--ink)}
+.dealrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.btn{font-family:inherit;font-weight:900;font-size:1rem;cursor:pointer;border:2.5px solid var(--ink);border-radius:13px;
+  padding:12px 20px;background:var(--amber);color:var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .07s,box-shadow .07s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn.ghost{background:#fffdf8}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.counter{font-weight:900;font-size:1rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counter b{color:var(--ink)}
+
+.plates{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:18px 8px;min-height:150px}
+.plate{width:104px;height:104px;border-radius:50%;border:3px solid var(--ink);background:#fffdf8;
+  box-shadow:inset 0 0 0 9px #fbf5e6,0 4px 0 var(--ink);position:relative;display:flex;
+  flex-wrap:wrap;align-content:center;justify-content:center;gap:4px;padding:16px}
+.cookie{width:17px;height:17px;border-radius:50%;background:#d9a441;border:2px solid #9c6b12;
+  box-shadow:inset -2px -2px 0 rgba(0,0,0,.12);animation:popin .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popin{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.cookie.leftover{background:#fff;border-style:dashed;border-color:var(--coral)}
+.leftoverbox{border:3px dashed var(--coral);border-radius:16px;padding:12px 16px;min-width:120px;
+  display:flex;flex-wrap:wrap;gap:5px;align-content:center;justify-content:center;background:#fff6f5}
+.leftoverbox .cap{width:100%;text-align:center;font-size:.88rem;font-weight:900;color:#a03a34;margin-bottom:4px}
+.quotient{text-align:center;font-family:ui-monospace,Menlo,monospace;font-weight:800;
+  font-size:clamp(1.4rem,5vw,2rem);margin:8px 0 0;font-variant-numeric:tabular-nums}
+.quotient .q{color:var(--amber-d)}
+.quotient .r{color:var(--coral)}
+.family{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+@media (max-width:520px){.family{grid-template-columns:repeat(2,1fr)}}
+.fact{background:#fffdf8;border:2.5px solid var(--ink);border-radius:12px;padding:12px 8px;text-align:center;
+  font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:.98rem;box-shadow:0 2px 0 var(--ink);font-variant-numeric:tabular-nums}
+.fact.hl{background:var(--amber)}
+.notecard{background:#f4fbf9;border-left:6px solid var(--teal);border-radius:0 14px 14px 0;padding:14px 17px;
+  font-size:1rem;line-height:1.55;color:var(--ink-2);font-weight:700;margin-top:16px}
+.notecard b{color:var(--ink)}
+.subtractline{font-family:ui-monospace,Menlo,monospace;font-size:.95rem;font-weight:800;color:var(--ink-2);
+  text-align:center;margin-top:14px;line-height:1.8}
+.subtractline .done{color:var(--good)}
+.subtractline .rem{color:var(--coral)}
+
+.bar{height:14px;border:2px solid var(--ink);border-radius:999px;background:#f3ecda;margin:16px 0 4px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;border-radius:999px;
+  background:repeating-linear-gradient(135deg,var(--amber) 0 10px,#d99a00 10px 20px);transition:width .35s cubic-bezier(.22,1,.36,1)}
+.stage{margin-top:18px;text-align:center}
+.ask{font-size:1.05rem;font-weight:900;color:var(--ink-2);margin:6px 0 0}
+.qcard{display:inline-flex;align-items:center;gap:12px;margin:12px auto 0;padding:18px 26px;background:#fffdf8;
+  border:2px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace;font-weight:800;font-size:clamp(1.9rem,7vw,2.8rem);
+  font-variant-numeric:tabular-nums}
+.qcard .op{color:var(--muted)}
+.qcard .ans{min-width:2.2ch;padding:2px 14px;border:2.5px dashed #cbbf9f;border-radius:12px;text-align:center;background:#fffdf8}
+.qcard .ans.ok{border-color:var(--good);background:#eaf7ef}
+.qcard .ans.no{border-color:var(--bad);background:#fdecec}
+.qcard .caret{display:inline-block;width:2px;height:.9em;background:var(--amber-d);vertical-align:-.08em;
+  animation:blink 1s steps(2) infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.miniplates{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px auto 0;max-width:420px}
+.miniplate{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);background:#fffdf8;
+  box-shadow:inset 0 0 0 4px #fbf5e6;display:flex;flex-wrap:wrap;gap:2px;align-content:center;justify-content:center;padding:6px}
+.miniplate .cookie{width:7px;height:7px;border-width:1px}
+.pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:380px;margin:20px auto 0}
+px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family:inherit;
+  font-size:1.45rem;font-weight:900;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 var(--ink);
+  transition:transform .07s,box-shadow .07s,background .15s;font-variant-numeric:tabular-nums}
+.key:hover{background:#fff}.key:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.key.del{background:#fff1f0;color:#b93a3d}.key.go{background:var(--amber);color:var(--ink)}
+.worked{display:none;margin:14px auto 0;max-width:440px;text-align:left;background:#fff8e6;
+  border:2.5px dashed #f0cd7a;border-radius:16px;padding:14px 17px;
+  font-size:1.02rem;line-height:1.6;color:#6b5000;font-weight:700}
+.worked.show{display:block}
+.worked b{color:var(--ink);font-size:1.1em}
+.worked .alt{display:block;margin-top:9px;padding-top:9px;border-top:2px dashed #f0cd7a}
+.nextbtn{display:block;margin:14px auto 0}
+.picture{display:block;margin:16px auto 0;font-family:inherit;font-weight:900;font-size:.98rem;
+  cursor:pointer;background:#fffdf8;border:2.5px solid var(--ink);border-radius:999px;padding:10px 18px;
+  box-shadow:0 3px 0 var(--ink);color:var(--ink)}
+.picture[aria-pressed="true"]{background:var(--teal);color:#fff}
+.picture:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.hint{margin-top:14px;font-size:1rem;color:var(--ink-2);font-weight:700;min-height:1.5em;line-height:1.5}
+.toast{position:fixed;left:50%;top:16px;z-index:50;transform:translateX(-50%) translateY(-90px);
+  background:var(--ink);color:#fff;padding:11px 22px;border-radius:999px;font-weight:900;
+  box-shadow:0 12px 30px rgba(25,28,58,.3);transition:transform .3s cubic-bezier(.22,1,.36,1);
+  font-size:.9rem;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.good{background:var(--good)}.toast.bad{background:var(--bad)}
+.done{display:none;text-align:center;padding:8px 4px 4px}
+.done.show{display:block;animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.done .badge{font-size:3.4rem;line-height:1}
+.done h2{margin:10px 0 6px;font-size:2rem;letter-spacing:-.03em}
+.done p{margin:0;color:var(--ink-2);font-weight:700}
+.stars{display:flex;justify-content:center;gap:6px;margin:14px 0 4px;font-size:1.6rem}
+.stars span{opacity:.22;filter:grayscale(1);transition:.3s}
+.stars span.on{opacity:1;filter:none;transform:scale(1.08)}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:480px){.panel{padding:16px;border-radius:0 18px 22px 22px}.shell{padding:16px 12px 52px}}
+.qcard .op.op-plus{color:var(--op-plus)}
+.qcard .op.op-minus{color:var(--op-minus)}
+.qcard .op.op-times{color:var(--op-times)}
+.qcard .op.op-div{color:var(--op-div)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.speak{display:block;margin:12px auto 0;font-family:inherit;
+  font-weight:900;font-size:.95rem;cursor:pointer;background:#fffdf8;border:2.5px solid var(--ink);
+  border-radius:999px;padding:9px 16px;box-shadow:0 3px 0 var(--ink);color:var(--ink)}
+.speak:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="shell">
+  <div class="top">
+    <a class="back" href="./index.html">← Arcade</a>
+    <div class="hud">
+      <div class="chip"><span class="k">Score</span><span class="v" id="score">0</span></div>
+      <div class="chip"><span class="k">Streak</span><span class="v" id="streak">0</span></div>
+    </div>
+  </div>
+
+  <header class="head">
+    <span class="kicker">Game 05 · Sharing</span>
+    <h1>Division <span>Diner</span></h1>
+    <p class="sub">Division is fair sharing, and it is multiplication read backwards. Deal the cookies, watch the plates fill, then recall the fact.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabLearn" aria-selected="true" aria-controls="learn">Share</button>
+    <button class="tab" role="tab" id="tabPractice" aria-selected="false" aria-controls="practice">Practise · 10</button>
+  </div>
+
+  <section class="panel" id="learn" role="tabpanel" aria-labelledby="tabLearn">
+    <div class="hintline"><span class="dot"></span><span>Pick the cookies and the plates, then deal. Every plate gets the same number — the leftover is the remainder.</span></div>
+
+    <div class="controls">
+      <div class="ctl"><label>Cookies <input type="range" id="cookies" min="1" max="60" value="12"><span class="val" id="cookiesVal">12</span></label></div>
+      <div class="ctl"><label>Plates <input type="range" id="plates" min="1" max="10" value="3"><span class="val" id="platesVal">3</span></label></div>
+    </div>
+    <div class="dealrow">
+      <button class="btn" id="deal">🍪 Deal</button>
+      <button class="btn ghost" id="reset">Reset</button>
+      <span class="counter" id="dealStatus">Ready</span>
+    </div>
+
+    <div class="plates" id="plateArea"></div>
+    <div class="quotient" id="quotient"></div>
+    <div class="subtractline" id="subtractLine"></div>
+
+    <div class="family" id="family"></div>
+    <div class="notecard" id="note"></div>
+  </section>
+
+  <section class="panel" id="practice" role="tabpanel" aria-labelledby="tabPractice" hidden>
+    <div class="row">
+      <div class="levels" role="group" aria-label="Choose a level">
+        <button class="lv" data-level="1-5" aria-pressed="true">÷ 1–5</button>
+        <button class="lv" data-level="6-10" aria-pressed="false">÷ 6–10</button>
+        <button class="lv" data-level="11-20" aria-pressed="false">÷ 11–20</button>
+        <button class="lv" data-level="mixed" aria-pressed="false">Mixed</button>
+      </div>
+      <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">10</b></div>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pbar"><i id="progress"></i></div>
+
+    <div class="stage" id="stage">
+      <div class="ask" id="ask">Divide</div>
+      <div class="sr-only" id="qsay" aria-live="polite"></div>
+      <div class="qcard">
+        <span id="qa">12</span><span class="op op-div">÷</span><span id="qb">3</span><span class="op op-div">=</span>
+        <span class="ans" id="qans"></span>
+      </div>
+      <div class="miniplates" id="miniplates" aria-hidden="true"></div>
+      <div class="worked" id="worked"></div>
+      <button class="picture" id="pictureBtn" type="button" aria-pressed="false">Show picture</button>
+      <button class="speak" id="speakBtn" type="button">🔊 Say it</button>
+      <div class="pad" id="pad"></div>
+      <button class="btn nextbtn" id="nextBtn" type="button" hidden>Next →</button>
+      <p class="hint" id="hint">Type the quotient, then tap ✓.</p>
+    </div>
+
+    <div class="done" id="done">
+      <div class="badge" id="medal">🏅</div>
+      <h2 id="doneTitle">Diner closed — well done!</h2>
+      <p id="doneText"></p>
+      <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+      <div class="actions">
+        <button class="btn" id="again">Play again</button>
+        <button class="btn ghost" id="toLearn">Back to sharing</button>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+  const TOTAL = 10;
+  const KEY = 'arcade.division.v1';
+  const $ = id => document.getElementById(id);
+  const rnd = n => Math.floor(Math.random() * n);
+  const shuffle = a => {
+    for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  };
+
+  let ctx = null;
+  function tone(freq, dur = .12, type = 'sine', gain = .05) {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(gain, ctx.currentTime + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + dur);
+      o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + .02);
+    } catch (_) {}
+  }
+  const goodSound = s => {
+    const b = 523.25 * Math.pow(2, Math.min(s, 6) / 12);
+    tone(b, .1, 'sine', .045); setTimeout(() => tone(b * 1.25, .12, 'sine', .04), 70);
+    if (s >= 5) setTimeout(() => tone(b * 1.5, .16, 'triangle', .035), 150);
+  };
+  const badSound = () => { tone(196, .16, 'triangle', .045); setTimeout(() => tone(155, .2, 'triangle', .04), 110); };
+  const clickSound = () => tone(660, .05, 'square', .02);
+  const plopSound = () => tone(420 + Math.random() * 120, .05, 'sine', .02);
+
+  const canvas = $('confetti'), cx = canvas.getContext('2d');
+  let bits = [], raf = null;
+  function sizeCanvas() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+    canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', sizeCanvas); sizeCanvas();
+  const COLORS = ['#ffb703', '#ff6b6b', '#0fb5a1', '#5b6cff', '#9b5de5', '#7cb518'];
+  function burst(n = 30) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (let i = 0; i < n; i++) bits.push({
+      x: innerWidth / 2 + (Math.random() - .5) * 160, y: innerHeight * .34 + (Math.random() - .5) * 40,
+      vx: (Math.random() - .5) * 9, vy: -Math.random() * 10 - 2, r: 3 + Math.random() * 5,
+      rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3, c: COLORS[i % COLORS.length], life: 1
+    });
+    if (!raf) tick();
+  }
+  function tick() {
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const b of bits) {
+      b.vy += .32; b.vx *= .992; b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.life -= .008;
+      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.rot); cx.globalAlpha = Math.max(b.life, 0);
+      cx.fillStyle = b.c; cx.fillRect(-b.r / 2, -b.r / 2, b.r, b.r * 1.7); cx.restore();
+    }
+    bits = bits.filter(b => b.life > 0 && b.y < innerHeight + 40);
+    if (bits.length) raf = requestAnimationFrame(tick);
+    else { cx.clearRect(0, 0, innerWidth, innerHeight); raf = null; }
+  }
+
+  /* ================= SHARE ================= */
+  const S = { cookies: 12, plates: 3, dealt: false };
+
+  function buildPlates() {
+    const area = $('plateArea');
+    area.innerHTML = '';
+    for (let i = 0; i < S.plates; i++) {
+      const p = document.createElement('div');
+      p.className = 'plate';
+      p.dataset.plate = i;
+      area.appendChild(p);
+    }
+  }
+
+  function resetShare() {
+    S.dealt = false;
+    buildPlates();
+    $('quotient').textContent = '';
+    $('subtractLine').innerHTML = '';
+    $('family').innerHTML = '';
+    $('dealStatus').textContent = 'Ready';
+    $('note').innerHTML = '<b>Deal the cookies</b> to see the sharing. The quotient is how many land on each plate.';
+    updateCounts();
+  }
+
+  function updateCounts() {
+    $('cookiesVal').textContent = S.cookies;
+    $('platesVal').textContent = S.plates;
+  }
+
+  function deal() {
+    if (S.dealt) return;
+    S.dealt = true;
+    buildPlates();
+    const q = Math.floor(S.cookies / S.plates);
+    const r = S.cookies % S.plates;
+    const plates = [...document.querySelectorAll('.plate')];
+    const totalToDeal = q * S.plates;
+    let k = 0;
+    const per = 55;
+    for (let round = 0; round < q; round++) {
+      plates.forEach((p, i) => {
+        setTimeout(() => {
+          const c = document.createElement('div');
+          c.className = 'cookie';
+          p.appendChild(c);
+          plopSound();
+        }, (k++) * per);
+      });
+    }
+    setTimeout(() => {
+      if (r > 0) {
+        const box = document.createElement('div');
+        box.className = 'leftoverbox';
+        box.innerHTML = '<div class="cap">Left over</div>';
+        for (let i = 0; i < r; i++) {
+          const c = document.createElement('div');
+          c.className = 'cookie leftover';
+          box.appendChild(c);
+        }
+        $('plateArea').appendChild(box);
+      }
+      $('dealStatus').textContent = r ? `Dealt · ${r} left over` : 'Dealt evenly';
+      $('quotient').innerHTML = `${S.cookies} ÷ ${S.plates} = <span class="q">${q}</span>` +
+        (r ? ` <span class="r">r ${r}</span>` : '');
+      // repeated subtraction
+      let line = `${S.cookies}`;
+      for (let i = 0; i < q; i++) line += ` − ${S.plates}`;
+      line += ` = <span class="${r ? 'rem' : 'done'}">${r}</span>`;
+      $('subtractLine').innerHTML = line + `<br><span style="font-size:.78rem;color:#6d7194">Subtract the plates once per cookie each plate gets.</span>`;
+      // fact family
+      const fam = $('family');
+      fam.innerHTML = '';
+      const facts = [
+        [`${S.plates} × ${q}`, S.plates * q],
+        [`${q} × ${S.plates}`, S.plates * q],
+        [`${S.cookies} ÷ ${S.plates}`, q],
+        [`${S.cookies} ÷ ${q}`, S.plates]
+      ];
+      facts.forEach(([l, v], i) => {
+        const d = document.createElement('div');
+        d.className = 'fact' + (i >= 2 ? ' hl' : '');
+        d.textContent = `${l} = ${v}`;
+        fam.appendChild(d);
+      });
+      $('note').innerHTML = r
+        ? `<b>${S.cookies} does not split evenly into ${S.plates} plates.</b> Each plate gets ${q}, and ${r} cannot be shared without breaking a cookie — that is the remainder.`
+        : `<b>${S.cookies} ÷ ${S.plates} = ${q}</b> means ${S.plates} plates of ${q} make ${S.cookies}. Division is multiplication read backwards.`;
+      if (r === 0) { goodSound(2); burst(30); }
+    }, totalToDeal * per + 120);
+  }
+
+  $('cookies').addEventListener('input', e => { S.cookies = Number(e.target.value); resetShare(); });
+  $('plates').addEventListener('input', e => { S.plates = Number(e.target.value); resetShare(); });
+  $('deal').addEventListener('click', deal);
+  $('reset').addEventListener('click', () => { resetShare(); clickSound(); });
+
+  /* ================= PRACTISE ================= */
+  const state = {
+    level: '1-5', queue: [], index: 0, input: '', score: 0, streak: 0, best: 0,
+    answered: false, right: 0, perLevel: {}, review: {}, showPicture: false
+  };
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; }
+    } catch (_) {}
+  }
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: state.review }));
+    } catch (_) {}
+  };
+
+  const factKey = q => `${q.divisor}|${q.dividend}`;
+  function noteFact(q, right) {
+    const k = factKey(q);
+    const r = state.review[k] || { n: 0, miss: 0, due: false };
+    r.n++; if (!right) { r.miss++; r.due = true; } else if (r.due) r.due = false;
+    state.review[k] = r;
+  }
+
+  function divisorsFor(level) {
+    if (level === '1-5') return [2, 3, 4, 5];
+    if (level === '6-10') return [6, 7, 8, 9, 10];
+    if (level === '11-20') return [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    return Array.from({ length: 19 }, (_, i) => i + 2);
+  }
+
+  function buildQueue() {
+    const ds = divisorsFor(state.level);
+    const out = Object.entries(state.review)
+      .filter(([k, r]) => r.due)
+      .slice(0, 2)
+      .map(([k]) => { const [d, n] = k.split('|').map(Number); return { dividend: n, divisor: d, quotient: n / d, review: true }; })
+      .filter(f => ds.includes(f.divisor));
+    while (out.length < TOTAL) {
+      const d = ds[rnd(ds.length)];
+      const q = 1 + rnd(20);
+      const fact = { dividend: d * q, divisor: d, quotient: q };
+      const last = out[out.length - 1];
+      if (last && last.dividend === fact.dividend && last.divisor === fact.divisor) continue;
+      if (out.some(o => o.dividend === fact.dividend && o.divisor === fact.divisor)) continue;
+      out.push(fact);
+    }
+    return out.slice(0, TOTAL);
+  }
+
+  function renderQuestion() {
+    const q = state.queue[state.index];
+    if (!q) return finish();
+    state.answered = false; state.input = '';
+    $('qa').textContent = q.dividend;
+    $('qb').textContent = q.divisor;
+    $('qsay').textContent = `${q.dividend} divided by ${q.divisor}.`;
+    $('qans').className = 'ans';
+    $('qans').textContent = '';
+    $('worked').classList.remove('show');
+    $('worked').innerHTML = '';
+    $('nextBtn').hidden = true;
+    $('qnum').textContent = state.index + 1;
+    $('qtot').textContent = TOTAL;
+    $('progress').style.width = (state.index / TOTAL * 100) + '%';
+    $('pbar').setAttribute('aria-valuenow', String(state.index));
+    $('ask').textContent = 'Divide';
+    $('hint').textContent = `${q.divisor} × what makes ${q.dividend}?`;
+
+    const mp = $('miniplates');
+    mp.innerHTML = '';
+    if (state.showPicture) {
+      for (let p = 0; p < q.divisor; p++) {
+        const pl = document.createElement('div');
+        pl.className = 'miniplate';
+        for (let c = 0; c < q.quotient; c++) {
+          const co = document.createElement('div');
+          co.className = 'cookie';
+          pl.appendChild(co);
+        }
+        mp.appendChild(pl);
+      }
+    }
+  }
+
+  function paintInput() {
+    const a = $('qans');
+    a.className = 'ans';
+    a.textContent = state.input || '';
+    if (state.input) {
+      const c = document.createElement('span'); c.className = 'caret'; a.appendChild(c);
+    }
+  }
+
+  function submit() {
+    if (state.answered || !state.queue[state.index]) return;
+    if (state.input === '') { toast('Type the quotient first', 'bad'); return; }
+    const q = state.queue[state.index];
+    const right = Number(state.input) === q.quotient;
+    const a = $('qans');
+    state.answered = true;
+    if (right) {
+      a.className = 'ans ok';
+      state.score += 10 + Math.min(state.streak, 5) * 2;
+      state.streak++; state.right++;
+      state.best = Math.max(state.best, state.streak);
+      goodSound(state.streak); burst(24 + Math.min(state.streak, 6) * 4);
+      toast(['Correct!', 'Shared evenly.', 'Exactly.', 'Sharp.'][rnd(4)], 'good');
+      $('hint').textContent = `Fact family: ${q.divisor} × ${q.quotient} = ${q.dividend}, and ${q.dividend} ÷ ${q.quotient} = ${q.divisor}.`;
+    } else {
+      a.className = 'ans no';
+      state.streak = 0; badSound();
+      const w = $('worked');
+      w.innerHTML = `Ask: how many ${q.divisor}s fit in ${q.dividend}?<br>` +
+        `${q.divisor} × <b>${q.quotient}</b> = ${q.dividend}<br>` +
+        `So ${q.dividend} ÷ ${q.divisor} = <b>${q.quotient}</b>.` +
+        `<span class="alt">Check it the other way: ${q.quotient} × ${q.divisor} = ${q.dividend}.</span>`;
+      w.classList.add('show');
+      $('hint').textContent = 'Read the working, then tap Next.';
+    }
+    noteFact(q, right);
+    paintStats(); save();
+    if (right) setTimeout(advance, 650);
+    else { $('nextBtn').hidden = false; $('nextBtn').focus(); }
+  }
+
+  function advance() {
+    state.index++;
+    if (state.index >= TOTAL) finish(); else renderQuestion();
+  }
+
+  const paintStats = () => { $('score').textContent = state.score; $('streak').textContent = state.streak; };
+
+  function finish() {
+    $('stage').style.display = 'none';
+    $('done').classList.add('show');
+    $('progress').style.width = '100%';
+    $('pbar').setAttribute('aria-valuenow', String(TOTAL));
+    const pct = Math.round(state.right / TOTAL * 100);
+    state.perLevel[state.level] = Math.max(state.perLevel[state.level] || 0, pct);
+    save();
+    $('doneText').textContent = `${state.right} of ${TOTAL} correct · ${state.score} points · best streak ${state.best}`;
+    const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
+    [...$('stars').children].forEach((s, i) => s.classList.toggle('on', i < stars));
+    $('medal').textContent = stars === 3 ? '🏆' : stars === 2 ? '🥇' : stars === 1 ? '🥈' : '🌱';
+    $('doneTitle').textContent = stars === 3 ? 'Diner closed — well done!' : stars === 2 ? 'Strong service!' : stars === 1 ? 'Good shift!' : 'Keep practising!';
+    if (stars >= 2) burst(80);
+    goodSound(6);
+  }
+
+  function start(level) {
+    state.level = level;
+    state.queue = buildQueue();
+    state.index = 0; state.score = 0; state.streak = 0; state.right = 0;
+    $('stage').style.display = '';
+    $('done').classList.remove('show');
+    document.querySelectorAll('#practice .lv[data-level]').forEach(b =>
+      b.setAttribute('aria-pressed', String(b.dataset.level === level)));
+    paintStats(); renderQuestion();
+  }
+
+  function buildPad() {
+    const pad = $('pad'); pad.innerHTML = '';
+    for (let d = 1; d <= 9; d++) pad.appendChild(key(String(d)));
+    pad.appendChild(key('0'));
+    pad.appendChild(key('⌫', 'del', () => { state.input = state.input.slice(0, -1); paintInput(); }));
+    pad.appendChild(key('✓', 'go', submit));
+  }
+  function key(label, cls, handler) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'key' + (cls ? ' ' + cls : ''); b.textContent = label;
+    b.setAttribute('aria-label', cls === 'del' ? 'Delete' : cls === 'go' ? 'Check answer' : label);
+    b.addEventListener('click', handler || (() => {
+      if (state.input.length < 3) { state.input += label; paintInput(); }
+    }));
+    return b;
+  }
+
+  function selectTab(which) {
+    const isLearn = which === 'learn';
+    $('tabLearn').setAttribute('aria-selected', String(isLearn));
+    $('tabPractice').setAttribute('aria-selected', String(!isLearn));
+    $('learn').hidden = !isLearn;
+    $('practice').hidden = isLearn;
+    if (!isLearn && !state.queue.length) start('1-5');
+  }
+  $('tabLearn').addEventListener('click', () => selectTab('learn'));
+  $('tabPractice').addEventListener('click', () => selectTab('practice'));
+
+  document.querySelectorAll('#practice .lv[data-level]').forEach(b =>
+    b.addEventListener('click', () => start(b.dataset.level)));
+  $('again').addEventListener('click', () => start(state.level));
+  $('nextBtn').addEventListener('click', advance);
+  $('pictureBtn').addEventListener('click', () => {
+    state.showPicture = !state.showPicture;
+    $('pictureBtn').setAttribute('aria-pressed', String(state.showPicture));
+    $('pictureBtn').textContent = state.showPicture ? 'Hide picture' : 'Show picture';
+    renderQuestion();
+  });
+  $('toLearn').addEventListener('click', () => selectTab('learn'));
+
+
+  function say() {
+    const text = ($('qsay') && $('qsay').textContent || '').trim();
+    if (!text || !('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = .9; u.pitch = 1.1;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }
+  $('speakBtn').addEventListener('click', say);
+
+  document.addEventListener('keydown', e => {
+    if ($('practice').hidden || state.answered) return;
+    if (/^[0-9]$/.test(e.key) && state.input.length < 3) { state.input += e.key; paintInput(); e.preventDefault(); }
+    else if (e.key === 'Backspace') { state.input = state.input.slice(0, -1); paintInput(); e.preventDefault(); }
+    else if (e.key === 'Enter') { submit(); e.preventDefault(); }
+  });
+
+  let toastTimer;
+  function toast(msg, kind) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (kind ? ' ' + kind : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+  }
+
+  load(); buildPad(); resetShare();
+})();
+</script>
+</body>
+</html>
