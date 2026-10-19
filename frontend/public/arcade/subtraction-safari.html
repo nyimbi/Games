@@ -148,6 +148,9 @@ h1 span{color:var(--coral)}
 .rod.broken{animation:break .55s forwards}
 @keyframes break{40%{transform:scaleY(1.06)}100%{transform:scaleY(1.06);opacity:.9}}
 .unit.new{animation:popin .4s cubic-bezier(.34,1.56,.64,1)}
+.rod.canbreak,.flat.canbreak{cursor:pointer;border-color:var(--coral);
+  box-shadow:0 0 0 3px rgba(255,107,107,.35);animation:glow 1.2s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 7px rgba(255,107,107,.18)}}
 @keyframes popin{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
 .unit.taken{animation:taken .4s forwards}
 @keyframes taken{to{transform:scale(.15) translateY(16px);opacity:0}}
@@ -627,7 +630,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     const box = $('blocks');
     box.innerHTML = '';
     const width = P.width;
-    const borrowed = reveal === 'borrow' || reveal === 'ones' || reveal === 'all' || reveal.startsWith('col:');
+    const broken = reveal === 'ones' || reveal === 'all' || reveal.startsWith('col:');
+    const atBorrow = reveal === 'borrow';
 
     [['a', L.a], ['b', L.b]].forEach(([tag, val], rowIndex) => {
       const row = document.createElement('div');
@@ -636,17 +640,24 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       row.appendChild(t);
       const cols = document.createElement('div'); cols.className = 'bcol';
       const ds = String(val).padStart(width, '0').split('').map(Number);
+      // Once the borrow has happened, A's blocks are a function of the
+      // post-borrow digits, not of an animation that may not have run.
+      if (rowIndex === 0 && broken) P.cols.forEach(c => { ds[width - 1 - c.col] = c.top; });
       ds.forEach((d, i) => {
         const place = width - 1 - i;
         if (d === 0) return;
         const group = document.createElement('div');
         group.style.cssText = 'display:flex;gap:3px;align-items:flex-end;margin-right:12px';
+        const lender = rowIndex === 0 && P.crossed[i] && place >= 1;
         for (let k = 0; k < d; k++) {
           const el = document.createElement('div');
           el.className = place === 2 ? 'flat' : place === 1 ? 'rod' : 'unit';
-          // when borrowed, the tens column of A shows one fewer rod
-          if (place === 1 && borrowed && rowIndex === 0 && P.crossed[i]) {
-            if (k === 0) continue;
+          if (lender && atBorrow && k === 0) {
+            el.classList.add('canbreak');
+            el.setAttribute('role', 'button');
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('aria-label', `Break one ten into ten ones`);
+            el.title = 'Tap the rod to break it into ten ones';
           }
           group.appendChild(el);
         }
@@ -656,9 +667,22 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       box.appendChild(row);
     });
 
-    if (reveal === 'borrow') {
-      $('blockNote').textContent = 'One rod is about to break into ten ones — watch the ones column grow.';
-    } else if (reveal === 'ones' || reveal === 'all' || reveal.startsWith('col:')) {
+    if (atBorrow) {
+      $('blockNote').textContent = 'Tap the glowing block to break it into ten ones.';
+      const rod = box.querySelector('.canbreak');
+      if (rod) {
+        const doBreak = () => {
+          if (L.step >= L.script.length - 1) return;
+          animateBreak();
+          // let the ten ones land before the next step repaints over them
+          setTimeout(() => goStep(L.step + 1), 460);
+        };
+        rod.addEventListener('click', doBreak);
+        rod.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doBreak(); }
+        });
+      }
+    } else if (broken) {
       $('blockNote').textContent = `Borrowing moved ten ones into the ones column. The tens column is now ${P.cols[0].top}.`;
     } else {
       $('blockNote').textContent = 'Blue rods are tens. Small squares are ones.';
@@ -666,10 +690,11 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   }
 
   function animateBreak() {
-    const rowB = document.querySelectorAll('.brow')[1];
-    if (!rowB) return;
-    // add ten ones to B's ones column, as if the borrowed rod broke apart
-    const groups = rowB.querySelectorAll('.bcol > div');
+    // The ten comes from A and lands in A's ones column.
+    const rowA = document.querySelectorAll('.brow')[0];
+    if (!rowA) return;
+    // units always land in A's ones column; the lender may be tens or hundreds
+    const groups = rowA.querySelectorAll('.bcol > div');
     const last = groups[groups.length - 1];
     if (!last) return;
     for (let i = 0; i < 10; i++) {
@@ -684,10 +709,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
 
   function goStep(n) {
     L.step = Math.max(0, Math.min(n, L.script.length - 1));
-    const reveal = L.script[L.step].reveal;
     paintLesson();
     clickSound();
-    if (reveal === 'borrow') setTimeout(animateBreak, 140);
   }
 
   /* ============================================================

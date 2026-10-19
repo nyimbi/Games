@@ -100,6 +100,8 @@ The Learn tab is a six-step lesson driven by two sliders. `A` and `B` choose the
 
 **Borrowing.** `borrowPlan()` returns the per-column state after borrowing — which column lent, which digit fell by one, which gained ten. The stepper reveals that plan one column at a time, so the child sees the lend and the receive as two separate events rather than one changed number. A zero in the middle borrows first, which is the case that breaks the naive rule and the one worth showing explicitly.
 
+**The break is the child's move.** At the borrow step the lending rod (or flat, for a three-digit example) glows, and tapping it — or pressing Enter on it — breaks it into ten ones in the correct row. The stepper's Next button still works, so the lesson is never blocked, but the *action* of borrowing is available as an act rather than only as a narration. Borrowing is a physical exchange, and the one moment a child should perform rather than watch is the moment the ten becomes ten ones.
+
 ---
 
 ## 04 · Times Table Academy (`times-table-academy.html`)
