@@ -201,7 +201,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabLearn" aria-selected="true" aria-controls="learn">Share</button>
     <button class="tab" role="tab" id="tabGroup" aria-selected="false" aria-controls="learn">Group</button>
-    <button class="tab" role="tab" id="tabPractice" aria-selected="false" aria-controls="practice">Practise · 10</button>
+    <button class="tab" role="tab" id="tabPractice" aria-selected="false" aria-controls="practice">Practise · 50</button>
   </div>
 
   <section class="panel" id="learn" role="tabpanel" aria-labelledby="tabLearn">
@@ -237,7 +237,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
         <button class="lv" data-level="11-20" aria-pressed="false">÷ 11–20</button>
         <button class="lv" data-level="mixed" aria-pressed="false">Mixed</button>
       </div>
-      <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">10</b></div>
+      <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">50</b></div>
     </div>
     <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pbar"><i id="progress"></i></div>
 
@@ -274,10 +274,39 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
 <script>
 (() => {
   'use strict';
-  const TOTAL = 10;
+  const TOTAL = 50;
   const KEY = 'arcade.division.v1';
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
+  /* ---------------- freshness ----------------
+     Unseen facts first, then the least recently served. A level smaller than a
+     deck (÷1–5 is 80 facts) starts a new cycle rather than repeating. */
+  const SEEN_CAP = 900;
+  function freshFirst(pool, seen, level) {
+    const bucket = seen[level] || {};
+    const fresh = [], stale = [];
+    pool.forEach(f => ((bucket[`${f.divisor}|${f.dividend}`] || 0) === 0 ? fresh : stale).push(f));
+    shuffle(stale).sort((x, y) =>
+      (bucket[`${x.divisor}|${x.dividend}`] || 0) - (bucket[`${y.divisor}|${y.dividend}`] || 0));
+    shuffle(fresh);
+    return fresh.concat(stale);
+  }
+  function markSeen(seen, level, key) {
+    const bucket = seen[level] || (seen[level] = {});
+    if (!bucket[key]) {
+      if (Object.keys(bucket).length >= SEEN_CAP) {
+        const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
+        if (oldest) delete bucket[oldest[0]];
+      }
+    }
+    bucket[key] = Date.now();
+  }
+  function newCycle(pool, seen, level) {
+    const bucket = seen[level] || {};
+    return pool.slice().sort((x, y) =>
+      (bucket[`${x.divisor}|${x.dividend}`] || 0) - (bucket[`${y.divisor}|${y.dividend}`] || 0));
+  }
+
   const shuffle = a => {
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
@@ -512,18 +541,18 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   /* ================= PRACTISE ================= */
   const state = {
     level: '1-5', queue: [], index: 0, input: '', score: 0, streak: 0, best: 0,
-    answered: false, right: 0, perLevel: {}, review: {}, showPicture: false
+    answered: false, right: 0, perLevel: {}, review: {}, seen: {}, showPicture: false
   };
 
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; }
+      if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; }
     } catch (_) {}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: state.review }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: state.review, seen: state.seen }));
     } catch (_) {}
   };
 
@@ -542,6 +571,17 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     return Array.from({ length: 19 }, (_, i) => i + 2);
   }
 
+  /* Every fact a level can ask, enumerated. The old builder drew divisor and
+     quotient at random, so 50 unique facts from a 60-fact space was a coupon
+     collector's loop that could spin. */
+  function poolFor(level) {
+    const facts = [];
+    divisorsFor(level).forEach(d => {
+      for (let q = 1; q <= 20; q++) facts.push({ dividend: d * q, divisor: d, quotient: q });
+    });
+    return facts;
+  }
+
   function buildQueue() {
     const ds = divisorsFor(state.level);
     const out = Object.entries(state.review)
@@ -549,13 +589,14 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
       .slice(0, 2)
       .map(([k]) => { const [d, n] = k.split('|').map(Number); return { dividend: n, divisor: d, quotient: n / d, review: true }; })
       .filter(f => ds.includes(f.divisor));
+    let pool = freshFirst(shuffle(poolFor(state.level)), state.seen, state.level);
+    let i = 0, pass = 0;
     while (out.length < TOTAL) {
-      const d = ds[rnd(ds.length)];
-      const q = 1 + rnd(20);
-      const fact = { dividend: d * q, divisor: d, quotient: q };
+      if (i >= pool.length) { pool = newCycle(poolFor(state.level), state.seen, state.level); i = 0; pass++; }
+      const fact = pool[i++];
       const last = out[out.length - 1];
+      if (pass === 0 && out.some(o => o.dividend === fact.dividend && o.divisor === fact.divisor)) continue;
       if (last && last.dividend === fact.dividend && last.divisor === fact.divisor) continue;
-      if (out.some(o => o.dividend === fact.dividend && o.divisor === fact.divisor)) continue;
       out.push(fact);
     }
     return out.slice(0, TOTAL);
@@ -565,6 +606,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     const q = state.queue[state.index];
     if (!q) return finish();
     state.answered = false; state.input = '';
+    markSeen(state.seen, state.level, `${q.divisor}|${q.dividend}`); save();
     $('qa').textContent = q.dividend;
     $('qb').textContent = q.divisor;
     $('qsay').textContent = `${q.dividend} divided by ${q.divisor}.`;

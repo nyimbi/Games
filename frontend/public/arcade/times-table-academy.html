@@ -233,7 +233,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     <button class="tab" role="tab" id="tabExplore" aria-selected="true" aria-controls="explore">See it</button>
     <button class="tab" role="tab" id="tabPatterns" aria-selected="false" aria-controls="patterns">Patterns</button>
     <button class="tab" role="tab" id="tabMemory" aria-selected="false" aria-controls="memory">Memory hooks</button>
-    <button class="tab" role="tab" id="tabPractice" aria-selected="false" aria-controls="practice">Practise · 10</button>
+    <button class="tab" role="tab" id="tabPractice" aria-selected="false" aria-controls="practice">Practise · 50</button>
   </div>
 
   <section class="panel" id="explore" role="tabpanel" aria-labelledby="tabExplore">
@@ -289,7 +289,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
         <button class="lv" data-mode="1-20" aria-pressed="false">Mixed 1–20</button>
         <button class="lv" data-mode="tournament" aria-pressed="false">Grand tournament</button>
       </div>
-      <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">10</b></div>
+      <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">50</b></div>
     </div>
     <div class="row" style="margin-top:10px">
       <div class="levels" id="tablePicker" role="group" aria-label="Drill one table"></div>
@@ -326,10 +326,39 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
 <script>
 (() => {
   'use strict';
-  const TOTAL = 10;
+  const TOTAL = 50;
   const KEY = 'arcade.times.v2';
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
+  /* ---------------- freshness ----------------
+     Unseen facts first, then the least recently served. A bucket smaller than
+     a deck (a single table is 20 facts) starts a new cycle rather than
+     repeating inside one. */
+  const SEEN_CAP = 900;
+  function freshFirst(pool, seen, key) {
+    const bucket = seen[key] || {};
+    const fresh = [], stale = [];
+    pool.forEach(f => ((bucket[`${f.a}|${f.b}`] || 0) === 0 ? fresh : stale).push(f));
+    shuffle(stale).sort((x, y) => (bucket[`${x.a}|${x.b}`] || 0) - (bucket[`${y.a}|${y.b}`] || 0));
+    shuffle(fresh);
+    return fresh.concat(stale);
+  }
+  function markSeen(seen, key, fact) {
+    const bucket = seen[key] || (seen[key] = {});
+    if (!bucket[fact]) {
+      if (Object.keys(bucket).length >= SEEN_CAP) {
+        const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
+        if (oldest) delete bucket[oldest[0]];
+      }
+    }
+    bucket[fact] = Date.now();
+  }
+  function newCycle(pool, seen, key) {
+    const bucket = seen[key] || {};
+    return pool.slice().sort((x, y) =>
+      (bucket[`${x.a}|${x.b}`] || 0) - (bucket[`${y.a}|${y.b}`] || 0));
+  }
+
   const shuffle = a => {
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
@@ -801,18 +830,18 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   /* ================= PRACTISE ================= */
   const state = {
     mode: '1-10', table: null, queue: [], index: 0, input: '',
-    score: 0, streak: 0, best: 0, answered: false, right: 0, perMode: {}, review: {}, showPicture: false
+    score: 0, streak: 0, best: 0, answered: false, right: 0, perMode: {}, review: {}, seen: {}, showPicture: false
   };
 
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; }
+      if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; }
     } catch (_) {}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review, seen: state.seen }));
     } catch (_) {}
   };
 
@@ -832,21 +861,27 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     return out;
   }
 
+  /* The bucket a set's freshness is tracked in: one table, or a whole mode. */
+  const bucketKey = () => state.table ? 'table-' + state.table : state.mode;
+
   function buildQueue() {
-    const pool = shuffle(factsFor(state.mode, state.table));
     const hi = state.table ? 20 : (state.mode === '1-10' ? 10 : 20);
     const out = Object.entries(state.review)
       .filter(([k, r]) => r.due)
       .slice(0, 2)
       .map(([k]) => { const [a, b] = k.split('|').map(Number); return { a, b, prod: a * b }; })
       .filter(f => f.a <= hi && f.b <= hi && (!state.table || f.a === state.table || f.b === state.table));
-    let i = 0;
+    const key = bucketKey();
+    let pool = freshFirst(factsFor(state.mode, state.table), state.seen, key);
+    let i = 0, pass = 0;
     while (out.length < TOTAL) {
-      if (i >= pool.length) { shuffle(pool); i = 0; }
+      // A single table holds 20 facts, so a 50-question set must cycle. Unseen
+      // facts are served first and the cycle restarts only once they run out.
+      if (i >= pool.length) { pool = newCycle(factsFor(state.mode, state.table), state.seen, key); i = 0; pass++; }
       const f = pool[i++];
       const last = out[out.length - 1];
+      if (pass === 0 && out.some(o => o.a === f.a && o.b === f.b)) continue;
       if (last && f.a === last.a && f.b === last.b) continue;
-      if (out.some(o => o.a === f.a && o.b === f.b)) continue;
       out.push({ a: f.a, b: f.b, prod: f.a * f.b });
     }
     return out.slice(0, TOTAL);
@@ -856,6 +891,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     const q = state.queue[state.index];
     if (!q) return finish();
     state.answered = false; state.input = '';
+    markSeen(state.seen, bucketKey(), `${q.a}|${q.b}`); save();
     $('qa').textContent = q.a;
     $('qb').textContent = q.b;
     $('qsay').textContent = `${q.a} times ${q.b}.`;

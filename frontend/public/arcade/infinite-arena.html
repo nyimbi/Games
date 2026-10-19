@@ -186,7 +186,8 @@ h1 span{color:var(--grape-d)}
         </div>
         <h3 style="margin-top:16px">Run length</h3>
         <div class="opts" id="lenOpts" role="group" aria-label="Run length">
-          <button class="opt" data-len="10" aria-pressed="true">10</button>
+          <button class="opt" data-len="50" aria-pressed="true">50</button>
+          <button class="opt" data-len="10" aria-pressed="false">10</button>
           <button class="opt" data-len="20" aria-pressed="false">20</button>
           <button class="opt" data-len="0" aria-pressed="false">Endless</button>
         </div>
@@ -382,6 +383,19 @@ h1 span{color:var(--grape-d)}
 
   SKILL_ORDER.forEach(k => { state.skill[k] = { ema: 0.5, n: 0, right: 0 }; });
 
+  /* Facts served in earlier runs, so a second run this week is not the same
+     run again. Bounded; oldest entries are dropped first. */
+  const SEEN_CAP = 600;
+  const seen = {};
+  function seenCount(key) { return seen[key] || 0; }
+  function noteServed(key) {
+    if (!seen[key] && Object.keys(seen).length >= SEEN_CAP) {
+      const oldest = Object.entries(seen).sort((a, b) => a[1] - b[1])[0];
+      if (oldest) delete seen[oldest[0]];
+    }
+    seen[key] = Date.now();
+  }
+
   const DAY = 86400000;
   function load() {
     try {
@@ -389,6 +403,7 @@ h1 span{color:var(--grape-d)}
       if (s) {
         state.best = s.best || 0;
         if (s.skill) for (const k of SKILL_ORDER) if (s.skill[k]) state.skill[k] = { ...state.skill[k], ...s.skill[k] };
+        if (s.seen) Object.assign(seen, s.seen);
         // memory decays: relax mastery toward 0.5 for every day since the last visit
         const days = s.savedAt ? Math.min(7, (Date.now() - s.savedAt) / DAY) : 0;
         if (days > 0) for (const k of SKILL_ORDER) {
@@ -401,7 +416,7 @@ h1 span{color:var(--grape-d)}
   }
   function save() {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, skill: state.skill, savedAt: Date.now() }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, skill: state.skill, seen, savedAt: Date.now() }));
     } catch (_) {}
   }
 
@@ -470,6 +485,9 @@ h1 span{color:var(--grape-d)}
       q.skill = sk;
       const key = factKey(q);
       if (state.recentSet.has(key)) continue;
+      // A fact served in an earlier run is a weaker draw than a fresh one, but
+      // not a forbidden one: the generators are finite and the run must finish.
+      if (seenCount(key) && attempt < 30) continue;
       return q;
     }
     // pool exhausted for this combination: clear the buffer
@@ -480,7 +498,7 @@ h1 span{color:var(--grape-d)}
 
   function remember(q) {
     const key = factKey(q);
-    state.recent.push(key); state.recentSet.add(key);
+    state.recent.push(key); state.recentSet.add(key); noteServed(key);
     while (state.recent.length > 200) {
       const old = state.recent.shift();
       state.recentSet.delete(old);

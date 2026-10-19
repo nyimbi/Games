@@ -18,9 +18,15 @@ The reason is attention. A saturated gradient and a soft shadow say *look at the
 
 Typography follows the same logic. `ui-rounded` is the first family because its single-storey `a` and open counters are the shapes children are taught to write. Body text is `1.05rem` at `1.5` line height — larger and looser than the usual web default — and labels are sentence case. The uppercase micro-type that earlier drafts used for tab labels is gone: at 0.66 rem with 0.1 em tracking it is legible to an adult and a grey smear to a child.
 
-### Ten, not fifty
+### Fifty, and never the same fifty twice
 
-Every deck is `const TOTAL = 10`. Fifty was the first design and it was wrong for a reason worth stating: a deck is a *unit of completion*, and a unit that cannot be finished in one sitting stops being one. The child who stops at question 34 has not failed, but the screen says they have. Ten questions is two to four minutes — finishable before attention lapses, so a finish is a real event and the star threshold can mean something.
+Every deck is `const TOTAL = 50`. A deck is a *unit of completion*, and a unit has to be long enough to cover the topic: a child who plays Times Tables twice in a week and meets the same twenty facts both times has practised recall, not the table.
+
+The bank is not a file. Every pool is generated in code from the level's parameters — `poolFor(level)` in addition, subtraction, and division, `factsFor(mode, table)` in times tables, the splits of each whole in number bonds. No question is stored, so no question can be deleted; changing the deck size changes how much of the generated space a session walks.
+
+Freshness is a persisted map, `seen: { bucket: { factKey: timestamp } }`, written into each game's existing localStorage record. `freshFirst()` puts every unseen fact ahead of every seen one; within the seen group the least recently served comes first. `markSeen()` stamps a fact when it is *served*, not when the deck is built — a child who quits at question 3 has spent three facts, not fifty. The map is capped (`SEEN_CAP`, 600–900 keys per game) and drops its oldest entry, so it cannot grow without bound.
+
+A pool smaller than the deck cycles rather than repeats inside one deck: `newCycle()` reorders by timestamp and the loop increments a pass counter. On the first pass a fact may not repeat at all; on later passes only an immediate repeat is forbidden. Without that counter the fill loop never terminates — Make 10 holds nine splits and three blank positions, and the unconditional duplicate check spins forever looking for a twenty-eighth unique question.
 
 Stars: `pct >= 90 → 3`, `pct >= 70 → 2`, otherwise `1`. Finishing a deck always earns at least one star. The point of the first star is to mark the act of finishing, not the accuracy of it.
 
@@ -118,7 +124,7 @@ Four tabs, in the order a learner should meet them.
 
 **Memory hooks.** One per table, 1–20. Each is a concrete image that encodes the *procedure* rather than the answer: eight legs means double three times, because a spider has eight legs and 8 = 2 × 2 × 2. Plus ten rhymes for the facts that resist reasoning (`7 × 8 = 56` — "five, six, seven, eight"). A hook that says "remember 56" is not a hook; a hook that says "here is how to rebuild 56" is.
 
-**Practise · 10.** Ten questions, with the same support toggle and review queue as the other drills. The picture toggle splits the array into two coloured rectangles — `split = min(5, b)` — so `7 × 8` shows as a 7 × 5 block plus a 7 × 3 block. That is the distributive property made visible, and it is why the split is at five rather than anywhere else: five is the anchor children already have.
+**Practise · 50.** Fifty questions, with the same support toggle and review queue as the other drills. The picture toggle splits the array into two coloured rectangles — `split = min(5, b)` — so `7 × 8` shows as a 7 × 5 block plus a 7 × 3 block. That is the distributive property made visible, and it is why the split is at five rather than anywhere else: five is the anchor children already have.
 
 ---
 
@@ -152,7 +158,7 @@ The Explore tab is a table with plates. The child sets the cookie count and the 
 
 **Forgetting.** On load, if the save is older than a day, every EMA decays toward 0.5 at 12% per day, capped at seven days. A skill the child mastered three weeks ago should not still read as mastered. This is the one place the arena is honest about time, and it is why the skill map shows stars and raw `right/n` rather than a single number.
 
-**Run length.** 10, 20, or Endless, defaulting to 10. Same reasoning as `TOTAL = 10`: a finishable unit.
+**Run length.** 50, 10, or Endless, defaulting to 50. The arena draws from a twelve-skill weighted generator rather than a fixed pool, so freshness is a soft skip: a fact already in the run's `seen` map is passed over for the first 30 attempts and then allowed, because a hard exclusion on a generator that can legitimately repeat a skill would starve the run instead of enriching it.
 
 **No shaming.** When every skill is above the mastery threshold the first build said something about having nothing left to practise. It now says: *You have mastered everything here. Try the next difficulty for a fresh challenge.* A dead end is a design failure, and telling a child they are done is a way of telling them to stop.
 

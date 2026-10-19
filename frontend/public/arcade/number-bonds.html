@@ -275,7 +275,7 @@ h1 span{color:var(--teal-d)}
       <div class="ladder" id="ladder"></div>
     </section>
 
-    <button class="playbtn" id="playBtn">Play 10 questions →</button>
+    <button class="playbtn" id="playBtn">Play 50 questions →</button>
   </div>
 
   <!-- ============ DRILL ============ -->
@@ -287,7 +287,7 @@ h1 span{color:var(--teal-d)}
           <button class="mode" data-mode="teen" aria-pressed="false">11 to 20</button>
           <button class="mode" data-mode="mixed" aria-pressed="false">Mixed</button>
         </div>
-        <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">10</b></div>
+        <div class="counter">Question <b id="qnum">1</b> of <b id="qtot">50</b></div>
       </div>
       <div class="bar2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pbar"><i id="progress"></i></div>
 
@@ -332,7 +332,7 @@ h1 span{color:var(--teal-d)}
 (() => {
   'use strict';
   const KEY = 'arcade.bonds.v4';
-  const TOTAL = 10;
+  const TOTAL = 50;
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -340,6 +340,39 @@ h1 span{color:var(--teal-d)}
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   };
+
+  /* ---------------- freshness ----------------
+     A fact served in an earlier set is moved behind every unseen fact, so a
+     second deck in the same week is genuinely a second deck. The record is
+     bounded and per mode, and a mode whose fact space is smaller than a deck
+     simply starts a new cycle rather than repeating inside one. */
+  const SEEN_CAP = 900;
+  function freshFirst(pool, seen, mode, keyOf) {
+    const bucket = seen[mode] || {};
+    const fresh = [], stale = [];
+    pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
+    // within each group, least recently served first, then shuffle the ties
+    shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
+    shuffle(fresh);
+    return fresh.concat(stale);
+  }
+  function markSeen(seen, mode, key) {
+    const bucket = seen[mode] || (seen[mode] = {});
+    const now = Date.now();
+    if (!bucket[key]) {
+      const n = Object.keys(bucket).length;
+      if (n >= SEEN_CAP) {
+        const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
+        if (oldest) delete bucket[oldest[0]];
+      }
+    }
+    bucket[key] = now;
+  }
+  function newCycle(pool, seen, mode) {
+    const bucket = seen[mode] || {};
+    const ordered = pool.slice().sort((x, y) => (bucket[`${x.whole}|${x.a}`] || 0) - (bucket[`${y.whole}|${y.a}`] || 0));
+    return ordered;
+  }
 
   /* ---------------- audio ---------------- */
   let ctx = null;
@@ -570,18 +603,18 @@ h1 span{color:var(--teal-d)}
   /* ================= DRILL ================= */
   const state = {
     mode: 'ten', queue: [], index: 0, input: '', score: 0, streak: 0,
-    best: 0, right: 0, answered: false, perMode: {}, review: {}
+    best: 0, right: 0, answered: false, perMode: {}, review: {}, seen: {}
   };
 
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; }
+      if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; }
     } catch (_) {}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review, seen: state.seen }));
     } catch (_) {}
   };
 
@@ -611,13 +644,24 @@ h1 span{color:var(--teal-d)}
       .filter(q => ws.includes(q.whole));
     const pool = [];
     ws.forEach(w => { for (let a = 1; a < w; a++) pool.push({ whole: w, a, b: w - a }); });
-    shuffle(pool);
-    let i = 0;
+    const blankFor = () => Math.random() < .3 ? 'whole' : (Math.random() < .5 ? 'a' : 'b');
+    const has = (w, a, bl) => out.some(o => o.whole === w && o.a === a && o.blank === bl);
+    // Fresh first: every split served in an earlier set goes to the back, so a
+    // child who plays the same mode twice this week meets different questions.
+    // When the mode's fact space is smaller than the deck, a new cycle starts
+    // and the leftovers are topped up rather than the loop spinning.
+    let fresh = freshFirst(pool, state.seen, state.mode, f => `${f.whole}|${f.a}`);
+    let i = 0, pass = 0;
     while (out.length < TOTAL) {
-      if (i >= pool.length) { shuffle(pool); i = 0; }
-      const f = pool[i++];
-      const blank = Math.random() < .3 ? 'whole' : (Math.random() < .5 ? 'a' : 'b');
-      if (out.some(o => o.whole === f.whole && o.a === f.a && o.blank === blank)) continue;
+      if (i >= fresh.length) { fresh = newCycle(pool, state.seen, state.mode); i = 0; pass++; }
+      const f = fresh[i++];
+      const blank = blankFor();
+      const prev = out[out.length - 1];
+      // A mode can hold fewer questions than a deck (Make 10 has 9 splits and
+      // 3 blank positions). The first sweep is unique; later sweeps only
+      // forbid an immediate repeat, so the loop always fills.
+      if (pass === 0 ? has(f.whole, f.a, blank)
+                     : prev && prev.whole === f.whole && prev.a === f.a) continue;
       out.push({ ...f, blank });
     }
     return out;
@@ -627,6 +671,7 @@ h1 span{color:var(--teal-d)}
     const q = state.queue[state.index];
     if (!q) return finish();
     state.answered = false; state.input = '';
+    markSeen(state.seen, state.mode, `${q.whole}|${q.a}`); save();
     const { whole, a, b, blank } = q;
     const setNode = (circle, text, val, isBlank, dark) => {
       circle.classList.toggle('blank', isBlank);
