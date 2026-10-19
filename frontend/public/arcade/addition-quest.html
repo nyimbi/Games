@@ -102,11 +102,18 @@ h1 span{color:var(--indigo)}
   border:2px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);
   font-variant-numeric:tabular-nums;position:relative;min-width:190px
 }
-.sum .carryrow{color:#d98a00;font-size:.62em;letter-spacing:.36em;height:1em}
-.sum .digits{letter-spacing:.14em;white-space:pre}
-.sum .op{color:var(--muted);margin-right:.35em}
+.sum .cols,.qsum .cols{
+  display:grid;grid-auto-flow:column;grid-auto-columns:1.15em;
+  text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums
+}
+.sum .cols>span,.qsum .cols>span{display:block;line-height:1.22}
+.sum .cols>.gut,.qsum .cols>.gut{grid-column:1}
+.sum .cols>.op,.qsum .cols>.op{grid-column:1;color:var(--muted)}
+.sum .carryrow,.qsum .carryrow{height:1.15em}
+.sum .carryrow i,.qsum .carryrow i{font-style:normal;color:#d98a00;font-size:.68em;font-weight:800;line-height:1.7}
+.sum .op{color:var(--muted)}
 .sum .rule{height:3px;background:var(--ink);border-radius:2px;margin:.18em 0 .22em}
-.sum .ans{color:var(--indigo);letter-spacing:.14em;min-height:1.2em}
+.sum .ans{color:var(--indigo);min-height:1.2em}
 .sum .ans.empty{color:#b9c2ff}
 .sum .colhl{position:absolute;top:0;bottom:0;border-radius:8px;background:rgba(91,108,255,.10);
   transition:left .3s,width .3s;pointer-events:none;z-index:-1}
@@ -170,11 +177,11 @@ h1 span{color:var(--indigo)}
   font-size:clamp(1.9rem,7vw,2.7rem);line-height:1.2;text-align:right;color:var(--ink);
   font-variant-numeric:tabular-nums
 }
-.qsum .carryrow{color:#d98a00;font-size:.6em;letter-spacing:.36em;height:1em}
-.qsum .digits{letter-spacing:.14em;white-space:pre}
-.qsum .op{color:var(--muted);margin-right:.32em}
+.qsum .op{color:var(--muted)}
 .qsum .rule{height:3px;background:var(--ink);border-radius:2px;margin:.18em 0 .22em}
-.qsum .ans{color:var(--indigo);letter-spacing:.14em;min-height:1.2em;transition:color .2s}
+.qsum .ans{color:var(--indigo);min-height:1.2em;transition:color .2s}
+.qsum .bondline{letter-spacing:.06em;white-space:nowrap}
+.qsum .bondline .miss{color:#c3caff;border-bottom:3px solid var(--indigo);padding:0 .12em}
 .qsum .ans.ok{color:var(--good)}
 .qsum .ans.no{color:var(--bad)}
 .qsum .ans.empty{color:#c3caff}
@@ -282,9 +289,9 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     <div class="lesson-grid">
       <div class="card-lite">
         <div class="sum" id="lessonSum">
-          <div class="carryrow" id="carryRow"></div>
-          <div class="digits" id="topRow"></div>
-          <div class="digits" id="botRow"></div>
+          <div class="carryrow cols" id="carryRow"></div>
+          <div class="digits cols" id="topRow"></div>
+          <div class="digits cols" id="botRow"></div>
           <div class="rule"></div>
           <div class="ans" id="lessonAns"></div>
         </div>
@@ -333,9 +340,9 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       <div class="ask" id="ask">Add</div>
       <div class="sr-only" id="qsay" aria-live="polite"></div>
       <div class="qsum" id="qsum">
-        <div class="carryrow" id="qCarry"></div>
-        <div class="digits" id="qTop"></div>
-        <div class="digits" id="qBot"></div>
+        <div class="carryrow cols" id="qCarry"></div>
+        <div class="digits cols" id="qTop"></div>
+        <div class="digits cols" id="qBot"></div>
         <div class="rule"></div>
         <div class="ans empty" id="qAns"></div>
       </div>
@@ -474,6 +481,35 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
 
   function digitsOf(n, width) { return String(n).padStart(width, '0').split('').map(Number); }
 
+  /* Every row of the sum is a grid with the same number of columns, and column
+     zero is the gutter that holds the operator. A carry then lands directly
+     above the column it was carried into. Padding a string cannot do this: the
+     carry is drawn in a smaller font, so its spaces are narrower than the
+     digits' and the carry drifts right. */
+  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  function cells(values, gutter = '') {
+    const head = `<span class="${gutter ? 'op op-plus' : 'gut'}">${gutter || '&nbsp;'}</span>`;
+    const body = values.map(v => {
+      const t = (v === null || v === undefined || v === '') ? '' : String(v);
+      return `<span>${t === '' ? '&nbsp;' : esc(t)}</span>`;
+    }).join('');
+    return head + body;
+  }
+  function carryCells(carries) {
+    const head = `<span class="gut">&nbsp;</span>`;
+    return head + carries.map(c =>
+      `<span>${c === null ? '&nbsp;' : '<i>' + c + '</i>'}</span>`).join('');
+  }
+  /* The carry is the answer to the regrouping step. Showing it before the
+     child has decided whether to regroup hands them the method, so the
+     practice card keeps the row empty and only the worked solution fills
+     it. */
+  function showCarry(on) {
+    const row = $('qCarry');
+    if (!row) return;
+    row.innerHTML = on && state.S ? carryCells(state.S.P.carries) : '';
+  }
+
   // Column layout: index 0 is the leftmost digit. Carries are computed
   // right-to-left exactly as a child would, then placed above the column
   // they land in (one place to the left).
@@ -561,9 +597,9 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     const P = L.plan, width = P.width;
     const step = L.script[L.step];
 
-    $('carryRow').textContent = P.carries.map(c => c === null ? ' ' : String(c)).join(' ');
-    $('topRow').textContent = String(L.a).padStart(width, ' ');
-    $('botRow').innerHTML = '<span class="op op-plus">+</span>' + String(L.b).padStart(width - 1, ' ');
+    $('carryRow').innerHTML = carryCells(P.carries);
+    $('topRow').innerHTML = cells(String(L.a).padStart(width, ' ').split(''));
+    $('botRow').innerHTML = cells(String(L.b).padStart(width, ' ').split(''), '+');
 
     // answer digits revealed progressively
     let ans = '';
@@ -750,8 +786,23 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     const S = stacked(q.a, q.b);
     state.S = S;
     $('ask').textContent = q.level === 'bond' ? 'Make the whole' : 'Add';
-    $('qTop').textContent = S.top;
-    $('qBot').innerHTML = '<span class="op op-plus">+</span>' + S.bot.slice(1);
+    if (q.level === 'bond') {
+      // A bond is a missing addend, not a column sum: show the whole and the
+      // part we have, and let the answer box stand in for the other part.
+      $('qCarry').innerHTML = '';
+      $('qTop').innerHTML = '';
+      $('qBot').innerHTML = '';
+      $('qBot').classList.remove('cols');
+      $('qBot').innerHTML =
+        `<span class="bondline">${q.a} + <span class="miss">?</span> = ${q.sum}</span>`;
+      $('qBot').style.textAlign = 'center';
+    } else {
+      $('qBot').classList.add('cols');
+      $('qBot').style.textAlign = '';
+      showCarry(false);
+      $('qTop').innerHTML = cells(S.top.split(''));
+      $('qBot').innerHTML = cells(S.bot.split(''), '+');
+    }
     $('qsay').textContent = `${q.a} plus ${q.b}.`;
     const ans = $('qAns');
     ans.className = 'ans empty';
@@ -769,6 +820,9 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     if (state.index < 2) {
       $('worked').innerHTML = '<b>Watch me.</b><br>' + workedFor(q);
       $('worked').classList.add('show');
+      // The first two questions are a demonstration, so the carries belong
+      // on screen with the worked columns.
+      showCarry(q.level !== 'bond');
     }
     $('hint').textContent = q.level === 'bond'
       ? `${q.a} plus what makes ${q.sum}?`
@@ -853,6 +907,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       toast(`${q.a} + ${q.b} = ${q.sum}`, 'bad');
       $('worked').innerHTML = workedFor(q);
       $('worked').classList.add('show');
+      showCarry(q.level !== 'bond');
       $('hint').textContent = 'Read the worked columns, then try the next one.';
     }
     noteFact(q, right);
@@ -972,7 +1027,10 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     const q = state.queue[state.index];
     if (!q) return;
     $('worked').innerHTML = workedFor(q);
-    $('worked').classList.toggle('show');
+    const on = !$('worked').classList.contains('show');
+    $('worked').classList.toggle('show', on);
+    // The carries travel with the worked solution, not before it.
+    showCarry(on && q.level !== 'bond' && !state.answered);
   });
 
 
