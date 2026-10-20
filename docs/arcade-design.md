@@ -1,6 +1,6 @@
 # The Arcade: design and implementation notes
 
-Eight self-contained games in `frontend/public/arcade/`. No build step, no network, no accounts. Each game is one HTML file with inline CSS and JS; progress lives in `localStorage` under a per-game key. The spelling bee carries its word bank in a separate `spelling-bank.js` (a single JSON array on `window.SPELL_BANK`), because a thousand annotated words inline would triple the file and make the engine unreadable.
+Fourteen self-contained games in `frontend/public/arcade/`. No build step, no network, no accounts. Each game is one HTML file with inline CSS and JS; progress lives in `localStorage` under a per-game key. Content that is large and tabular lives beside the page rather than inside it — the spelling bee's thousand words, the four language banks, the 440-character calligraphy bank and its sketches, the physics and chemistry questions — because a thousand annotated entries inline would triple the file and make the engine unreadable. The language games share `lang-engine.js` and the science games share `science-engine.js`; the engines hold the interaction, the banks hold the content.
 
 This document records what each game teaches, why the interaction is shaped the way it is, and the implementation that carries it. The reader it is written for is a teacher or a parent who wants to know why the screen looks like that — and the next person who has to change it.
 
@@ -214,9 +214,83 @@ Most spelling software is a word list with a text box. That teaches one thing �
 
 ---
 
+## 09 · French (`french.html`)
+
+**Teaches:** 300 words and phrases, the gender of every noun in the bank, and the sentence frame each word lives in.
+
+Built on the shared `lang-engine.js`, so the queue, spaced review, speech and scoring are the same machinery as the spelling bee. The bank is the content.
+
+**Five modes, because a word is five different facts.** *Learn* is the study card: the word with its article, a respelled pronunciation, the English, an example sentence with the headword highlighted, and a watch-out. *Gender* asks for the article alone — `le`, `la` or `les` — which is the fact that French learners most often learn late and pay for longest. *French to English* and *English to French* are the two retrieval directions. *Sentence* shows the example with the headword blanked and offers four words from the same family and tier, so the answer is chosen by grammar rather than by remembering which sentence came with which word.
+
+**The bank stores the article, not the gender.** `fr` is `le chat`, not `chat` plus `gender: m`, so the form the learner sees on every card is the form they have to produce. `gender` is derived from the article at build time and exists only so the gender drill can ask the question.
+
+**The gender drill draws only from nouns.** A mode that can only ask about nouns must draw from nouns; without that, `articlePrompt` fell back to a translation question for the numbers and verbs in the deck, and the learner met `nineteen` in a drill about articles. `cfg.pool(mode, entry)` is the hook: the deck for a mode is `all.filter(pool)` when that leaves anything, and the whole tier otherwise.
+
+**Accents are forgiven once, and named.** A right spelling without its accents returns `'accent'` rather than `false`, so `eleve` for `élève` is reported as *"right word, wrong accents"* and the card shows the accented form. Marking it simply wrong teaches nothing; marking it fully right teaches that accents do not matter.
+
+---
+
+## 10 · Kiswahili (`swahili.html`)
+
+**Teaches:** 300 words, the noun class of every noun, and the greeting and sentence forms.
+
+Same engine, different grammar. Kiswahili's difficulty for an English speaker is not vocabulary but the noun class system, which governs agreement across the whole sentence. So the drill that matters is *class*: given a noun, name its class (1/2 for people, 3/4 for trees and natural objects, 7/8 for things, 9/10 for the borrowed nouns). The bank stores `class` on nouns only, and `cfg.pool` keeps the class deck to nouns that have one, for the same reason the French gender drill is nouns-only.
+
+**Pronunciation is written for an English reader**, not in IPA: `asante` is `ah-SAHN-teh`. The `say` field is what the speech button falls back to when no Swahili voice is installed, and it is on the study card where it is needed.
+
+**The sentence mode uses the greeting and travel phrases**, because those are the frames a learner meets first: `Habari yako?` — `Nzuri, asante.`
+
+---
+
+## 11 · Mandarin (`chinese.html`)
+
+**Teaches:** 300 words and phrases, their tones, their characters, and how the characters are built.
+
+Mandarin is four facts stacked: the word, its pinyin, its tone, and its character. The study card shows all four at once — hanzi, pinyin with tone marks, the tone numbers, the English, an example sentence, the radical and the stroke count — because a learner who meets them separately meets them as four unrelated facts.
+
+**Five modes.** *Learn*, *Tone* (name the tone contour of the syllable), *Chinese to English*, *Pinyin* (produce the romanisation), and *Pick the character* (four hanzi, one reading). The last two are the ones that separate recognising a word from knowing it.
+
+**Tone is a separate fact from pinyin**, so `tones` is stored as a list (`[2, 5]` for `yéye`) and the tone drill asks about the contour, not the spelling. The distractor tones are drawn from the other tones in the same tier, never from a tone the syllable could not take.
+
+---
+
+## 12 · Chinese Calligraphy (`calligraphy.html`)
+
+**Teaches:** the stroke order of 440 characters, drawn on a rice grid.
+
+This is the game that cannot be faked by multiple choice. The learner draws each stroke with a finger or mouse; the stroke is correct only when it starts where the real stroke starts, runs in the same direction, and has the same shape. A stroke drawn backwards covers the same pixels and fails.
+
+**Where the data comes from.** 440 characters, selected by frequency from Jun Da's Modern Chinese list, each with a complete record in four independent datasets that all agree on the stroke count: Make Me a Hanzi's stroke skeletons and dictionary, its graphics outlines, CC-CEDICT's glosses, and cnchar-order's authoritative stroke names. The build refuses a character where the datasets disagree on the count rather than guessing an alignment. Sources are archived in `sources/calligraphy/` and indexed in `sources/INDEX.md`.
+
+The first attempt at stroke names was a geometry classifier over the skeletons. It agreed with hand-authored names on 52% of strokes, then 58%, then 51%: `竖` and `撇` overlap in their travel fractions, `捺` and `点` both move rightward and down. Three failures on correct input is not a tuning problem, it is the wrong instrument — a stroke's *name* is curriculum data, not something to infer from a polyline. cnchar-order supplies the names positionally, and the 84 hand-drawn characters served as the canary that proved the classifier wrong.
+
+**Scoring.** Both the drawn stroke and the target are resampled to 16 points of equal arc length, so the comparison is of shape rather than of speed or scale. A stroke passes when the mean point distance is under 9 and the endpoint error under 16, which rejects a backwards stroke. The tolerance is deliberately loose: this is a hand-drawn stroke on a phone screen, not a vector match.
+
+**Every character shows four things:** the character, its pinyin, its English gloss, and a sketch. The sketch is one of three kinds, in order of preference: one of the 84 hand-drawn pictograms the game shipped with; a composition of the character's own decomposition tree, with each component stamped into the slot its ideographic description character names (so `都` is drawn as `者` + `阝`, and `现` as `王` + `见`); or, when neither is available, the character's radical alone, and only when that radical depicts something. A radical that denotes nothing — `一`, `亅`, a lid — gets no drawing, because a made-up picture is worse than none: the learner would memorise the invention. All 440 have one of the three.
+
+**Pronunciation is spoken, not just written.** The pinyin is on the card with tone marks, and clicking the character speaks it with `speechSynthesis` at `zh-CN`. This matters more in Mandarin than in the other languages in the arcade, because a tone is not recoverable from the spelling.
+
+**Stroke hints are per-stroke curriculum data.** Every stroke name maps to a one-line instruction (*"Right-falling — sweep down and to the right, pressed as it lands"*), written once in a table and joined to the 3,086 strokes at build time. The Show-me button prints it and flashes the stroke in red in place.
+
+---
+
+## 13 · Physics (`physics.html`) and 14 · Chemistry (`chemistry.html`)
+
+**Teach:** 240 questions each across ten topics, with worked reasoning.
+
+Both run on the shared `science-engine.js`. Two modes: *Quiz* (four options, one right) and *Work it out* (type the answer).
+
+**Every distractor encodes a specific mistake.** `d1`, `d2` and `d3` are not random wrong numbers; each one is what you get by making a particular error — adding instead of subtracting, multiplying instead of dividing, leaving the unit unconverted. The engine names that error when the learner picks it. A wrong answer that says *"Adding the forces because both are given, or reversing the direction"* teaches more than a red cross.
+
+**The answer field takes a number, and the unit is asked for separately.** `num()` pulls the leading number so `9.8 N` and `9.8` compare equal, with a 2% tolerance for rounding. But a right number with the wrong unit is not the right answer: if the learner types a unit of their own and it is not the one the prompt asked for, the answer fails, and the feedback says so specifically — *"The number is right; the unit is not"* — rather than marking the whole thing wrong. That distinction is the point of separating the two.
+
+**The formula is a chip, not the question.** It is shown with the explanation after the answer, so the learner reasons first and checks the shape of the reasoning afterwards.
+
+---
+
 ## The index (`index.html`)
 
-Eight cards, each with an illustration, a one-sentence description, tags, and **0–3 stars read from that game's own storage**. Each game writes `{ level|mode: bestPct }`; the index scans the bucket, takes the maximum, and maps it to stars with the same thresholds the games use. The arena stores EMAs instead, so its card reads the maximum `ema × 100`.
+Fourteen cards, each with an illustration, a one-sentence description, tags, and **0–3 stars read from that game's own storage**. Each game writes `{ level|mode: bestPct }`; the index scans the bucket, takes the maximum, and maps it to stars with the same thresholds the games use. The arena stores EMAs instead, so its card reads the maximum `ema × 100`.
 
 Above the grid, a **Today's suggestion** lane lists the three games played least recently, with "Never played" or "N days ago" beside each. It is computed on load and hidden if the list is empty. The point is to make the choice of what to play next a decision the page can help with, rather than one the child makes by picking the same card every time.
 
