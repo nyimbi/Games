@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chemistry — Science Arcade</title>
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;--paper:#fdf7ea;--card:#fffdf8;
+  --accent:#1e8f6a;--accent-d:#146b4e;--good:#1e9e6a;--bad:#e5484d;--hard:6px 6px 0 var(--ink);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(840px 520px at 2% -8%,#d8f5e6 0%,transparent 62%),
+    radial-gradient(780px 520px at 102% 4%,#ffe6b0 0%,transparent 58%),
+    radial-gradient(760px 560px at 50% 118%,#dbe2ff 0%,transparent 62%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.09) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);
+  mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.shell{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:20px 18px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);font-weight:900;font-size:.82rem;background:var(--card);border:2px solid var(--ink);padding:8px 13px;border-radius:999px;box-shadow:0 3px 0 var(--ink);transition:transform .12s}
+.back:hover{transform:translate(-1px,-1px)}
+.chip{display:flex;align-items:center;gap:7px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:10px 16px;font-size:.78rem;font-weight:900;box-shadow:0 3px 0 var(--ink);font-variant-numeric:tabular-nums}
+.kicker{display:inline-block;font-size:.68rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:var(--accent);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 var(--ink);margin-bottom:14px}
+h1{margin:0;font-size:clamp(2rem,6vw,2.9rem);line-height:.98;letter-spacing:-.045em;font-weight:900}
+h1 span{color:var(--accent)}
+.sub{margin:12px 0 0;color:var(--ink-2);font-size:1.06rem;line-height:1.55;max-width:54ch}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:22px;padding:22px;box-shadow:var(--hard);margin-top:20px}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+@media (max-width:640px){.tiers{grid-template-columns:1fr}}
+.tierbtn{font-family:inherit;text-align:left;cursor:pointer;background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:12px 14px;box-shadow:0 3px 0 var(--ink);transition:transform .1s,background .15s}
+.tierbtn:hover{background:#fff}
+.tierbtn[aria-pressed="true"]{background:var(--accent);color:#fff}
+.tierbtn b{display:block;font-size:1rem;font-weight:900}
+.tierbtn span{display:block;font-size:.78rem;opacity:.85;margin-top:3px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.modes{grid-template-columns:1fr}}
+.modebtn{font-family:inherit;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:flex-start;background:#fbf5e6;border:2px solid var(--ink);border-radius:16px;padding:14px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,background .15s}
+.modebtn:hover{background:#fff;transform:translate(-1px,-1px)}
+.modebtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.modebtn .ic{font-size:1.5rem;line-height:1}
+.modebtn b{display:block;font-size:1rem;font-weight:900}
+.modebtn small{display:block;font-size:.8rem;color:var(--ink-2);margin-top:4px;line-height:1.4}
+.topics{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}
+.topicchip{font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:7px;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:8px 13px;font-size:.82rem;font-weight:900;box-shadow:0 2px 0 var(--ink);transition:transform .1s}
+.topicchip:hover{background:#f4f7ff}
+.topicchip:active{transform:translateY(2px);box-shadow:none}
+.topicchip span{font-size:.7rem;background:var(--accent);color:#fff;border-radius:999px;padding:1px 7px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+@media (max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.5rem;font-weight:900;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.stage{display:none}
+.stage.on{display:block}
+.bar{height:12px;background:#efe6d2;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin:14px 0}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums}
+.qtext{font-size:1.25rem;font-weight:800;line-height:1.5;margin:0 0 16px}
+.topiclabel{font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-d);margin-bottom:8px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.choices{grid-template-columns:1fr}}
+.opt{font-family:inherit;font-size:1.05rem;font-weight:900;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:16px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,background .15s;text-align:left;line-height:1.35}
+.opt:hover{background:#f4f7ff}
+.opt:active{transform:translateY(2px);box-shadow:2px 2px 0 var(--ink)}
+.opt.right{background:#d8f5e6;border-color:var(--good)}
+.opt.wrong{background:#ffe0e0;border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.typerow{display:flex;gap:10px;align-items:stretch}
+#qInput{flex:1;font-family:inherit;font-size:1.3rem;font-weight:800;padding:14px 16px;border:2px solid var(--ink);border-radius:14px;background:#fff}
+#qInput:focus{outline:3px solid #b9c2ff;outline-offset:1px}
+#qUnit{font-size:.9rem;font-weight:900;color:var(--muted);align-self:center;white-space:nowrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:inherit;font-weight:900;cursor:pointer;border:2px solid var(--ink);border-radius:999px;padding:11px 18px;background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--ink);transition:transform .1s}
+.btn:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.small{font-size:.85rem;padding:8px 14px}
+.btn.soft{background:#f4efe2}
+.btn.primary{background:var(--accent);color:#fff}
+.hintbox{margin-top:10px;background:#fffbe8;border:2px dashed #e0b84a;border-radius:12px;padding:12px;font-size:.95rem;line-height:1.5}
+.feedback{margin-top:14px;border-radius:14px;padding:0;border:2px solid transparent;display:none}
+.feedback.on{display:block;padding:14px 16px}
+.feedback.good{background:#e8faf1;border-color:var(--good)}
+.feedback.bad{background:#ffecec;border-color:var(--bad)}
+.feedback h3{margin:0 0 8px;font-size:1.05rem}
+.feedback p{margin:0 0 6px;font-size:.95rem;line-height:1.5}
+.answerline{margin:0 0 8px!important}
+.trickline{color:#7a4b00;font-weight:700}
+.why{margin-top:12px;background:#fbf5e6;border:2px solid var(--ink);border-radius:12px;padding:12px;font-size:.95rem;line-height:1.55}
+.fchip{display:inline-block;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-weight:800;background:var(--accent);color:#fff;border-radius:6px;padding:2px 8px;margin-left:6px}
+.missed{margin-top:18px;background:#fbf5e6;border:2px solid var(--ink);border-radius:16px;padding:16px}
+.missed h4{margin:0 0 10px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.missrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px dashed #ddd2b8;font-size:.92rem}
+.missrow:first-of-type{border-top:0}
+.missrow span{flex:1;color:var(--ink-2)}
+.missrow b{white-space:nowrap;color:var(--accent-d)}
+.stars{display:flex;gap:8px;justify-content:center;margin:10px 0 6px;font-size:2rem}
+.stars span{opacity:.22}
+.stars span.on{opacity:1}
+.donebox{text-align:center;padding:8px 0}
+#doneTitle{margin:6px 0;font-size:1.6rem;font-weight:900}
+.navrow{display:flex;gap:8px;justify-content:space-between;margin-top:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="shell">
+  <div class="top">
+    <a class="back" href="./index.html">← Arcade</a>
+    <div class="chip"><span class="k">Best</span><span class="v" id="hudBest">0%</span></div>
+  </div>
+
+  <section class="stage on" id="home">
+    <div class="kicker">Science arcade</div>
+    <h1>Chemistry</h1>
+    <p class="sub">Atoms, the periodic table, bonding, reactions, acids and moles. Every wrong answer is the answer you get by making one specific mistake.</p>
+    <div class="panel">
+      <div class="tiers" id="tiers"></div>
+      <div class="modes" id="modes"></div>
+      <div class="topics" id="topics"></div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <section class="stage" id="quiz">
+    <div class="meta"><span id="qTopic">topic</span><span><b id="qNum">1</b> / <span id="qTot">1</span> · <span id="qScore">0 right</span></span></div>
+    <div class="bar"><i id="qProg"></i></div>
+    <div class="panel">
+      <p class="qtext" id="qText"></p>
+      <div class="choices" id="qChoices"></div>
+      <div id="qType" hidden>
+        <div class="typerow">
+          <input id="qInput" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Your answer">
+          <span id="qUnit"></span>
+          <button class="btn primary" type="button" id="qSubmit">Check</button>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn soft small" type="button" id="qHint">Clue</button>
+      </div>
+      <div class="hintbox" id="qHintBox" hidden></div>
+      <div class="feedback" id="qFb"></div>
+      <div class="why" id="qExplain" hidden></div>
+      <div class="navrow">
+        <button class="btn" type="button" id="qExit">Exit</button>
+        <button class="btn primary" type="button" id="qNext" hidden>Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="done">
+    <div class="panel donebox">
+      <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+      <h2 id="doneTitle">Deck complete!</h2>
+      <p class="sub" id="doneText"></p>
+      <div class="missed" id="missed" hidden></div>
+      <div class="actions" style="justify-content:center;margin-top:18px">
+        <button class="btn" type="button" id="rHome">Home</button>
+        <button class="btn primary" type="button" id="rAgain">Another deck</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="./chemistry-bank.js"></script>
+<script src="./science-engine.js"></script>
+<script>
+(() => {
+  'use strict';
+  const BANK = Array.isArray(window.CHEMISTRY_BANK) ? window.CHEMISTRY_BANK : [];
+  window.ScienceGame.init({
+    bank: BANK, key: 'arcade.chemistry.v1', total: 20,
+    topics: [
+      { id: 'atoms', name: 'Atoms' },
+      { id: 'periodic', name: 'Periodic table' },
+      { id: 'bonding', name: 'Bonding' },
+      { id: 'reactions', name: 'Reactions' },
+      { id: 'acids', name: 'Acids' },
+      { id: 'moles', name: 'Moles' },
+      { id: 'states', name: 'States' },
+      { id: 'separating', name: 'Separating' },
+      { id: 'energetics', name: 'Energetics' },
+      { id: 'organic', name: 'Organic' }
+    ],
+    modes: [
+      { id: 'quiz', icon: '🎯', name: 'Choose the answer', desc: 'Four answers, each one a different mistake. Pick the right one.' },
+      { id: 'work', icon: '✏️', name: 'Work it out', desc: 'Type the answer. A number within 2% counts; the unit is given.' }
+    ]
+  });
+})();
+</script>
+</body>
+</html>
