@@ -240,7 +240,9 @@ h1 span{color:var(--blue)}
     const same = BANK.filter(o => o.pinyin.normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s+/)[0] === syl);
     const patterns = new Set([e.tones, ...same.map(o => o.tones)]);
     [1, 2, 3, 4].forEach(t => { if (patterns.size < 4) patterns.add(String(t)); });
-    const opts = [...patterns].slice(0, 4);
+    // Shuffled: the set is built with the answer first, so an unshuffled list
+    // puts the right tone in the same place on every card.
+    const opts = shuffle([...patterns].slice(0, 4));
     return {
       type: 'choose', kind: 'Tone',
       prompt: `<p class="big">${esc(e.pinyin)}</p><p class="small">${esc(e.hanzi)} — which tone${e.tones.includes(' ') ? 's' : ''}?</p>`,

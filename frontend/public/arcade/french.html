@@ -222,8 +222,11 @@ h1 span{color:var(--blue)}
   /* The bank stores each noun with its article already ("le père"), so the
      article is shown as stored and never prepended twice. */
   const withArticle = e => e.fr;
-  const bareWord = e => e.fr.replace(/^(le|la|les|l'|un|une)\s+/i, '');
-  const articleOf = e => (e.fr.match(/^(le|la|les|l'|un|une)\b/i) || [''])[0].toLowerCase();
+  // "l'oncle" has no space after the apostrophe, so the elided form needs its
+  // own branch: a \s+ after l' never matches and the prompt would show the
+  // article it is asking for.
+  const bareWord = e => e.fr.replace(/^(le|la|les|un|une)\s+/i, '').replace(/^l['’]/i, '');
+  const articleOf = e => (e.fr.match(/^(le|la|les|un|une)\b/i) || e.fr.match(/^l['’]/i) || [''])[0].toLowerCase();
 
   function sentenceHTML(e) {
     const s = e.ex_fr || '', head = e.fr.toLowerCase().replace(/^(le|la|les|l'|un|une)\s*/i, '');
@@ -271,17 +274,35 @@ h1 span{color:var(--blue)}
 
   /* The article is a fact about a noun, so the drill is nouns only. A word
      that is not a noun cannot answer it and is served as a meaning question
-     instead rather than being skipped, which would shorten the deck. */
+     instead rather than being skipped, which would shorten the deck.
+
+     A noun that elides is asked as le/la, not as l'. The elision is
+     mechanical -- it follows from the vowel -- so asking it would test the
+     spelling rule rather than the gender. The prompt shows the bare word, and
+     the feedback shows the article as the bank stores it, so the learner sees
+     the elided form without having to produce it.
+
+     A plural noun is asked as les, whatever its singular gender: "les
+     parents" is masculine but takes les, and the gender field records the
+     singular. */
   function articlePrompt(e) {
     if (!isNoun(e)) return fr2en(e);
-    const art = articleOf(e) || (e.gender === 'f' ? 'la' : 'le');
-    const opts = ['le', 'la', 'les'];
+    const stored = articleOf(e);
+    const art = stored === 'les' ? 'les' : e.gender === 'f' ? 'la' : 'le';
+    // Shuffled: building the list with the answer first would put it in the
+    // same position on every card.
+    const opts = shuffle(['le', 'la', 'les']);
     return {
       type: 'choose', kind: 'Article',
       prompt: `<p class="big">${esc(bareWord(e))}</p><p class="small">“${esc(e.en)}” — which article?</p>`,
       options: opts.map(a => ({ value: a, label: a + (a === 'le' ? ' — masculine' : a === 'la' ? ' — feminine' : a === 'les' ? ' — plural' : '') })),
       answer: art, short: bareWord(e),
-      hint: e.trap, note: e.ex_fr
+      hint: e.trap,
+      // Written before the elision, "l'oncle" takes le; the note shows the
+      // form the learner will actually see in a sentence.
+      note: stored && stored !== art && stored.startsWith('l')
+        ? `In a sentence it elides: ${e.fr}. ${e.ex_fr}`
+        : e.ex_fr
     };
   }
 
