@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calligraphy — Chinese Character Writing</title>
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;--paper:#fdf7ea;--card:#fffdf8;
+  --brush:#14161f;--seal:#c1272d;--seal-d:#8e1c21;--rice:#f6f1e2;
+  --gold:#c8a24a;--good:#1e9e6a;--bad:#e5484d;--hard:6px 6px 0 var(--ink);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(840px 520px at 2% -8%,#efe6cf 0%,transparent 62%),
+    radial-gradient(780px 520px at 102% 4%,#f7e7e0 0%,transparent 58%),
+    radial-gradient(760px 560px at 50% 118%,#e6efe4 0%,transparent 62%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.09) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);
+  mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);
+}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.shell{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:20px 18px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);font-weight:900;font-size:.82rem;background:var(--card);border:2px solid var(--ink);padding:8px 13px;border-radius:999px;box-shadow:0 3px 0 var(--ink);transition:transform .12s}
+.back:hover{transform:translate(-1px,-1px)}
+.chip{display:flex;align-items:center;gap:7px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:10px 16px;font-size:.78rem;font-weight:900;box-shadow:0 3px 0 var(--ink);font-variant-numeric:tabular-nums}
+.kicker{display:inline-block;font-size:.68rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:var(--seal);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 var(--ink);margin-bottom:14px}
+h1{margin:0;font-size:clamp(2rem,6vw,2.9rem);line-height:.98;letter-spacing:-.045em;font-weight:900}
+h1 span{color:var(--seal)}
+.sub{margin:12px 0 0;color:var(--ink-2);font-size:1.06rem;line-height:1.55;max-width:54ch}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:22px;padding:22px;box-shadow:var(--hard);margin-top:20px}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+@media (max-width:640px){.tiers{grid-template-columns:1fr}}
+.tierbtn{font-family:inherit;text-align:left;cursor:pointer;background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:12px 14px;box-shadow:0 3px 0 var(--ink);transition:transform .1s,background .15s}
+.tierbtn:hover{background:#fff}
+.tierbtn[aria-pressed="true"]{background:var(--seal);color:#fff}
+.tierbtn b{display:block;font-size:1rem;font-weight:900}
+.tierbtn span{display:block;font-size:.78rem;opacity:.85;margin-top:3px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.modes{grid-template-columns:1fr}}
+.modebtn{font-family:inherit;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:flex-start;background:#fbf5e6;border:2px solid var(--ink);border-radius:16px;padding:14px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,background .15s}
+.modebtn:hover{background:#fff;transform:translate(-1px,-1px)}
+.modebtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.modebtn .ic{font-size:1.5rem;line-height:1}
+.modebtn b{display:block;font-size:1rem;font-weight:900}
+.modebtn small{display:block;font-size:.8rem;color:var(--ink-2);margin-top:4px;line-height:1.4}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+@media (max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.5rem;font-weight:900;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.stage{display:none}
+.stage.on{display:block}
+.bar{height:12px;background:#efe6d2;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin:14px 0}
+.bar i{display:block;height:100%;background:var(--seal);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums}
+.badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.badge{font-size:.7rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border:2px solid var(--ink);border-radius:999px;padding:4px 10px;background:#fff}
+.badge.tier{background:var(--gold)}
+.badge.pos{background:#e6f7f2}
+.badge.origin{background:#efe6ff}
+.wordbig{margin:0;font-size:clamp(3rem,14vw,5rem);font-weight:900;line-height:1.05;font-family:"Songti SC","Noto Serif CJK SC","Source Han Serif SC",serif}
+.sayline{margin:8px 0 16px;font-size:1.05rem;color:var(--muted);font-weight:700}
+.def{margin:0 0 12px;font-size:1.15rem;font-weight:800}
+.sent{margin:0 0 16px;font-size:1.08rem;line-height:1.55;color:var(--ink-2)}
+.sent b{background:#fff3c4;border-radius:4px;padding:0 2px}
+.explain{display:grid;gap:8px}
+.exrow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;background:#fbf5e6;border:2px solid var(--ink);border-radius:12px;padding:10px 12px}
+.exrow p{margin:0;font-size:.95rem;line-height:1.5}
+.extag{font-size:.66rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:#fff;border-radius:6px;padding:3px 7px;white-space:nowrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:inherit;font-weight:900;cursor:pointer;border:2px solid var(--ink);border-radius:999px;padding:11px 18px;background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--ink);transition:transform .1s}
+.btn:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.small{font-size:.85rem;padding:8px 14px}
+.btn.soft{background:#f4efe2}
+.btn.primary{background:var(--seal);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.navrow{display:flex;gap:8px;justify-content:space-between;margin-top:18px}
+
+/* ---- the grid ---- */
+.gridwrap{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+@media (max-width:640px){.gridwrap{grid-template-columns:1fr}}
+.mizige{
+  position:relative;width:min(340px,78vw);aspect-ratio:1;background:var(--rice);
+  border:2.5px solid var(--ink);border-radius:10px;box-shadow:0 5px 0 var(--ink);
+  touch-action:manipulation;user-select:none;
+}
+.mizige svg{position:absolute;inset:0;width:100%;height:100%}
+.mizige .char{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:"Songti SC","Noto Serif CJK SC","Source Han Serif SC",serif;
+  font-size:calc(min(340px,78vw) * .78);line-height:1;color:rgba(20,22,31,.10);
+  pointer-events:none;
+}
+.mizige .char.show{color:rgba(20,22,31,.92)}
+.legend{display:grid;gap:10px;align-content:start}
+.strokeinfo{background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:14px}
+.charhead{display:flex;gap:14px;align-items:flex-start}
+.charbig{flex:0 0 auto;font-family:"Songti SC","Noto Serif CJK SC","Source Han Serif SC",serif;
+  font-size:2.6rem;line-height:1;color:var(--ink);cursor:pointer;background:none;border:0;padding:2px 4px;
+  border-radius:8px}
+.charbig:hover{background:#fff}
+.sketch{flex:0 0 84px;width:84px;height:84px;color:#3a3f63}
+@media (max-width:640px){.sketch{flex-basis:64px;width:64px;height:64px}}
+.sketch svg{width:100%;height:100%;display:block}
+.sketch.none{display:none}
+.word{flex:1 1 auto;min-width:0}
+.pinyin{font-size:1.15rem;font-weight:900;color:var(--seal);letter-spacing:.02em}
+.gloss{font-size:1rem;font-weight:700;margin-top:2px}
+.etym{margin-top:6px;font-size:.82rem;line-height:1.45;color:var(--muted)}
+.speak{font-family:inherit;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:999px;
+  font-size:.72rem;font-weight:900;padding:3px 9px;margin-left:6px;box-shadow:0 2px 0 var(--ink)}
+.speak:active{transform:translateY(2px);box-shadow:none}
+.strokeinfo h4{margin:0 0 6px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.strokeinfo p{margin:0;font-size:1rem;line-height:1.5}
+.strokecount{font-size:1.6rem;font-weight:900;font-variant-numeric:tabular-nums}
+.strokecount span{font-size:.85rem;color:var(--muted);font-weight:800}
+.sname{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sname i{font-style:normal;font-size:.78rem;font-weight:900;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:4px 8px}
+.sname i.now{background:var(--seal);color:#fff}
+.feedback{margin-top:14px;border-radius:14px;padding:0;border:2px solid transparent;display:none}
+.feedback.on{display:block;padding:14px 16px}
+.feedback.good{background:#e8faf1;border-color:var(--good)}
+.feedback.bad{background:#ffecec;border-color:var(--bad)}
+.feedback h3{margin:0 0 8px;font-size:1.05rem}
+.feedback p{margin:0 0 6px;font-size:.95rem;line-height:1.5}
+.trickline{color:#7a4b00;font-weight:700}
+.missed{margin-top:18px;background:#fbf5e6;border:2px solid var(--ink);border-radius:16px;padding:16px}
+.missed h4{margin:0 0 10px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.missrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px dashed #ddd2b8;font-size:.95rem}
+.missrow:first-of-type{border-top:0}
+.stars{display:flex;gap:8px;justify-content:center;margin:10px 0 6px;font-size:2rem}
+.stars span{opacity:.22}
+.stars span.on{opacity:1}
+.donebox{text-align:center;padding:8px 0}
+#doneTitle{margin:6px 0;font-size:1.6rem;font-weight:900}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="shell">
+  <div class="top">
+    <a class="back" href="./index.html">← Arcade</a>
+    <div class="chip"><span class="k">Best</span><span class="v" id="hudBest">0%</span></div>
+  </div>
+
+  <section class="stage on" id="home">
+    <div class="kicker">Chinese · 书法</div>
+    <h1>Calligraphy</h1>
+    <p class="sub">Every character is written in a fixed order, and the order is what makes it
+      legible and fast. Draw each stroke in sequence on the rice grid.</p>
+    <div class="panel">
+      <div class="tiers" id="tiers"></div>
+      <div class="modes" id="modes"></div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <section class="stage" id="practice">
+    <div class="meta"><span id="pKind">Stroke order</span><span><b id="pNum">1</b> / <span id="pTot">1</span> · <span id="pScore">0 right</span></span></div>
+    <div class="bar"><i id="pProg"></i></div>
+    <div class="panel">
+      <div class="gridwrap">
+        <div class="mizige" id="mizige">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <line x1="50" y1="0" x2="50" y2="100" stroke="#c9b98e" stroke-width=".6" stroke-dasharray="3 3"/>
+            <line x1="0" y1="50" x2="100" y2="50" stroke="#c9b98e" stroke-width=".6" stroke-dasharray="3 3"/>
+            <line x1="0" y1="0" x2="100" y2="100" stroke="#d8cbaa" stroke-width=".5" stroke-dasharray="2 4"/>
+            <line x1="100" y1="0" x2="0" y2="100" stroke="#d8cbaa" stroke-width=".5" stroke-dasharray="2 4"/>
+            <g id="ink"></g>
+          </svg>
+          <div class="char" id="charGhost"></div>
+        </div>
+        <div class="legend">
+          <div class="strokeinfo">
+            <h4>Character</h4>
+            <div class="charhead">
+              <button class="charbig" type="button" id="pChar" title="Hear it">字</button>
+              <div class="sketch" id="pSketch" aria-hidden="true"></div>
+              <div class="word">
+                <p class="pinyin" id="pPinyin"></p>
+                <p class="gloss" id="pMeaning"></p>
+                <p class="etym" id="pEtym"></p>
+              </div>
+            </div>
+            <p style="margin-top:8px"><button class="speak" type="button" id="pSpeak">🔊 Say it</button></p>
+          </div>
+          <div class="strokeinfo">
+            <h4>Stroke <span id="pStrokeNo">1</span> of <span id="pStrokeTot">1</span></h4>
+            <p id="pStrokeName">Draw it.</p>
+            <div class="sname" id="pDone"></div>
+          </div>
+          <div class="actions">
+            <button class="btn soft small" type="button" id="pHint">Show me</button>
+            <button class="btn soft small" type="button" id="pUndo">Undo</button>
+            <button class="btn soft small" type="button" id="pClear">Clear</button>
+          </div>
+          <div class="hintbox" id="pHintBox" hidden></div>
+        </div>
+      </div>
+      <div class="feedback" id="pFb"></div>
+      <div class="navrow">
+        <button class="btn" type="button" id="pExit">Exit</button>
+        <button class="btn primary" type="button" id="pNext" hidden>Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="done">
+    <div class="panel donebox">
+      <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+      <h2 id="doneTitle">Deck complete!</h2>
+      <p class="sub" id="doneText"></p>
+      <div class="missed" id="missed" hidden></div>
+      <div class="actions" style="justify-content:center;margin-top:18px">
+        <button class="btn" type="button" id="rHome">Home</button>
+        <button class="btn primary" type="button" id="rAgain">Another deck</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="./calligraphy-bank.js"></script>
+<script src="./calligraphy-sketch.js"></script>
+<script>
+(() => {
+  'use strict';
+  const BANK = Array.isArray(window.CALLIGRAPHY_BANK) ? window.CALLIGRAPHY_BANK : [];
+  const SKETCH = window.CALLI_SKETCH || {};
+  const $ = id => document.getElementById(id);
+  const rnd = n => Math.floor(Math.random() * n);
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  const KEY = 'arcade.calligraphy.v1';
+  const TOTAL = 20;
+
+  const state = {
+    tier: 1, queue: [], index: 0, right: 0, score: 0, streak: 0, best: 0,
+    step: 0, drawn: [], answered: false, misses: [],
+    seen: {}, review: {}, perTier: {}
+  };
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (s) { state.best = s.best || 0; state.seen = s.seen || {}; state.review = s.review || {}; state.perTier = s.perTier || {}; if (s.tier) state.tier = s.tier; }
+    } catch (_) { }
+  }
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier }));
+    } catch (_) { }
+  };
+
+  /* ---------------- audio ---------------- */
+  let ctx = null;
+  function tone(freq, dur = .12, type = 'sine', gain = .05) {
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(gain, ctx.currentTime + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + dur);
+      o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + .02);
+    } catch (_) { }
+  }
+  const goodSound = s => { const b = 523.25 * Math.pow(2, Math.min(s, 7) / 12); tone(b, .1, 'sine', .045); setTimeout(() => tone(b * 1.25, .12, 'sine', .04), 70); };
+  const badSound = () => { tone(196, .16, 'triangle', .045); setTimeout(() => tone(155, .2, 'triangle', .04), 110); };
+
+  function burst(n) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const c = $('confetti'); if (!c) return;
+    const cx = c.getContext('2d');
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+    c.style.width = innerWidth + 'px'; c.style.height = innerHeight + 'px';
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const cols = ['#c1272d', '#c8a24a', '#191c3a', '#1e9e6a', '#8e1c21'];
+    const bits = [];
+    for (let i = 0; i < n; i++) bits.push({
+      x: innerWidth / 2 + (Math.random() - .5) * 160, y: innerHeight * .34,
+      vx: (Math.random() - .5) * 9, vy: -Math.random() * 10 - 2,
+      r: 3 + Math.random() * 5, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3,
+      c: cols[i % cols.length], life: 1
+    });
+    let raf = null;
+    const tick = () => {
+      cx.clearRect(0, 0, innerWidth, innerHeight);
+      let live = false;
+      bits.forEach(b => {
+        if (b.life <= 0) return;
+        live = true; b.vy += .32; b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.life -= .011;
+        cx.save(); cx.translate(b.x, b.y); cx.rotate(b.rot);
+        cx.globalAlpha = Math.max(b.life, 0); cx.fillStyle = b.c;
+        cx.fillRect(-b.r, -b.r / 2, b.r * 2, b.r); cx.restore();
+      });
+      if (live) raf = requestAnimationFrame(tick); else { cx.clearRect(0, 0, innerWidth, innerHeight); raf = null; }
+    };
+    if (!raf) tick();
+  }
+
+  /* ---------------- pools & queue ---------------- */
+  const poolFor = t => BANK.filter(e => e.tier === t);
+  function freshFirst(pool, bucket, keyOf) {
+    const fresh = [], stale = [];
+    pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
+    shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
+    shuffle(fresh);
+    return fresh.concat(stale);
+  }
+  const keyOf = e => e.char;
+
+  function buildQueue(pool, total) {
+    const bucket = state.seen[state.tier] || {};
+    const order = freshFirst(pool, bucket, keyOf);
+    return order.slice(0, Math.min(total, order.length));
+  }
+
+  /* ---------------- strokes ----------------
+     A stroke is a polyline in a 0..100 box, drawn with a round cap. The
+     learner draws on the same box; a stroke counts as correct when its
+     start, its direction and its shape all match, so a stroke drawn
+     backwards fails even though it covers the same pixels. */
+  function renderStroke(s, cls) {
+    const d = s.pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ');
+    return `<path d="${d}" fill="none" stroke="${cls === 'guide' ? '#c1272d' : '#14161f'}"
+      stroke-width="${s.w || 4.2}" stroke-linecap="round" stroke-linejoin="round"
+      opacity="${cls === 'guide' ? '.85' : '1'}" ${cls === 'guide' ? 'stroke-dasharray="4 3"' : ''}/>`;
+  }
+
+  function paintInk() {
+    const e = state.queue[state.index];
+    if (!e) return;
+    const done = state.drawn.map((_, i) => renderStroke(e.strokes[i], 'ink')).join('');
+    $('ink').innerHTML = done;
+    $('charGhost').classList.toggle('show', state.showGhost);
+  }
+
+  function paintStrokes() {
+    const e = state.queue[state.index];
+    if (!e) return;
+    $('pChar').textContent = e.char;
+    $('pMeaning').textContent = e.meaning;
+    $('pPinyin').textContent = e.pinyin;
+    $('pSketch').innerHTML = SKETCH[e.char] || '';
+    $('pSketch').classList.toggle('none', !SKETCH[e.char]);
+    // The etymology hint is written for characters whose parts say something;
+    // where it is missing, the decomposition still shows the learner how the
+    // character is built.
+    const etym = e.hint || (e.decomp && e.decomp !== '？' ? `Built from ${e.decomp.replace(/[⿰-⿻]/g, ' ').trim().split('').join(' + ')}` : '');
+    $('pEtym').textContent = etym;
+    $('pEtym').hidden = !etym;
+    $('pStrokeNo').textContent = Math.min(state.step + 1, e.strokes.length);
+    $('pStrokeTot').textContent = e.strokes.length;
+    const cur = e.strokes[state.step];
+    $('pStrokeName').textContent = cur ? cur.name : 'All strokes drawn.';
+    if (!cur) { $('pHintBox').hidden = true; $('pHintBox').textContent = ''; }
+    $('pDone').innerHTML = e.strokes.map((s, i) =>
+      `<i class="${i < state.step ? 'now' : ''}" title="${esc(s.name)}">${i + 1}</i>`).join('');
+    $('pUndo').disabled = state.step === 0;
+  }
+
+  /* ---------------- drawing ---------------- */
+  const board = $('mizige');
+  let drawing = false, current = [];
+
+  function pointFrom(ev) {
+    const r = board.getBoundingClientRect();
+    const t = ev.touches ? ev.touches[0] : ev;
+    return [
+      Math.round(Math.max(0, Math.min(100, (t.clientX - r.left) / r.width * 100)) * 10) / 10,
+      Math.round(Math.max(0, Math.min(100, (t.clientY - r.top) / r.height * 100)) * 10) / 10
+    ];
+  }
+
+  function pathLength(pts) {
+    let L = 0;
+    for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    return L;
+  }
+
+  /* Resample both paths to the same number of points so they can be compared
+     by mean distance. Length is normalised, which is what makes this a test
+     of shape rather than of speed or scale. */
+  function resample(pts, n) {
+    const total = pathLength(pts);
+    if (total === 0 || pts.length < 2) return Array.from({ length: n }, () => pts[0] || [0, 0]);
+    const out = [pts[0]];
+    let step = total / (n - 1), acc = 0, i = 1;
+    let prev = pts[0];
+    while (i < pts.length && out.length < n) {
+      const seg = Math.hypot(pts[i][0] - prev[0], pts[i][1] - prev[1]);
+      if (acc + seg >= step) {
+        const t = (step - acc) / seg;
+        const p = [prev[0] + (pts[i][0] - prev[0]) * t, prev[1] + (pts[i][1] - prev[1]) * t];
+        out.push(p); prev = p; acc = 0;
+      } else { acc += seg; prev = pts[i]; i++; }
+    }
+    while (out.length < n) out.push(pts[pts.length - 1]);
+    return out;
+  }
+
+  function scoreStroke(user, want) {
+    const u = resample(user, 16), w = resample(want, 16);
+    let sum = 0;
+    for (let i = 0; i < 16; i++) sum += Math.hypot(u[i][0] - w[i][0], u[i][1] - w[i][1]);
+    const mean = sum / 16;
+    // direction check: the endpoints must agree, which rejects a stroke drawn
+    // the right shape in the wrong direction
+    const endErr = Math.hypot(u[15][0] - w[15][0], u[15][1] - w[15][1]);
+    return { mean, endErr, ok: mean < 9 && endErr < 16 };
+  }
+
+  function startDraw(ev) {
+    if (state.answered) return;
+    ev.preventDefault();
+    drawing = true; current = [pointFrom(ev)];
+  }
+  function moveDraw(ev) {
+    if (!drawing) return;
+    ev.preventDefault();
+    const p = pointFrom(ev);
+    const last = current[current.length - 1];
+    if (Math.hypot(p[0] - last[0], p[1] - last[1]) < 1.2) return;
+    current.push(p);
+    const e = state.queue[state.index];
+    if (!e) return;
+    const done = state.drawn.map((_, i) => renderStroke(e.strokes[i], 'ink')).join('');
+    const live = `<path d="${current.map((q, i) => (i ? 'L' : 'M') + q[0] + ' ' + q[1]).join(' ')}"
+      fill="none" stroke="#c1272d" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/>`;
+    $('ink').innerHTML = done + live;
+  }
+  function endDraw(ev) {
+    if (!drawing) return;
+    if (ev && ev.preventDefault) ev.preventDefault();
+    drawing = false;
+    const e = state.queue[state.index];
+    if (!e || current.length < 2) { current = []; paintInk(); return; }
+    const want = e.strokes[state.step];
+    const r = scoreStroke(current, want.pts);
+    current = [];
+    if (r.ok) {
+      state.drawn.push(want);
+      state.step++;
+      state.streak++;
+      state.best = Math.max(state.best, state.streak);
+      state.score += 6;
+      goodSound(state.streak);
+      $('pFb').className = 'feedback';
+      paintInk(); paintStrokes();
+      if (state.step >= e.strokes.length) {
+        state.right++;
+        $('pScore').textContent = state.right + ' right';
+        state.answered = true;
+        state.showGhost = false;
+        $('charGhost').classList.add('show');
+        $('pFb').className = 'feedback on good';
+        $('pFb').innerHTML = `<h3>${esc(e.char)} — written in order</h3>
+          <p>${esc(e.char)} is <b>${esc(e.pinyin)}</b> — ${esc(e.meaning)}</p>
+          ${e.hint ? `<p class="trickline">${esc(e.hint)}</p>` : ''}`;
+        $('pNext').hidden = false; $('pNext').focus();
+        burst(60);
+        noteFact(e, true);
+        save();
+      }
+    } else {
+      state.streak = 0;
+      badSound();
+      $('pFb').className = 'feedback on bad';
+      const why = r.endErr > 16
+        ? 'Start where the stroke starts, and draw towards its end.'
+        : 'Close. Follow the same line as the stroke.';
+      $('pFb').innerHTML = `<h3>Not that one</h3><p>${why}</p>
+        <p class="trickline">${esc(want.name)} — ${esc(want.hint || '')}</p>
+        <p>That stroke belongs at position ${state.step + 1}; ${esc(e.char)} is ${esc(e.meaning)}.</p>`;
+      paintInk();
+      state.misses.push({ prompt: e.char + ' stroke ' + (state.step + 1), right: want.name });
+      noteFact(e, false);
+      save();
+    }
+  }
+
+  board.addEventListener('pointerdown', startDraw);
+  board.addEventListener('pointermove', moveDraw);
+  board.addEventListener('pointerup', endDraw);
+  board.addEventListener('pointerleave', endDraw);
+  board.addEventListener('pointercancel', endDraw);
+  board.style.touchAction = 'none';
+
+  /* ---------------- flow ---------------- */
+  function noteFact(e, ok) {
+    const r = state.review[e.char] || { n: 0, miss: 0, due: false };
+    r.n++; if (!ok) { r.miss++; r.due = true; } else if (r.due) r.due = false;
+    state.review[e.char] = r;
+  }
+
+  function show(id) {
+    document.querySelectorAll('.stage').forEach(s => s.classList.toggle('on', s.id === id));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function render() {
+    if (state.index >= state.queue.length) return finish();
+    const e = state.queue[state.index];
+    state.step = 0; state.drawn = []; state.answered = false; state.showGhost = false;
+    $('pNum').textContent = state.index + 1;
+    $('pTot').textContent = state.queue.length;
+    $('pProg').style.width = (state.index / state.queue.length * 100) + '%';
+    $('pFb').className = 'feedback';
+    $('pFb').innerHTML = '';
+    $('pNext').hidden = true;
+    $('pHintBox').hidden = true;
+    $('pHintBox').textContent = '';
+    paintInk(); paintStrokes();
+    if (!state.seen[state.tier]) state.seen[state.tier] = {};
+    state.seen[state.tier][e.char] = Date.now();
+    save();
+  }
+
+  function finish() {
+    show('done');
+    const pct = Math.round(state.right / Math.max(state.queue.length, 1) * 100);
+    state.perTier[state.tier] = Math.max(state.perTier[state.tier] || 0, pct);
+    state.best = Math.max(state.best, state.streak);
+    save();
+    $('doneText').textContent = `${state.right} of ${state.queue.length} characters written · ${state.score} points · best streak ${state.best}`;
+    const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
+    [...$('stars').children].forEach((s, i) => s.classList.toggle('on', i < stars));
+    $('doneTitle').textContent = stars === 3 ? 'Beautifully written!' : stars === 2 ? 'Good hand!' : 'Keep practising!';
+    $('hudBest').textContent = 'Best ' + Math.max(...Object.values(state.perTier), 0) + '%';
+    if (state.misses.length) {
+      $('missed').hidden = false;
+      $('missed').innerHTML = '<h4>Worth another look</h4>' + state.misses.slice(0, 12)
+        .map(m => `<div class="missrow"><span>${esc(m.prompt)}</span><b>${esc(m.right)}</b></div>`).join('');
+    } else $('missed').hidden = true;
+    if (stars >= 2) burst(70);
+  }
+
+  function start() {
+    state.queue = buildQueue(poolFor(state.tier), TOTAL);
+    state.index = 0; state.right = 0; state.score = 0; state.streak = 0; state.misses = [];
+    show('practice'); render();
+  }
+
+  function paintHome() {
+    $('tiers').innerHTML = [1, 2, 3].map(t => {
+      const n = poolFor(t).length;
+      const name = ['Starter', 'Middle', 'Challenger'][t - 1];
+      const note = ['2–4 strokes', '5–7 strokes', '8+ strokes'][t - 1];
+      return `<button class="tierbtn" type="button" data-tier="${t}" aria-pressed="${state.tier === t}">
+        <b>${name}</b><span>${note} · ${n} characters</span></button>`;
+    }).join('');
+    $('tiers').querySelectorAll('[data-tier]').forEach(b => b.addEventListener('click', () => {
+      state.tier = +b.dataset.tier; save(); paintHome();
+    }));
+
+    const modes = [
+      ['order', '✍️', 'Stroke order', 'Draw each stroke in sequence. Direction counts — a stroke drawn backwards is wrong.'],
+      ['trace', '🖌️', 'Trace', 'The character is shown greyed out. Draw over it, stroke by stroke.']
+    ];
+    $('modes').innerHTML = modes.map(([k, ic, name, desc]) =>
+      `<button class="modebtn" type="button" data-mode="${k}">
+        <span class="ic" aria-hidden="true">${ic}</span>
+        <span><b>${name}</b><small>${desc}</small></span></button>`).join('');
+    $('modes').querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+      state.traceMode = b.dataset.mode === 'trace';
+      start();
+    }));
+
+    const known = Object.values(state.review).filter(r => r.n > 0).length;
+    const clean = Object.values(state.review).filter(r => r.n >= 1 && r.miss === 0).length;
+    $('stats').innerHTML = `
+      <div class="stat"><b>${BANK.length}</b><span>characters</span></div>
+      <div class="stat"><b>${known}</b><span>attempted</span></div>
+      <div class="stat"><b>${clean}</b><span>written clean</span></div>
+      <div class="stat"><b>${Math.max(...Object.values(state.perTier), 0) || 0}%</b><span>best deck</span></div>`;
+    $('hudBest').textContent = 'Best ' + (Math.max(...Object.values(state.perTier), 0) || 0) + '%';
+  }
+
+  $('pNext').addEventListener('click', () => { state.index++; render(); });
+  $('pExit').addEventListener('click', () => { paintHome(); show('home'); });
+  $('pUndo').addEventListener('click', () => {
+    if (!state.step) return;
+    state.step--; state.drawn.pop(); paintInk(); paintStrokes();
+  });
+  $('pClear').addEventListener('click', () => {
+    state.step = 0; state.drawn = []; paintInk(); paintStrokes();
+  });
+  /* ---------------- speech ----------------
+     The pinyin is already on the page; the sound is the other half of it.
+     Voices load asynchronously in most browsers, so the first call may find
+     none and speak in the default voice. A missing speech engine is not an
+     error -- the button simply does nothing. */
+  function say(text) {
+    if (!window.speechSynthesis || !text) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 0.75;
+    const v = speechSynthesis.getVoices().find(x => /^zh/i.test(x.lang));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
+  const sayChar = () => {
+    const e = state.queue[state.index];
+    if (e) say(e.char);
+  };
+  $('pChar').addEventListener('click', sayChar);
+  $('pSpeak').addEventListener('click', sayChar);
+  if (window.speechSynthesis) speechSynthesis.getVoices();
+
+  $('pHint').addEventListener('click', () => {
+    const e = state.queue[state.index];
+    if (!e) return;
+    const want = e.strokes[state.step];
+    if (!want) return;
+    const box = $('pHintBox');
+    if (!box.hidden) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = `<b>${esc(want.name)}</b><br>${esc(want.hint || '')}`;
+    // flash the stroke in place
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.innerHTML = renderStroke(want, 'guide');
+    $('ink').appendChild(g);
+    setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 1400);
+  });
+  $('rAgain').addEventListener('click', start);
+  $('rHome').addEventListener('click', () => { paintHome(); show('home'); });
+
+  load(); paintHome(); show('home');
+})();
+</script>
+</body>
+</html>

@@ -687,3 +687,7 @@ uv.lock
 
 # zvec-grep local workspace index
 .zvec-grep/
+
+# Archived third-party corpora are gzip on arrival; the ignore above is for
+# build artefacts, not for sources the arcade cites.
+!sources/**/*.gz
