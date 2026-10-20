@@ -226,6 +226,10 @@ Built on the shared `lang-engine.js`, so the queue, spaced review, speech and sc
 
 **The gender drill draws only from nouns.** A mode that can only ask about nouns must draw from nouns; without that, `articlePrompt` fell back to a translation question for the numbers and verbs in the deck, and the learner met `nineteen` in a drill about articles. `cfg.pool(mode, entry)` is the hook: the deck for a mode is `all.filter(pool)` when that leaves anything, and the whole tier otherwise.
 
+**Elided nouns are asked as `le`/`la`, not as `l'`.** Twenty-three nouns in the bank begin with `l'` — `l'école`, `l'eau`, `l'oiseau` — and the drill originally offered only `le`/`la`/`les`, so those cards had no correct option to pick. The elision follows mechanically from the vowel, so asking for it would test a spelling rule rather than the gender. The drill asks `le`/`la`, and the feedback names the elided form in a sentence. Plural nouns are asked as `les` whatever their singular gender: `les parents` is masculine and would otherwise be asked as `le`.
+
+**No drill puts the answer in a fixed position.** Both the article drill and the Mandarin tone drill built their option list with the answer first; unshuffled, the correct option sat in the same place on every card and the drill could be passed without reading it. Every option list in the three language games is shuffled.
+
 **Accents are forgiven once, and named.** A right spelling without its accents returns `'accent'` rather than `false`, so `eleve` for `élève` is reported as *"right word, wrong accents"* and the card shows the accented form. Marking it simply wrong teaches nothing; marking it fully right teaches that accents do not matter.
 
 ---
