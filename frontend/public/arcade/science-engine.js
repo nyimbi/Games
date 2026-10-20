@@ -81,15 +81,70 @@
   }
 
   /* Pull the leading number out of an answer string, so "9.8 N" and "9.8"
-     compare equal while "9.8" and "98" do not. */
+     compare equal while "9.8" and "98" do not. Scientific notation is read
+     whole: the mantissa of 6.02 x 10^23 is not the answer to anything. */
   function num(s) {
-    const m = String(s).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+    const t = String(s);
+    const sci = t.match(/(-?\d+(?:\.\d+)?)\s*(?:[x×]\s*10\s*\^\s*(-?\d+)|e\s*(-?\d+))/i);
+    if (sci) return parseFloat(sci[1]) * Math.pow(10, parseInt(sci[2] ?? sci[3], 10));
+    const m = t.replace(/,/g, '').match(/-?\d+(\.\d+)?/);
     return m ? parseFloat(m[0]) : null;
   }
+  /* The unit a typed answer carries, or '' if it carries none. The unit has
+     to start with a letter or a symbol: "49.5" is a number, and its trailing
+     "5" is not a unit. Digits are allowed after the first character, so
+     "m/s2" reads as a unit. An exponent is part of the number, not a unit:
+     "6.02e23" has no unit at all. */
   const unitOf = s => {
-    const m = String(s).match(/-?\d+(?:\.\d+)?\s*([A-Za-z°%/·^0-9]+.*)$/);
+    const t = String(s).replace(/(-?\d+(?:\.\d+)?)\s*[x×]\s*10\s*\^\s*-?\d+/gi, '$1').replace(/(\d)e-?\d+/gi, '$1');
+    const m = t.match(/^-?\d+(?:\.\d+)?\s*([A-Za-z°%µΩ][A-Za-z0-9°%/·^²³\-]*.*)$/);
     return m ? m[1].trim() : '';
   };
+
+  /* Not every answer that starts with a digit is a quantity. "2,8,7" is an
+     electron configuration, "2, 1, 2" is a set of coefficients and "2+" is a
+     charge; read through num() the first two collapse to 287 and 212, so a
+     learner who typed the bare number would be marked right for a fact they
+     were never asked. A quantity is a number followed by a unit and nothing
+     else: no comma, no operator, no arrow. */
+  const QUANTITY = /^-?\d+(?:\.\d+)?[^,+\->=]*$/;
+  const isQuantity = s => QUANTITY.test(String(s).trim());
+
+  /* A quantity carries its unit in one place on screen, not two. Where the
+     bank's answer already ends in the unit the prompt asks for, the unit is
+     not repeated. */
+  const answerText = q => {
+    const a = String(q.a), u = String(q.unit || '').split(',')[0].trim();
+    return u && !a.toLowerCase().endsWith(u.toLowerCase()) ? `${a} ${u}` : a;
+  };
+
+  /* Grading a typed answer is a pure predicate, kept out of the render path
+     so it can be exercised on its own. Returns { ok, unitOnly } -- unitOnly
+     marks the case where the number was right and only the unit was not,
+     which the feedback reports separately from a wrong number. */
+  function gradeTyped(given, q) {
+    const g = num(given), want = num(q.a);
+    if (g === null || want === null || !isQuantity(q.a)) {
+      return { ok: given.trim().toLowerCase() === String(q.a).trim().toLowerCase(), unitOnly: false };
+    }
+    const tol = Math.max(Math.abs(want) * 0.02, 0.05);
+    if (Math.abs(g - want) > tol) return { ok: false, unitOnly: false };
+
+    // A right number with the wrong unit is not the right answer. The unit
+    // is checked wherever it appears: in the answer's own text ("32 g") or
+    // in the unit field ("24" with unit "W"). A qualifier after the comma is
+    // guidance, not part of the unit -- "N, to the right" asks for newtons.
+    // Superscripts compare as digits, because a phone keyboard has no ².
+    const asked = String(q.unit || '').split(',')[0].trim();
+    const inAnswer = unitOf(q.a);
+    const expected = asked || inAnswer;
+    if (expected) {
+      const said = unitOf(given) || inAnswer;
+      const norm = u => u.toLowerCase().replace(/²/g, '2').replace(/³/g, '3');
+      if (said && norm(said) !== norm(expected)) return { ok: false, unitOnly: true };
+    }
+    return { ok: true, unitOnly: false };
+  }
 
   function init(cfg) {
     const BANK = Array.isArray(cfg.bank) ? cfg.bank : [];
@@ -178,24 +233,7 @@
     function answer(given, q) {
       if (state.answered) return;
       state.answered = true;
-      let ok;
-      if (state.mode === 'quiz') {
-        ok = given === q.a;
-      } else {
-        const g = num(given), want = num(q.a);
-        if (g === null || want === null) ok = given.trim().toLowerCase() === String(q.a).toLowerCase();
-        else {
-          const tol = Math.max(Math.abs(want) * 0.02, 0.05);
-          ok = Math.abs(g - want) <= tol;
-          // A right number with the wrong unit is not the right answer. The
-          // prompt names the unit it wants; if the learner types one of their
-          // own, it has to be that one.
-          if (ok && q.unit) {
-            const said = unitOf(given);
-            if (said && said.toLowerCase() !== String(q.unit).toLowerCase()) ok = false;
-          }
-        }
-      }
+      const ok = state.mode === 'quiz' ? given === q.a : gradeTyped(given, q).ok;
       settle(ok, given, q);
     }
 
@@ -220,11 +258,12 @@
         if (hit) why = q.trap || '';
       }
       fb.className = 'feedback on ' + (ok ? 'good' : 'bad');
-      const unitNote = !ok && q.unit && num(given) !== null && Math.abs((num(given) || 0) - (num(q.a) || 0)) <= Math.max(Math.abs(num(q.a) || 0) * 0.02, 0.05)
-        ? `<p class="trickline">The number is right; the unit is not. This one is in ${esc(q.unit)}.</p>`
+      // A qualifier after the comma in the unit is guidance, not part of the
+      const unitNote = !ok && state.mode === 'work' && gradeTyped(given, q).unitOnly
+        ? `<p class="trickline">The number is right; the unit is not. This one is in ${esc(String(q.unit).split(',')[0].trim())}.</p>`
         : '';
       fb.innerHTML = `<h3>${ok ? 'Correct' : 'Not quite'}</h3>
-        ${ok ? '' : `<p class="answerline">The answer is <b>${esc(q.a)}${q.unit ? ' ' + esc(q.unit) : ''}</b>.</p>`}
+        ${ok ? '' : `<p class="answerline">The answer is <b>${esc(answerText(q))}</b>.</p>`}
         ${unitNote}
         ${why ? `<p class="trickline">${esc(why)}</p>` : ''}
         <p>${esc(q.explain)}</p>`;
@@ -338,5 +377,5 @@
     load(); paintHome(); show('home');
   }
 
-  window.ScienceGame = { init, esc, shuffle, num };
+  window.ScienceGame = { init, esc, shuffle, num, isQuantity, answerText, gradeTyped };
 })();
