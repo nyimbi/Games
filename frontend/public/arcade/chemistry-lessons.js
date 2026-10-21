@@ -494,31 +494,32 @@ window.CHEMISTRY_LESSONS = {
     figs: [
       {
         cap: 'Exothermic: the products sit lower than the reactants, and the difference leaves as heat.',
-        svg: `<svg viewBox="0 0 240 130" role="img" aria-label="An exothermic energy profile, products lower than reactants">
-          <line x1="34" y1="106" x2="222" y2="106" stroke="#191c3a" stroke-width="2.5"/>
-          <line x1="34" y1="106" x2="34" y2="14" stroke="#191c3a" stroke-width="2.5"/>
-          <path d="M40 60 q26 -40 52 -40 q22 0 36 34 h50" fill="none" stroke="#2f6fd0" stroke-width="3"/>
-          <line x1="34" y1="60" x2="80" y2="60" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
-          <line x1="34" y1="94" x2="186" y2="94" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
-          <text x="92" y="26" font-size="9" fill="#6d7194">activation energy</text>
-          <line x1="200" y1="60" x2="200" y2="94" stroke="#e5484d" stroke-width="2.5"/>
-          <path d="M200 94 l-4 -9 h8 z" fill="#e5484d"/>
-          <text x="212" y="80" font-size="9" font-weight="700" fill="#b3261e">heat</text>
-          <text x="120" y="122" text-anchor="middle" font-size="9" fill="#6d7194">exothermic</text>
+        svg: `<svg viewBox="0 0 240 140" role="img" aria-label="An exothermic energy profile, products lower than reactants">
+          <line x1="34" y1="118" x2="222" y2="118" stroke="#191c3a" stroke-width="2.5"/>
+          <line x1="34" y1="118" x2="34" y2="14" stroke="#191c3a" stroke-width="2.5"/>
+          <line x1="34" y1="64" x2="80" y2="64" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
+          <line x1="34" y1="96" x2="182" y2="96" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
+          <path d="M44 64 L70 40 Q90 24 106 34 C118 60 126 84 134 96 L182 96" fill="none" stroke="#2f6fd0" stroke-width="3" stroke-linejoin="round"/>
+          <text x="40" y="20" text-anchor="start" font-size="9" fill="#6d7194">activation energy</text>
+          <line x1="200" y1="64" x2="200" y2="96" stroke="#e5484d" stroke-width="2.5"/>
+          <path d="M200 96 l-4 -9 h8 z" fill="#e5484d"/>
+          <text x="212" y="84" font-size="9" font-weight="700" fill="#b3261e">heat</text>
+          <text x="128" y="134" text-anchor="middle" font-size="9" fill="#6d7194">exothermic</text>
         </svg>`
       },
       {
         cap: 'Endothermic: the products sit higher, so the reaction has taken energy in from around it.',
-        svg: `<svg viewBox="0 0 240 130" role="img" aria-label="An endothermic energy profile, products higher than reactants">
-          <line x1="34" y1="106" x2="222" y2="106" stroke="#191c3a" stroke-width="2.5"/>
-          <line x1="34" y1="106" x2="34" y2="14" stroke="#191c3a" stroke-width="2.5"/>
-          <path d="M40 88 q26 -44 52 -44 q22 0 36 34 h50" fill="none" stroke="#2f6fd0" stroke-width="3"/>
+        svg: `<svg viewBox="0 0 240 140" role="img" aria-label="An endothermic energy profile, products higher than reactants">
+          <line x1="34" y1="118" x2="222" y2="118" stroke="#191c3a" stroke-width="2.5"/>
+          <line x1="34" y1="118" x2="34" y2="14" stroke="#191c3a" stroke-width="2.5"/>
           <line x1="34" y1="88" x2="80" y2="88" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
-          <line x1="34" y1="44" x2="186" y2="44" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
+          <line x1="34" y1="44" x2="182" y2="44" stroke="#6d7194" stroke-width="1" stroke-dasharray="4 4"/>
+          <path d="M44 88 L70 42 Q90 26 106 33 L128 44 L182 44" fill="none" stroke="#2f6fd0" stroke-width="3" stroke-linejoin="round"/>
+          <text x="40" y="20" text-anchor="start" font-size="9" fill="#6d7194">activation energy</text>
           <line x1="200" y1="88" x2="200" y2="44" stroke="#1e9e6a" stroke-width="2.5"/>
           <path d="M200 44 l-4 9 h8 z" fill="#1e9e6a"/>
-          <text x="212" y="68" font-size="9" font-weight="700" fill="#146b48">in</text>
-          <text x="120" y="122" text-anchor="middle" font-size="9" fill="#6d7194">endothermic</text>
+          <text x="212" y="70" font-size="9" font-weight="700" fill="#146b48">in</text>
+          <text x="128" y="134" text-anchor="middle" font-size="9" fill="#6d7194">endothermic</text>
         </svg>`
       }
     ]

@@ -344,7 +344,7 @@ window.PHYSICS_LESSONS = {
           <text x="132" y="40" font-size="10" fill="#6d7194">thermometer</text>
           <path d="M52 112 q6 -14 0 -26 q-6 -12 0 -24" fill="none" stroke="#e5484d" stroke-width="2.5"/>
           <path d="M36 112 q6 -14 0 -26 q-6 -12 0 -24" fill="none" stroke="#e5484d" stroke-width="2.5"/>
-          <text x="120" y="14" text-anchor="middle" font-size="10" fill="#6d7194">E = mcΔθ</text>
+          <text x="196" y="120" text-anchor="end" font-size="10" fill="#6d7194">E = mcΔθ</text>
         </svg>`
       },
       {
