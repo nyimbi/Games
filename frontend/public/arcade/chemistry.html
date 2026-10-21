@@ -110,6 +110,30 @@ h1 span{color:var(--accent)}
 .donebox{text-align:center;padding:8px 0}
 #doneTitle{margin:6px 0;font-size:1.6rem;font-weight:900}
 .navrow{display:flex;gap:8px;justify-content:space-between;margin-top:18px}
+/* ---------- lesson ---------- */
+.lwhy{margin:0 0 16px;font-size:1.04rem;line-height:1.6;color:var(--ink-2)}
+.lrule{background:#f0f6ff;border:2px solid var(--ink);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.lrule b,.lex b,.lremember b{display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-d);margin-bottom:6px}
+.lrule p{margin:0;font-weight:800;font-size:1.05rem;line-height:1.5}
+.lbeats{margin:0 0 18px;padding-left:22px}
+.lbeats li{margin-bottom:11px;line-height:1.58;font-size:.99rem}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:0 0 18px}
+.fig{margin:0;background:var(--card);border:2.5px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:10px 10px 8px;overflow:hidden}
+.fig svg{display:block;width:100%;height:auto}
+.fig figcaption{font-size:.8rem;line-height:1.4;color:var(--muted);margin-top:6px;text-align:center}
+.lex{background:#fffbe8;border:2px dashed #e0b84a;border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.lex .lq{margin:0 0 10px;font-weight:900;font-size:1rem;line-height:1.45}
+.lex ol{margin:0 0 10px;padding-left:22px}
+.lex li{margin-bottom:6px;line-height:1.5;font-size:.95rem}
+.lex .la{margin:0;font-weight:900;color:var(--good);font-size:1.02rem}
+.lremember{display:flex;flex-direction:column;background:#e8faf1;border:2px solid var(--good);border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.lremember b{color:#146b48}
+.lremember span{font-weight:800;line-height:1.5}
+.ltrap{margin:0 0 18px;font-size:.92rem;color:#7a4b00;line-height:1.55}
+.topicchip .tick{font-style:normal;font-size:.72rem;font-weight:900;color:var(--good);margin-left:2px}
+.topicchip .new{font-style:normal;font-size:.62rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--accent);border-radius:999px;padding:1px 6px;margin-left:2px}
+.lessonrow{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -133,6 +157,17 @@ h1 span{color:var(--accent)}
     </div>
   </section>
 
+<section class="stage" id="lesson">
+    <div class="meta"><span id="lTopic">Lesson</span><span>Read this first</span></div>
+    <div class="panel">
+      <div id="lBody"></div>
+      <div class="lessonrow">
+        <button class="btn" type="button" id="lHome">Back</button>
+        <button class="btn primary" type="button" id="lDone">I have read it — quiz me →</button>
+      </div>
+    </div>
+  </section>
+
   <section class="stage" id="quiz">
     <div class="meta"><span id="qTopic">topic</span><span><b id="qNum">1</b> / <span id="qTot">1</span> · <span id="qScore">0 right</span></span></div>
     <div class="bar"><i id="qProg"></i></div>
@@ -148,6 +183,7 @@ h1 span{color:var(--accent)}
       </div>
       <div class="actions" style="margin-top:12px">
         <button class="btn soft small" type="button" id="qHint">Clue</button>
+        <button class="btn soft small" type="button" id="qLesson">Teach me this</button>
       </div>
       <div class="hintbox" id="qHintBox" hidden></div>
       <div class="feedback" id="qFb"></div>
@@ -175,12 +211,14 @@ h1 span{color:var(--accent)}
 
 <script src="./chemistry-bank.js"></script>
 <script src="./science-engine.js"></script>
+<script src="./chemistry-lessons.js"></script>
 <script src="./session.js"></script>
 <script>
 (() => {
   'use strict';
   const BANK = Array.isArray(window.CHEMISTRY_BANK) ? window.CHEMISTRY_BANK : [];
   window.ScienceGame.init({
+    lessons: window.CHEMISTRY_LESSONS,
     bank: BANK, key: 'arcade.chemistry.v1', total: 20,
     topics: [
       { id: 'atoms', name: 'Atoms' },

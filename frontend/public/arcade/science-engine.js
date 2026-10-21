@@ -148,24 +148,26 @@
 
   function init(cfg) {
     const BANK = Array.isArray(cfg.bank) ? cfg.bank : [];
+    const LESSONS = cfg.lessons && typeof cfg.lessons === 'object' ? cfg.lessons : null;
     const TOTAL = cfg.total || 20;
     const KEY = cfg.key;
     const keyOf = q => q.q;
 
     const state = {
       tier: 1, mode: 'quiz', queue: [], index: 0, right: 0, score: 0,
-      streak: 0, best: 0, misses: [], answered: false, seen: {}, review: {}, perTier: {}
+      streak: 0, best: 0, misses: [], answered: false, seen: {}, review: {}, perTier: {},
+      taught: {}, lessonTopic: null, lessonResume: null
     };
 
     function load() {
       try {
         const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-        if (s) { state.best = s.best || 0; state.seen = s.seen || {}; state.review = s.review || {}; state.perTier = s.perTier || {}; if (s.tier) state.tier = s.tier; }
+        if (s) { state.best = s.best || 0; state.seen = s.seen || {}; state.review = s.review || {}; state.perTier = s.perTier || {}; state.taught = s.taught || {}; if (s.tier) state.tier = s.tier; }
       } catch (_) { }
     }
     const save = () => {
       try {
-        localStorage.setItem(KEY, JSON.stringify({ best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier }));
+        localStorage.setItem(KEY, JSON.stringify({ best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier, taught: state.taught }));
       } catch (_) { }
     };
 
@@ -194,6 +196,13 @@
     function render() {
       if (state.index >= state.queue.length) return finish();
       const q = state.queue[state.index];
+      // First question from a topic: teach it before asking it. This is the
+      // whole design -- the lesson arrives attached to the question it
+      // explains, not as a preamble the learner scrolls past.
+      if (q.topic && lessonFor(q.topic) && !state.taught[q.topic]) {
+        paintLesson(q.topic, 'render');
+        return;
+      }
       state.answered = false;
       $('qNum').textContent = state.index + 1;
       $('qTot').textContent = state.queue.length;
@@ -229,6 +238,85 @@
     }
 
     const tierKey = () => 't' + state.tier;
+
+    /* ---------- lessons ----------
+     *
+     * A topic is taught once, then quizzed. `taught` is per topic and is kept
+     * across decks, so the second time a topic comes round the learner goes
+     * straight to the questions. The lesson is never skipped silently: if a
+     * topic has no lesson written, the learner is quizzed as before rather
+     * than blocked by a missing page.
+     */
+    const lessonFor = topic => (LESSONS && LESSONS[topic]) || null;
+
+    function paintLesson(topic, resume) {
+      const L = lessonFor(topic);
+      if (!L) return false;
+      state.lessonTopic = topic;
+      state.lessonResume = resume || 'home';
+      $('lTopic').textContent = L.title;
+      // Every piece is escaped: the lessons are authored text, but they are
+      // text, and a stray angle bracket would break the page rather than
+      // print. The figures are the exception -- they are SVG, so they go in
+      // as markup, and only the caption is escaped.
+      const figs = Array.isArray(L.figs) && L.figs.length
+        ? `<div class="figs">${L.figs.map(f =>
+            `<figure class="fig">${f.svg}<figcaption>${esc(f.cap)}</figcaption></figure>`).join('')}</div>`
+        : '';
+      $('lBody').innerHTML = `
+        <p class="lwhy">${esc(L.why)}</p>
+        <div class="lrule"><b>The rule</b><p>${esc(L.rule)}</p></div>
+        ${figs}
+        <ul class="lbeats">${L.beats.map(b => `<li>${esc(b)}</li>`).join('')}</ul>
+        <div class="lex">
+          <b>Worked example</b>
+          <p class="lq">${esc(L.example.q)}</p>
+          <ol>${L.example.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+          <p class="la">${esc(L.example.a)}</p>
+        </div>
+        <div class="lremember"><b>Remember</b><span>${esc(L.remember)}</span></div>
+        <p class="ltrap"><b>The usual mistake:</b> ${esc(L.trap)}</p>`;
+      show('lesson');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      return true;
+    }
+
+    /* Called when a deck starts. The teaching is not done here: a deck of
+       twenty questions crosses many topics, and a wall of ten lessons before
+       the first question is not teaching, it is a barrier. render() shows the
+       lesson for a topic the first time a question from it comes up, so the
+       learner meets each idea immediately before being asked about it. */
+    function begin(mode, queue) {
+      state.mode = mode;
+      state.queue = queue;
+      state.index = 0; state.right = 0; state.score = 0; state.streak = 0; state.misses = [];
+      state.answered = false;
+      show('quiz'); render();
+    }
+
+    function afterLesson() {
+      const t = state.lessonTopic;
+      if (t) { state.taught[t] = true; save(); }
+      const resume = state.lessonResume;
+      state.lessonResume = null;
+      if (resume === 'keep') {
+        // Returning to a question that is already on screen: re-rendering
+        // would wipe an answer the learner had already given.
+        show('quiz');
+        return;
+      }
+      if (resume === 'render') { show('quiz'); render(); return; }
+      paintHome(); show('home');
+    }
+
+    /* The lesson for the topic of the question on screen, from the quiz.
+       This is the "teach me" button: a learner who does not recognise the
+       idea can read it without losing their place. */
+    function lessonFromQuiz() {
+      const q = state.queue[state.index];
+      if (!q || !lessonFor(q.topic)) return;
+      paintLesson(q.topic, 'keep');
+    }
 
     function answer(given, q) {
       if (state.answered) return;
@@ -309,11 +397,8 @@
     }
 
     function start(mode) {
-      state.mode = mode;
       const pool = poolFor(state.tier);
-      state.queue = buildQueue(pool, tierKey() + ':' + mode, TOTAL);
-      state.index = 0; state.right = 0; state.score = 0; state.streak = 0; state.misses = [];
-      show('quiz'); render();
+      begin(mode, buildQueue(pool, tierKey() + ':' + mode, TOTAL));
     }
 
     function paintHome() {
@@ -330,16 +415,22 @@
 
       $('topics').innerHTML = cfg.topics.map(t => {
         const n = topicOf(t.id).length;
-        return `<button class="topicchip" type="button" data-topic="${t.id}">
-          <b>${esc(t.name)}</b><span>${n}</span></button>`;
+        const taught = !!state.taught[t.id];
+        const has = !!lessonFor(t.id);
+        // The tick is the whole point of the chip: a child can see which
+        // topics they have met and which are still new.
+        const mark = has ? (taught ? '<em class="tick" title="Lesson read">✓</em>' : '<em class="new" title="Lesson not read yet">new</em>') : '';
+        return `<button class="topicchip" type="button" data-topic="${t.id}"${has ? ` data-lesson="1"` : ''}>
+          <b>${esc(t.name)}</b><span>${n}</span>${mark}</button>`;
       }).join('');
       $('topics').querySelectorAll('[data-topic]').forEach(b => b.addEventListener('click', () => {
-        const pool = topicOf(b.dataset.topic);
+        const id = b.dataset.topic;
+        const pool = topicOf(id);
         if (!pool.length) return;
-        state.queue = shuffle(pool.slice()).slice(0, Math.min(TOTAL, pool.length));
-        state.index = 0; state.right = 0; state.score = 0; state.streak = 0; state.misses = [];
-        state.mode = 'quiz';
-        show('quiz'); render();
+        const queue = shuffle(pool.slice()).slice(0, Math.min(TOTAL, pool.length));
+        // Every question from a topic chip is that topic, so render() shows
+        // its lesson on the way in if it has not been taught yet.
+        begin('quiz', queue);
       }));
 
       $('modes').innerHTML = cfg.modes.map(m =>
@@ -356,7 +447,9 @@
         <div class="stat"><b>${known}</b><span>attempted</span></div>
         <div class="stat"><b>${clean}</b><span>got clean</span></div>
         <div class="stat"><b>${best}%</b><span>best deck</span></div>`;
-      $('hudBest').textContent = 'Best ' + best + '%';
+      // The chip already carries its own "Best" label in the markup; this is
+      // the value only, or the HUD reads "Best Best 0%".
+      $('hudBest').textContent = best + '%';
     }
 
     $('qNext').addEventListener('click', () => { state.index++; render(); });
@@ -373,6 +466,13 @@
     });
     $('rAgain').addEventListener('click', () => start(state.mode));
     $('rHome').addEventListener('click', () => { paintHome(); show('home'); });
+    $('lDone').addEventListener('click', afterLesson);
+    $('qLesson').addEventListener('click', lessonFromQuiz);
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' && $('lesson') && $('lesson').classList.contains('on')) {
+        ev.preventDefault(); afterLesson();
+      }
+    });
 
     load(); paintHome(); show('home');
   }
