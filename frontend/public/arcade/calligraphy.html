@@ -361,8 +361,11 @@ h1 span{color:var(--seal)}
     $('pSketch').classList.toggle('none', !SKETCH[e.char]);
     // The etymology hint is written for characters whose parts say something;
     // where it is missing, the decomposition still shows the learner how the
-    // character is built.
-    const etym = e.hint || (e.decomp && e.decomp !== '？' ? `Built from ${e.decomp.replace(/[⿰-⿻]/g, ' ').trim().split('').join(' + ')}` : '');
+    // character is built. A part the source data does not identify comes
+    // through as ？, which is a placeholder, not a component: listing it would
+    // print "Built from ？ + 月" as if the learner could look it up.
+    const parts = (e.decomp || '').replace(/[⿰-⿻]/g, ' ').replace(/[？?]/g, ' ').trim().split(/\s*/).filter(Boolean);
+    const etym = e.hint || (parts.length > 1 ? `Built from ${parts.join(' + ')}` : '');
     $('pEtym').textContent = etym;
     $('pEtym').hidden = !etym;
     $('pStrokeNo').textContent = Math.min(state.step + 1, e.strokes.length);
