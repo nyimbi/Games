@@ -99,11 +99,11 @@ window.PHYSICS_LESSONS = {
           <text x="26" y="24" text-anchor="end" font-size="10" fill="#6d7194">d</text>
           <text x="214" y="122" text-anchor="end" font-size="10" fill="#6d7194">t</text>
           <line x1="34" y1="106" x2="130" y2="30" stroke="#2f6fd0" stroke-width="3"/>
-          <text x="140" y="40" font-size="11" font-weight="700" fill="#1f4f9c">fast</text>
-          <line x1="34" y1="106" x2="200" y2="90" stroke="#1e9e6a" stroke-width="3"/>
-          <text x="186" y="82" font-size="11" font-weight="700" fill="#146b48">slow</text>
-          <line x1="34" y1="72" x2="200" y2="72" stroke="#e5484d" stroke-width="3" stroke-dasharray="7 5"/>
-          <text x="186" y="64" text-anchor="end" font-size="11" font-weight="700" fill="#b3261e">stopped</text>
+          <text x="138" y="38" font-size="11" font-weight="700" fill="#1f4f9c">fast</text>
+          <line x1="34" y1="106" x2="200" y2="92" stroke="#1e9e6a" stroke-width="3"/>
+          <text x="196" y="84" text-anchor="end" font-size="11" font-weight="700" fill="#146b48">slow</text>
+          <line x1="34" y1="66" x2="200" y2="66" stroke="#e5484d" stroke-width="3" stroke-dasharray="7 5"/>
+          <text x="196" y="58" text-anchor="end" font-size="11" font-weight="700" fill="#b3261e">stopped</text>
         </svg>`
       }
     ],
