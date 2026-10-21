@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Today's Session — Local Arcade</title>
+<meta name="description" content="One pass over nine subjects, in order. Maths, typing, spelling, French, Kiswahili, Mandarin, calligraphy, physics, chemistry.">
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
+  --paper:#fdf7ea;--card:#fffdf8;--line:#e7dcc4;
+  --sun:#ffb703;--coral:#ff6b6b;--teal:#0fb5a1;--indigo:#5b6cff;
+  --grape:#9b5de5;--lime:#7cb518;--sky:#2b8fd6;
+  --hard:6px 6px 0 var(--ink);
+  --wash-1:#ffe6b0;--wash-2:#dbe2ff;--wash-3:#cdf5ec;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);font-size:1.05rem;line-height:1.5;
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(900px 540px at 6% -10%,var(--wash-1) 0%,transparent 62%),
+    radial-gradient(860px 540px at 102% 0%,var(--wash-2) 0%,transparent 58%),
+    radial-gradient(820px 600px at 50% 118%,var(--wash-3) 0%,transparent 64%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.10) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 45%,transparent 78%);
+  mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 45%,transparent 78%);
+}
+.shell{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:26px 20px 72px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px;flex-wrap:wrap}
+.back{
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);
+  font-weight:900;font-size:.82rem;background:var(--card);border:2.5px solid var(--ink);
+  padding:8px 13px;border-radius:999px;box-shadow:0 3px 0 var(--ink);transition:transform .12s
+}
+.back:hover{transform:translate(-1px,-1px)}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2.5px solid var(--ink);
+  padding:8px 14px;border-radius:999px;font-size:.82rem;font-weight:900;box-shadow:0 3px 0 var(--ink)
+}
+
+header{margin-bottom:26px}
+.eyebrow{
+  display:inline-block;font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--sun);border:2.5px solid var(--ink);border-radius:999px;padding:6px 13px;
+  box-shadow:0 3px 0 var(--ink);margin:0 0 16px
+}
+h1{margin:0 0 10px;font-size:clamp(2.1rem,6vw,3.2rem);line-height:.98;letter-spacing:-.045em;font-weight:900}
+.lede{margin:0;color:var(--ink-2);font-weight:600;max-width:56ch;text-wrap:pretty}
+
+/* The meter is the one number a child reads at a glance. It sits above the
+   list so the list can be scrolled past once the day is done. */
+.meter{
+  background:var(--card);border:2.5px solid var(--ink);border-radius:22px;padding:18px 20px;
+  box-shadow:var(--hard);margin-bottom:26px
+}
+.meter .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.meter .big{font-size:1.9rem;font-weight:900;letter-spacing:-.03em;line-height:1.1}
+.meter .big span{font-size:1rem;color:var(--muted);letter-spacing:0;font-weight:800}
+.meter .streak{font-size:.9rem;font-weight:900;color:var(--ink-2)}
+.bar{height:16px;border:2.5px solid var(--ink);border-radius:999px;background:#fff;margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--teal);transition:width .35s cubic-bezier(.34,1.56,.64,1)}
+.meter.done .bar i{background:var(--lime)}
+
+/* ---------- the ordered list ---------- */
+ol.plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:none}
+.step{
+  display:flex;align-items:center;gap:14px;background:var(--card);border:2.5px solid var(--ink);
+  border-radius:18px;padding:13px 15px;box-shadow:0 4px 0 var(--ink);position:relative
+}
+.step .n{
+  flex:0 0 38px;width:38px;height:38px;border-radius:12px;border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-weight:900;font-size:1rem;background:#fff;
+  box-shadow:0 2px 0 var(--ink)
+}
+.step .txt{min-width:0;flex:1}
+.step .name{font-weight:900;font-size:1.06rem;letter-spacing:-.02em;line-height:1.2}
+/* Not `.note`: the page-level note below the list is a dashed box, and an
+   element class shared with it would inherit the box. */
+.step .blurb{font-size:.85rem;color:var(--muted);font-weight:700;margin-top:2px}
+.step .game{font-size:.8rem;color:var(--ink-2);font-weight:800;margin-top:3px}
+.step .go{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);
+  background:var(--sun);border:2.5px solid var(--ink);border-radius:999px;padding:8px 15px;
+  font-weight:900;font-size:.9rem;box-shadow:0 3px 0 var(--ink);transition:transform .12s
+}
+.step .go:hover{transform:translate(-1px,-1px)}
+.step .go:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+
+/* Done and current are the only two states worth styling. Everything else is
+   "not yet", which needs no decoration. */
+.step.done{border-color:var(--teal)}
+.step.done .n{background:var(--teal);color:#fff}
+.step.done .go{background:#fff}
+.step.now{border-width:3px;box-shadow:7px 7px 0 var(--ink);transform:translate(-1px,-1px)}
+.step.now .n{background:var(--sun)}
+.step.now .go{background:var(--coral);color:#fff}
+.step .badge{
+  position:absolute;left:12px;top:-11px;font-size:.68rem;font-weight:900;letter-spacing:.08em;
+  text-transform:uppercase;background:var(--coral);color:#fff;border:2.5px solid var(--ink);
+  border-radius:999px;padding:2px 9px;box-shadow:0 2px 0 var(--ink)
+}
+
+/* ---------- history strip ---------- */
+.hist{margin-top:34px;background:var(--card);border:2.5px solid var(--ink);border-radius:22px;padding:18px 20px;box-shadow:var(--hard)}
+.hist h2{margin:0 0 3px;font-size:1.05rem;letter-spacing:-.02em}
+.hist .sub{margin:0 0 14px;font-size:.85rem;color:var(--muted);font-weight:700}
+.days{display:flex;gap:5px;flex-wrap:wrap}
+.day{width:26px;height:26px;border:2px solid var(--ink);border-radius:7px;background:#fff;position:relative}
+.day.full{background:var(--lime)}
+.day.part{background:color-mix(in srgb,var(--lime) 45%,#fff)}
+.day.today{outline:2.5px solid var(--ink);outline-offset:2px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:.76rem;font-weight:800;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:13px;height:13px;border:2px solid var(--ink);border-radius:4px;display:inline-block}
+
+/* ---------- empty / complete states ---------- */
+.note{
+  margin-top:26px;background:var(--card);border:2.5px dashed var(--ink);border-radius:18px;
+  padding:16px 18px;font-weight:700;font-size:.94rem;color:var(--ink-2);line-height:1.6
+}
+.note b{color:var(--ink)}
+footer{margin-top:36px;text-align:center;color:var(--muted);font-size:.84rem;line-height:1.8;font-weight:600}
+footer .dot{opacity:.45;margin:0 8px}
+button.reset{
+  margin-top:16px;background:none;border:2px solid var(--line);border-radius:999px;padding:7px 14px;
+  font:inherit;font-size:.8rem;font-weight:800;color:var(--muted);cursor:pointer
+}
+button.reset:hover{border-color:var(--ink);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:520px){
+  .shell{padding:18px 14px 54px}
+  .step{gap:11px;padding:11px 12px}
+  .step .go{padding:7px 12px;font-size:.84rem}
+  .step .n{flex-basis:32px;width:32px;height:32px;font-size:.92rem}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a class="back" href="./index.html">← Arcade</a>
+    <span class="pill" id="todayPill">Today</span>
+  </div>
+
+  <header>
+    <p class="eyebrow">Nine subjects · one pass</p>
+    <h1 id="headline">Today's session</h1>
+    <p class="lede" id="lede">Every subject, in order, once. Finish a deck and the next one opens. Nothing is timed and nothing leaves this browser.</p>
+  </header>
+
+  <section class="meter" id="meter">
+    <div class="row">
+      <div class="big"><span id="doneCount">0</span> <span>of 9 done</span></div>
+      <div class="streak" id="streak"></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+  </section>
+
+  <ol class="plan" id="plan"></ol>
+
+  <p class="note" id="note" hidden></p>
+
+  <section class="hist">
+    <h2>Last three weeks</h2>
+    <p class="sub">A full day is all nine. Anything less shows as part of a square.</p>
+    <div class="days" id="days"></div>
+    <div class="legend">
+      <span><i style="background:var(--lime)"></i>All nine</span>
+      <span><i style="background:color-mix(in srgb,var(--lime) 45%,#fff)"></i>Some</span>
+      <span><i style="background:#fff"></i>Nothing</span>
+    </div>
+    <button class="reset" type="button" id="resetBtn">Clear the record</button>
+  </section>
+
+  <footer>
+    One file, no network, no accounts.
+    <span class="dot">·</span> The record is in this browser only.
+  </footer>
+</div>
+
+<script src="./session.js"></script>
+<script>
+(() => {
+  'use strict';
+  const S = window.ArcadeSession;
+  const $ = id => document.getElementById(id);
+  const GAME_NAME = {
+    'number-bonds': 'Number bonds', 'addition-quest': 'Addition quest',
+    'subtraction-safari': 'Subtraction safari', 'times-table-academy': 'Times tables',
+    'division-diner': 'Division diner', 'infinite-arena': 'The arena',
+    'typing-tutor': 'Typing tutor', 'spelling-bee': 'Spelling bee'
+  };
+
+  /* The plan is read once per paint. Every card links to the game for today,
+     which for maths is the one the date picks -- the page never stores that
+     choice, so a child who opens the arcade twice in a day gets the same game
+     and a child who opens it tomorrow gets the next one. */
+  function render() {
+    const p = S.progress();
+    const list = $('plan');
+    list.innerHTML = '';
+    const firstOpen = p.plan.find(x => !x.done);
+
+    p.plan.forEach((s, i) => {
+      const li = document.createElement('li');
+      li.className = 'step' + (s.done ? ' done' : '') + (!s.done && s === firstOpen ? ' now' : '');
+
+      const n = document.createElement('span');
+      n.className = 'n';
+      n.textContent = s.done ? '✓' : String(i + 1);
+
+      const txt = document.createElement('div');
+      txt.className = 'txt';
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = s.name;
+      const note = document.createElement('div');
+      note.className = 'blurb';
+      note.textContent = s.note;
+      txt.append(name, note);
+
+      // Only maths has more than one game, and only maths needs to say which
+      // one today. Naming the game for the others would be noise.
+      if (S.SUBJECTS[i].games.length > 1) {
+        const g = document.createElement('div');
+        g.className = 'game';
+        g.textContent = 'Today: ' + (GAME_NAME[s.game] || s.game);
+        txt.append(g);
+      }
+
+      const go = document.createElement('a');
+      go.className = 'go';
+      go.href = s.href;
+      go.textContent = s.done ? 'Again →' : (s === firstOpen ? 'Start →' : 'Play →');
+      go.setAttribute('aria-label',
+        `${s.done ? 'Play again' : 'Play'}: ${s.name}${s === firstOpen ? ' — next in today’s session' : ''}`);
+
+      li.append(n, txt, go);
+      if (s === firstOpen) {
+        const b = document.createElement('span');
+        b.className = 'badge';
+        b.textContent = 'Next';
+        li.append(b);
+      }
+      list.append(li);
+    });
+
+    $('doneCount').textContent = String(p.done);
+    $('barFill').style.width = (p.done / p.total * 100) + '%';
+    $('meter').classList.toggle('done', p.done >= p.total);
+
+    const st = S.streak();
+    $('streak').textContent = st > 0
+      ? `${st} day${st === 1 ? '' : 's'} in a row`
+      : 'No run going yet';
+
+    const note = $('note');
+    if (p.done >= p.total) {
+      note.innerHTML = '<b>That is the whole day.</b> Come back tomorrow and the order is the same, with the next maths game in the rotation.';
+      note.hidden = false;
+      $('headline').textContent = 'Session complete';
+    } else {
+      // firstOpen is always defined here: something is unfinished.
+      note.innerHTML = `Next up is <b>${firstOpen.name}</b>. A deck is fifty questions for most games, twenty for calligraphy and the sciences; stopping part-way keeps what you have answered.`;
+      note.hidden = false;
+      $('headline').textContent = 'Today’s session';
+    }
+  }
+
+  function renderHistory() {
+    const days = S.history(21);
+    const box = $('days');
+    box.innerHTML = '';
+    const todayKey = S.dayKey();
+    days.forEach(d => {
+      const el = document.createElement('span');
+      const cls = d.complete ? 'full' : d.done > 0 ? 'part' : '';
+      el.className = 'day' + (cls ? ' ' + cls : '') + (d.key === todayKey ? ' today' : '');
+      el.title = `${d.key}: ${d.done} of ${d.total}`;
+      el.setAttribute('aria-label', `${d.key}: ${d.done} of ${d.total} subjects`);
+      box.append(el);
+    });
+  }
+
+  $('resetBtn').addEventListener('click', () => {
+    // Two-step rather than a confirm(): a dialog is a second surface to style
+    // and the button's own label is enough warning.
+    const b = $('resetBtn');
+    if (b.dataset.armed !== '1') {
+      b.dataset.armed = '1';
+      b.textContent = 'Tap again to clear';
+      setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Clear the record'; }, 4000);
+      return;
+    }
+    try { localStorage.removeItem('arcade.session.v1'); } catch (_) { }
+    b.dataset.armed = '';
+    b.textContent = 'Clear the record';
+    render(); renderHistory();
+  });
+
+  // A tab left open overnight would otherwise still show yesterday's plan.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { render(); renderHistory(); }
+  });
+
+  $('todayPill').textContent = new Date().toLocaleDateString(undefined,
+    { weekday: 'short', day: 'numeric', month: 'short' });
+
+  render();
+  renderHistory();
+})();
+</script>
+</body>
+</html>

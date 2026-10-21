@@ -89,6 +89,18 @@ h1 .under::after{
 .sg .why{font-size:.8rem;color:var(--muted);font-weight:700;display:block;margin-top:1px}
 .sg .arw{margin-left:auto;font-weight:900;color:var(--muted)}
 
+/* The session card is the first thing on the page when a child is mid-session,
+   so it carries its own bar and one obvious button. */
+.bar{height:14px;border:2.5px solid var(--ink);border-radius:999px;background:#fff;margin:0 0 14px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--teal);transition:width .35s cubic-bezier(.34,1.56,.64,1)}
+.start{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
+  background:var(--sun);border:2.5px solid var(--ink);border-radius:999px;padding:10px 18px;
+  font-weight:900;font-size:.95rem;box-shadow:0 3px 0 var(--ink);transition:transform .12s
+}
+.start:hover{transform:translate(-2px,-2px)}
+.start:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+
 /* ---------- cards ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px;margin-top:34px}
 .card{
@@ -170,6 +182,13 @@ footer .dot{opacity:.45;margin:0 8px}
     <h1>Math, <span class="under">playable</span>.</h1>
     <p class="lede">Bonds first. Then the four operations, one honest step at a time. Every deck is <b>fifty questions</b>, drawn from a pool that remembers what you have already met, so a second visit this week is a second set. The arena never runs out.</p>
   </header>
+
+  <section class="suggest" id="session" hidden>
+    <h3>Today's session</h3>
+    <p class="sub" id="sessionSub">Nine subjects, in order.</p>
+    <div class="bar" aria-hidden="true"><i id="sessionBar"></i></div>
+    <a class="start" id="sessionGo" href="./session.html">Open the session →</a>
+  </section>
 
   <section class="suggest" id="suggest" hidden>
     <h3>Today's suggestion</h3>
@@ -455,6 +474,7 @@ footer .dot{opacity:.45;margin:0 8px}
   </footer>
 </div>
 
+<script src="./session.js"></script>
 <script>
 (() => {
   'use strict';
@@ -551,8 +571,32 @@ footer .dot{opacity:.45;margin:0 8px}
     try { localStorage.setItem(LAST, JSON.stringify(played)); } catch (_) {}
   });
 
+  /* The session card is read from the tracker rather than duplicated here, so
+     there is one definition of the order and one record of the day. If the
+     tracker is missing -- an old cached page, a file copied without it -- the
+     card simply does not appear and the arcade still works. */
+  function paintSession() {
+    const S = window.ArcadeSession;
+    if (!S) return;
+    const p = S.progress();
+    const next = p.plan.find(x => !x.done);
+    const sub = document.getElementById('sessionSub');
+    const go = document.getElementById('sessionGo');
+    if (p.done >= p.total) {
+      sub.textContent = 'All nine done today. Tomorrow the maths game rotates on.';
+      go.textContent = 'See the day →';
+    } else {
+      sub.textContent = `${p.done} of ${p.total} done. Next: ${next.name}.`;
+      go.textContent = `Play ${next.name} →`;
+      go.href = next.href;
+    }
+    document.getElementById('sessionBar').style.width = (p.done / p.total * 100) + '%';
+    document.getElementById('session').hidden = false;
+  }
+
   paintProgress();
   paintSuggest();
+  paintSession();
 })();
 </script>
 </body>

@@ -1,6 +1,6 @@
 # The Arcade: design and implementation notes
 
-Fourteen self-contained games in `frontend/public/arcade/`. No build step, no network, no accounts. Each game is one HTML file with inline CSS and JS; progress lives in `localStorage` under a per-game key. Content that is large and tabular lives beside the page rather than inside it — the spelling bee's thousand words, the four language banks, the 440-character calligraphy bank and its sketches, the physics and chemistry questions — because a thousand annotated entries inline would triple the file and make the engine unreadable. The language games share `lang-engine.js` and the science games share `science-engine.js`; the engines hold the interaction, the banks hold the content.
+Fourteen self-contained games in `frontend/public/arcade/`. No build step, no network, no accounts. A fifteenth page, `session.html`, is not a game: it orders the fourteen into a daily pass over nine subjects. Each game is one HTML file with inline CSS and JS; progress lives in `localStorage` under a per-game key. Content that is large and tabular lives beside the page rather than inside it — the spelling bee's thousand words, the four language banks, the 440-character calligraphy bank and its sketches, the physics and chemistry questions — because a thousand annotated entries inline would triple the file and make the engine unreadable. The language games share `lang-engine.js` and the science games share `science-engine.js`; the engines hold the interaction, the banks hold the content.
 
 This document records what each game teaches, why the interaction is shaped the way it is, and the implementation that carries it. The reader it is written for is a teacher or a parent who wants to know why the screen looks like that — and the next person who has to change it.
 
@@ -304,13 +304,37 @@ The index records a play when a card is clicked (`arcade.lastplay`), which is wh
 
 ---
 
+## The daily session (`session.html`, `session.js`)
+
+The arcade is fourteen games; a child needs a day. The session page is the superstructure: **nine subjects, in a fixed order, once each** — maths, typing, spelling, French, Kiswahili, Mandarin, calligraphy, physics, chemistry. Maths is one subject with six games, and the game rotates by the day number, so over six days every maths game comes up once and a child cannot dodge the same one every day. The rotation is derived from the date, not stored, so it cannot drift.
+
+**The order is the point, not a preference.** Maths comes first because it is the subject most likely to be skipped, and the two word drills sit before the three languages because they ask less of a tired learner. A rotating order would let a child avoid the same subject every time; a fixed one makes avoidance visible.
+
+**Completion is read from each game's own summary screen, not from a new signal.** The games finish three different ways: the seven `.stage` games (spelling, French, Kiswahili, Mandarin, calligraphy, physics, chemistry) toggle `#done.on`; the five maths drills and the typing tutor toggle `#done.show`; the arena shows `#summaryPanel.show`. Rather than ask fourteen games to change how they end, `session.js` is loaded by each page and watches the class attribute of whichever element the page declares. The marker is read from the element's own class — `class="stage"` means `on`, `class="done"` means `show` — because accepting either on either page would count `.stage.on`, which is true on the home screen of every stage game.
+
+The observer is filtered to `class` and `hidden` attributes. The games repaint their DOM on every keystroke; an unfiltered subtree observer would run thousands of times per deck for one event.
+
+**A deck already finished at load is not a completion.** If a child reopens a summary they had already seen, `armed` is false and nothing is recorded. One toast per page load: a second deck in the same subject is not news.
+
+The record is `arcade.session.v1` — `{ v, days: { 'YYYY-MM-DD': { done: { subjectId: timestamp } } } }` — trimmed to 120 days on write, because an unbounded object in `localStorage` eventually throws on write. The day key is local, not UTC: a child finishing at nine in the evening should get credit for that evening.
+
+**A streak is the run of consecutive complete days ending today**, and an unfinished today does not break it — it is the run ending yesterday until today is complete. That is the difference between a streak that rewards showing up and one that punishes a slow morning. There is no counter of lost days.
+
+The session page shows the day as a numbered checklist with the next subject marked, a progress bar, a three-week history strip, and a two-step clear button. The index grows a **Today's session** card that reads the same tracker, so there is one definition of the order and one record of the day.
+
+Every game's back link now points at `session.html` rather than `index.html`, so finishing a deck and pressing back lands on the list that says what is next. The index is still one click away.
+
+---
+
 ## Verification
 
 Each inline `<script>` block is extracted and run through `node --check` after every edit. That catches syntax errors and nothing else: it does not render the page, so it cannot catch a layout break, a missing element id, or a wrong value written into the DOM. There is no build step and no test runner; the files are the artefact, and the remaining check is opening them.
+
+The session tracker is the exception, because its whole job is a predicate that no static check can exercise. It was probed in a browser: for each of the fourteen games, the class the page declares records that page's subject and the class it does not declare is ignored; a typing lesson played to its summary by typing the passage records `typing`; the maths rotation covers all six games across six days; the streak, history and 120-day trim were exercised against a stub store; and corrupt, missing and wrong-typed storage all read as empty rather than throwing.
 
 ## What is deliberately absent
 
 - **No accounts, no sync, no network.** The files open from `file://` and work offline. Progress is per-browser, and the index says so.
 - **No leaderboards.** Comparison to other children is the fastest way to make a slow learner stop.
-- **No streaks that punish absence.** The arena decays skill estimates; it does not break a chain or show a lost number.
+- **No streaks that punish absence.** The arena decays skill estimates; it does not break a chain or show a lost number. The session page counts consecutive complete days, but an unfinished today does not break the run until the day is over, and nothing anywhere reports a lost streak.
 - **No time pressure in the drills.** The only clock in the arcade is the optional one in the typing tutor.
