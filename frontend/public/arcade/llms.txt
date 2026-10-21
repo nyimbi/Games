@@ -1,0 +1,109 @@
+# The Arcade > 15 self-contained pages that teach nine subjects to a child: 14 games plus a daily-session page. No build step, no accounts, no network — everything inline or beside the page, progress in localStorage. Designed to be lifted into its own repository as a folder.
+
+## The hard invariants (break these and the product changes, not the code)
+
+- [Offline-only](index.html): zero `fetch`, zero `XMLHttpRequest`, zero external fonts or icon
+  fonts across all 15 pages. Any new asset must be inline SVG or a sibling `.js`/`.png` file.
+  A page that pulls from a CDN is a broken guarantee, not a slow page. Probe: wire a `request`
+  listener in Playwright and assert every URL starts with the served base.
+- [Paper design system](docs/design.md): `--paper:#fdf7ea`, `--ink:#191c3a`, 2.5px borders, hard
+  offset shadows (`6px 6px 0 var(--ink)`), `ui-rounded` first font, `html{font-size:17px}`,
+  `1.05rem`/`1.5` body. Nothing glows, blurs, or floats. The one spectacle is the confetti burst,
+  bounded by `prefers-reduced-motion`. Full rationale with the reason for every token in
+  [docs/design.md](docs/design.md) — read it before restyling anything.
+- [Session alternation](session.js): the 9 subjects are 5 languages (`kind:'lang'`: spelling,
+  french, chinese, swahili, calligraphy) + 4 others (`kind:'other'`). The order spells
+  `lang, other, lang, other, …` and there is a load-time `checkOrder()` that throws if two
+  `lang` subjects end up adjacent. Adding a subject means adding a `kind` and re-slotting; the
+  guard will catch a wrong slot but not a missing one.
+- [Decks are 50, and the size is per family](number-bonds.html): maths drills and the spelling bee
+  declare `const TOTAL = 50`; languages (`lang-engine.js`, `cfg.total`) are 30; sciences
+  (`science-engine.js`, `cfg.total`) are 20; calligraphy 20. The deck is the unit of completion.
+  Pools are *generated* (`poolFor(level)`, `factsFor(mode,table)`), never stored — no
+  question exists to delete. Freshness maps (`seen: {bucket:{key:ts}}`), stamped on *served* not
+  *built*, capped (SEEN_CAP per game), oldest-dropped. A deck smaller than its pool cycles with a
+  pass counter so the fill loop cannot spin.
+- [Three completion markers](session.js): stage games toggle `#done` class `on` (`class="stage"`:
+  languages, calligraphy, physics, chemistry); maths/typing toggle `#done` class `show`
+  (`class="done"`); `infinite-arena.html` alone shows `#summaryPanel` class `show`.
+  `session.js` reads the marker the page *declares* via the element's own class — accepting
+  either marker on any page lets a class a game never uses count as finished
+  (`.stage.on` is true on a stage game's home screen). A new game must declare one of these shapes.
+- [localStorage versioning](index.html): every key is `arcade.<game>.v<N>`; bump the version when
+  the shape changes, never reuse a key with a new shape. `arcade.session.v1` is trimmed to
+  `KEEP_DAYS = 120` on write.
+
+## The engines
+
+- [lang-engine.js](lang-engine.js): one quiz engine for French, Kiswahili and Mandarin (spelling
+  bee carries its own engine in `spelling-bee.html`). Mode
+  buttons, deck queue, answering, scoring, the tick that flips `#done`. Page supplies a bank and
+  target. Does not know about lessons.
+- [science-engine.js](science-engine.js): quiz engine for physics and chemistry **plus the lesson
+  system**. `render()` checks each question's topic against `state.taught` (persisted alongside the
+  freshness map) and, on a topic's first encounter, shows the lesson before the question. Resume
+  modes: `'keep'` returns to the same question, `'render'` re-renders, otherwise home. Topic chips
+  carry a `.tick` (taught) or `.new` badge. `esc()` everything that passes `innerHTML`; SVG figure
+  markup is the one sanctioned exception (caption still escaped).
+
+## Content banks (data beside the page, never inline)
+
+- [spelling-bank.js](spelling-bank.js) ~1000 graded words · [french-bank.js](french-bank.js)
+  words+sentences · [swahili-bank.js](swahili-bank.js) noun classes ·
+  [chinese-bank.js](chinese-bank.js) characters+pinyin+gloss ·
+  [calligraphy-bank.js](calligraphy-bank.js) 440 characters with stroke order ·
+  [calligraphy-sketch.js](calligraphy-sketch.js) hand-drawn pictograms + composition sketches ·
+- [physics-bank.js](physics-bank.js) · [chemistry-bank.js](chemistry-bank.js): questions by topic,
+  each with an explanation written for the *explanation screen*, not the lesson. Lesson text is
+  never derived from the bank (spoiler) or from explanations (answers with questions stripped).
+
+## Lessons + figures
+
+- [physics-lessons.js](physics-lessons.js) · [chemistry-lessons.js](chemistry-lessons.js): 10 each,
+  key = bank topic id. Shape:
+  `{ title, why, rule, beats[2-3], example{q,steps[2+],a}, remember, trap, figs[2]{cap,svg} }`.
+  `example` uses numbers the bank never asks — the lesson must not hand over a bank answer. Every
+  lesson carries ≥2 inline SVG figures; the probe checks overflow and zero-height at 390px.
+
+## The pages and their shape
+
+- [session.html](session.html) · [index.html](index.html) ·
+  [number-bonds.html](number-bonds.html) · [addition-quest.html](addition-quest.html) ·
+  [subtraction-safari.html](subtraction-safari.html) · [times-table-academy.html](times-table-academy.html) ·
+  [division-diner.html](division-diner.html) · [infinite-arena.html](infinite-arena.html) ·
+  [typing-tutor.html](typing-tutor.html) · [spelling-bee.html](spelling-bee.html) ·
+  [french.html](french.html) · [swahili.html](swahili.html) · [chinese.html](chinese.html) ·
+  [calligraphy.html](calligraphy.html) · [physics.html](physics.html) · [chemistry.html](chemistry.html)
+
+## Session state shape
+
+- [session.js](session.js) reads/writes `arcade.session.v1` =
+  `{ v:1, days:{ 'YYYY-MM-DD': { done:{ subjectId: timestamp } } } }`, local date (not UTC), trimmed
+  to 120 days. Exposes `window.ArcadeSession` → `{ plan(), progress(), mark(), streak(), history(n),
+  dayKey, isFinished }`. Any game page loads it so finishing a deck can toast the next subject.
+
+## How to verify a change
+
+- Serve on a private port, drive with Playwright, assert on the DOM:
+  `http.server` + `socketserver` with `allow_reuse_address`, `functools.partial(SimpleHTTPRequestHandler,
+  directory=<this folder>)`, thread the serve loop, then `p.chromium.launch()` and navigate.
+- Assertions that matter, in order: **no `pageerror`**, **no request outside the served base**,
+  every new feature's promised count (`>= 2` figures per lesson), **no overflow at 390px viewport**
+  (the design's first width), figure `getBoundingClientRect().height > 40` (no collapsed SVG).
+- Probes are throwaway scripts in `/tmp` — recreate from this recipe, do not hunt for them.
+
+## The three failure modes this codebase has actually produced (hunt for these by name)
+
+1. **A predicate that is a strict subset of what it tests** — accepting either completion marker
+   is the canonical instance. Ask "what does this NOT check?"
+2. **A gate that passes on a construction error** — a probe whose fixture broke reads as a suite
+   failing wholesale; read the failure *reason*, not the count.
+3. **Colliding names** — `.note` meaning one thing in a step row and another on the page; an id
+   the engine and the tracker both use. Check for id/class collision when adding any element.
+
+## Optional
+
+- [docs/design.md](docs/design.md): 352 lines of design narrative — every game's pedagogy, why
+  deck = 50, why `ui-rounded`, why cream over white, why the confetti is the only spectacle, why
+  the uppercase micro-type was removed. Read before substantive UI work here.
+- `docs/design.md` travels with the folder; nothing else in the parent repo references it.
