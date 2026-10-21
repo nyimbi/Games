@@ -28,17 +28,36 @@
   const MATHS = ['number-bonds', 'addition-quest', 'subtraction-safari',
     'times-table-academy', 'division-diner', 'infinite-arena'];
 
+  /* Order matters as much as content. Five of the nine subjects are languages
+     -- spelling, French, Kiswahili, Mandarin and calligraphy, which is Chinese
+     character writing -- and a run of five language drills back to back is one
+     skill practised five ways, not five subjects. With five languages and four
+     others, strict alternation is the only order that never puts two languages
+     together, and it uses every subject exactly once. `kind` is what the order
+     is built from; adding a subject means adding it to the right half. */
   const SUBJECTS = [
-    { id: 'maths', name: 'Maths', note: 'Number facts', games: MATHS },
-    { id: 'typing', name: 'Typing', note: 'Home row to speed', games: ['typing-tutor'] },
-    { id: 'spelling', name: 'Spelling', note: 'A thousand words', games: ['spelling-bee'] },
-    { id: 'french', name: 'French', note: 'Words and sentences', games: ['french'] },
-    { id: 'swahili', name: 'Kiswahili', note: 'Noun classes', games: ['swahili'] },
-    { id: 'chinese', name: 'Mandarin', note: 'Tones and characters', games: ['chinese'] },
-    { id: 'calligraphy', name: 'Calligraphy', note: 'Stroke order', games: ['calligraphy'] },
-    { id: 'physics', name: 'Physics', note: 'Forces to waves', games: ['physics'] },
-    { id: 'chemistry', name: 'Chemistry', note: 'Atoms to moles', games: ['chemistry'] }
+    { id: 'spelling', kind: 'lang', name: 'Spelling', note: 'A thousand words', games: ['spelling-bee'] },
+    { id: 'maths', kind: 'other', name: 'Maths', note: 'Number facts', games: MATHS },
+    { id: 'french', kind: 'lang', name: 'French', note: 'Words and sentences', games: ['french'] },
+    { id: 'physics', kind: 'other', name: 'Physics', note: 'Forces to waves', games: ['physics'] },
+    { id: 'chinese', kind: 'lang', name: 'Mandarin', note: 'Tones and characters', games: ['chinese'] },
+    { id: 'chemistry', kind: 'other', name: 'Chemistry', note: 'Atoms to moles', games: ['chemistry'] },
+    { id: 'swahili', kind: 'lang', name: 'Kiswahili', note: 'Noun classes', games: ['swahili'] },
+    { id: 'typing', kind: 'other', name: 'Typing', note: 'Home row to speed', games: ['typing-tutor'] },
+    { id: 'calligraphy', kind: 'lang', name: 'Calligraphy', note: 'Stroke order', games: ['calligraphy'] }
   ];
+
+  /* The order above is asserted, not trusted: a subject added to the wrong
+     place, or a sixth language, would break the one property the order exists
+     for, and it would break it silently. Fail loudly at load instead. */
+  (function checkOrder() {
+    for (let i = 1; i < SUBJECTS.length; i++) {
+      if (SUBJECTS[i].kind === 'lang' && SUBJECTS[i - 1].kind === 'lang') {
+        throw new Error('session: ' + SUBJECTS[i].name + ' follows ' + SUBJECTS[i - 1].name +
+          ', two languages in a row');
+      }
+    }
+  })();
 
   const BY_GAME = {};
   SUBJECTS.forEach(s => s.games.forEach(g => { BY_GAME[g] = s; }));

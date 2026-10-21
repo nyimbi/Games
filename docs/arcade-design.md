@@ -282,6 +282,8 @@ The first attempt at stroke names was a geometry classifier over the skeletons. 
 
 **Teach:** 240 questions each across ten topics, with worked reasoning.
 
+Each topic also has a written lesson page that arrives before the first question from that topic — see the lesson note below.
+
 Both run on the shared `science-engine.js`. Two modes: *Quiz* (four options, one right) and *Work it out* (type the answer).
 
 **Every distractor encodes a specific mistake.** `d1`, `d2` and `d3` are not random wrong numbers; each one is what you get by making a particular error — adding instead of subtracting, multiplying instead of dividing, leaving the unit unconverted. The engine names that error when the learner picks it. A wrong answer that says *"Adding the forces because both are given, or reversing the direction"* teaches more than a red cross.
@@ -291,6 +293,14 @@ Both run on the shared `science-engine.js`. Two modes: *Quiz* (four options, one
 **Not every answer that starts with a digit is a quantity.** `2,8,7` is an electron configuration and `2, 1, 2` is a set of coefficients. Read through `num()`, which strips commas, the first becomes 287 and the second 212 — so a learner who typed the bare number would be marked right for a fact they were never asked. `isQuantity()` gates the numeric path: a quantity is a number followed by a unit and nothing else, with no comma, operator or arrow. Everything else is matched as text. In the chemistry bank that moves 186 of 240 answers onto the text path.
 
 **The formula is a chip, not the question.** It is shown with the explanation after the answer, so the learner reasons first and checks the shape of the reasoning afterwards.
+
+**A quiz that only asks is a test, not a lesson.** Both subjects now carry a teaching page per topic — `physics-lessons.js` and `chemistry-lessons.js`, ten each — and the lesson arrives **immediately before the first question from that topic**, not as a preamble to the deck. A deck of twenty crosses many topics; a wall of ten lessons before question one is a barrier, and it teaches each idea too far from the moment it is needed. `render()` checks the question's topic against `taught` and shows the lesson on a first encounter. A topic is taught once and never again, so a second deck goes straight to the questions, and the topic chips on the home screen carry a tick or a `new` badge so the child can see which ideas they have met.
+
+**Every lesson carries two diagrams.** Prose describes a resultant force or an ionic transfer; a drawing shows it, and the drawing is what a child of this age takes the idea away as. Each lesson has two inline SVG figures with captions — forty in all — drawn in the page's own palette and geometry so they read as part of the paper arcade rather than as clip art. Inline is not a preference: an `<img src>` or an icon font would break the offline guarantee, so the SVG is authored in the lesson data and injected as markup, with only the caption escaped. The figures sit between the rule and the reasoning beats, where the rule has just been stated and the beats are about to explain it. They are drawn to a `viewBox` and sized by CSS, so the same figure is legible at 390px and on a desktop; the probe checks that no figure overflows its card or the viewport at phone width and that none collapses to zero height.
+
+**The lessons are written, not derived.** A lesson generated from the question bank would be a spoiler — it would hand over the answer to every question drawn from it — and one generated from the explanations would be a list of answers with the questions stripped off. Each lesson states why the idea matters, the rule, two or three beats of reasoning, a worked example using numbers the bank does not ask about, the line to remember, and the one mistake that usually goes with it. That last part is the same idea as the distractors: name the error rather than only marking it wrong.
+
+The lessons are escaped on the way into the DOM. They are authored text, but they are text, and a stray angle bracket should print rather than break the page. `taught` is stored alongside the rest of the game's state, so it survives a reload.
 
 ---
 
@@ -306,7 +316,9 @@ The index records a play when a card is clicked (`arcade.lastplay`), which is wh
 
 ## The daily session (`session.html`, `session.js`)
 
-The arcade is fourteen games; a child needs a day. The session page is the superstructure: **nine subjects, in a fixed order, once each** — maths, typing, spelling, French, Kiswahili, Mandarin, calligraphy, physics, chemistry. Maths is one subject with six games, and the game rotates by the day number, so over six days every maths game comes up once and a child cannot dodge the same one every day. The rotation is derived from the date, not stored, so it cannot drift.
+The arcade is fourteen games; a child needs a day. The session page is the superstructure: **nine subjects, once each, alternating language with science and number** — spelling, maths, French, physics, Mandarin, chemistry, Kiswahili, typing, calligraphy. Maths is one subject with six games, and the game rotates by the day number, so over six days every maths game comes up once and a child cannot dodge the same one every day. The rotation is derived from the date, not stored, so it cannot drift.
+
+**Five of the nine subjects are languages.** Spelling, French, Kiswahili, Mandarin, and calligraphy — which is Chinese character writing, not a separate art. In the order the subjects were first listed, those five ran consecutively, and five language drills back to back is one skill practised five ways, not five subjects. Five languages and four others have exactly one order that never puts two languages together: strict alternation, which is also why it uses every subject once with nothing left over. Each subject carries a `kind` (`lang` or `other`) and the order is built to alternate them; a load-time check throws if any two `lang` subjects end up adjacent, because a sixth language added to the list would break the property silently otherwise.
 
 **The order is the point, not a preference.** Maths comes first because it is the subject most likely to be skipped, and the two word drills sit before the three languages because they ask less of a tired learner. A rotating order would let a child avoid the same subject every time; a fixed one makes avoidance visible.
 
