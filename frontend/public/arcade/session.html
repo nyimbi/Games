@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Today's Session — Local Arcade</title>
-<meta name="description" content="One pass over nine subjects, alternating language with science and number. Spelling, maths, French, physics, Mandarin, chemistry, Kiswahili, typing, calligraphy.">
+<meta name="description" content="One pass over eleven subjects, alternating language with science, number, music and the machine shelf. Spelling, maths, French, physics, Mandarin, chemistry, Kiswahili, typing, calligraphy, piano, how things work.">
 <style>
 :root{
   --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
@@ -152,14 +153,14 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
   </div>
 
   <header>
-    <p class="eyebrow">Nine subjects · one pass</p>
+    <p class="eyebrow">Eleven subjects · one pass</p>
     <h1 id="headline">Today's session</h1>
-    <p class="lede" id="lede">Every subject once, alternating language with science and number. Finish a deck and the next one opens. Nothing is timed and nothing leaves this browser.</p>
+    <p class="lede" id="lede">Every subject once, alternating language with science, number and the machine shelf. Finish a deck and the next one opens. Nothing is timed and nothing leaves this browser.</p>
   </header>
 
   <section class="meter" id="meter">
     <div class="row">
-      <div class="big"><span id="doneCount">0</span> <span>of 9 done</span></div>
+      <div class="big"><span id="doneCount">0</span> <span>of <span id="totalCount">10</span> done</span></div>
       <div class="streak" id="streak"></div>
     </div>
     <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
@@ -171,10 +172,10 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
 
   <section class="hist">
     <h2>Last three weeks</h2>
-    <p class="sub">A full day is all nine. Anything less shows as part of a square.</p>
+    <p class="sub">A full day is all eleven. Anything less shows as part of a square.</p>
     <div class="days" id="days"></div>
     <div class="legend">
-      <span><i style="background:var(--lime)"></i>All nine</span>
+      <span><i style="background:var(--lime)"></i>All eleven</span>
       <span><i style="background:color-mix(in srgb,var(--lime) 45%,#fff)"></i>Some</span>
       <span><i style="background:#fff"></i>Nothing</span>
     </div>
@@ -255,6 +256,7 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
     });
 
     $('doneCount').textContent = String(p.done);
+    $('totalCount').textContent = String(p.total);
     $('barFill').style.width = (p.done / p.total * 100) + '%';
     $('meter').classList.toggle('done', p.done >= p.total);
 
@@ -270,7 +272,7 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
       $('headline').textContent = 'Session complete';
     } else {
       // firstOpen is always defined here: something is unfinished.
-      note.innerHTML = `Next up is <b>${firstOpen.name}</b>. A deck is fifty questions for most games, twenty for calligraphy and the sciences; stopping part-way keeps what you have answered.`;
+      note.innerHTML = `Next up is <b>${firstOpen.name}</b>. A deck is fifty questions for most games, twenty for calligraphy and the sciences, and one machine on the shelf; stopping part-way keeps what you have answered.`;
       note.hidden = false;
       $('headline').textContent = 'Today’s session';
     }

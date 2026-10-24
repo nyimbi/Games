@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Local Arcade — Fourteen Games</title>
-<meta name="description" content="Fourteen self-contained games: six maths drills, an endless mixed arena, a typing tutor, a thousand-word spelling bee, French, Kiswahili, Mandarin, Chinese calligraphy, physics and chemistry.">
+<title>Local Arcade — Fifteen Games</title>
+<meta name="description" content="Fifteen self-contained games: six maths drills, an endless mixed arena, a typing tutor, a thousand-word spelling bee, French, Kiswahili, Mandarin, Chinese calligraphy, physics, chemistry, and twenty-six machines you can take apart.">
 <style>
 :root{
   --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
   --paper:#fdf7ea;--card:#fffdf8;--line:#e7dcc4;
   --sun:#ffb703;--coral:#ff6b6b;--teal:#0fb5a1;--indigo:#5b6cff;
   --grape:#9b5de5;--lime:#7cb518;--sky:#2b8fd6;
-  --french:#2b5bd7;--swahili:#1d7a4d;--cinnabar:#c1272d;--physics:#2f6fd0;--chem:#1e8f6a;
-  --hard:6px 6px 0 var(--ink);--soft:0 22px 48px rgba(25,28,58,.14);
+  --french:#2b5bd7;--swahili:#1d7a4d;--cinnabar:#c1272d;--physics:#2f6fd0;--chem:#1e8f6a;--works:#a4581b;--piano:#b02a37;
+  --hard:6px 6px 0 var(--ink);
   --wash-1:#ffe6b0;--wash-2:#dbe2ff;--wash-3:#cdf5ec;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -178,14 +179,14 @@ footer .dot{opacity:.45;margin:0 8px}
   </div>
 
   <header class="hero">
-    <p class="eyebrow">Fourteen games · number, word and world</p>
+    <p class="eyebrow">Sixteen games · number, word, world, machine and music</p>
     <h1>Math, <span class="under">playable</span>.</h1>
     <p class="lede">Bonds first. Then the four operations, one honest step at a time. Every deck is <b>fifty questions</b>, drawn from a pool that remembers what you have already met, so a second visit this week is a second set. The arena never runs out.</p>
   </header>
 
   <section class="suggest" id="session" hidden>
     <h3>Today's session</h3>
-    <p class="sub" id="sessionSub">Nine subjects, language then number.</p>
+    <p class="sub" id="sessionSub">Eleven subjects, alternating language with the rest.</p>
     <div class="bar" aria-hidden="true"><i id="sessionBar"></i></div>
     <a class="start" id="sessionGo" href="./session.html">Open the session →</a>
   </section>
@@ -431,9 +432,40 @@ footer .dot{opacity:.45;margin:0 8px}
       <div class="prog"></div>
       <div class="playrow"><span>Draw in order</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
     </a>
-    <a class="card" href="./physics.html" style="--accent:var(--physics)" data-key="arcade.physics.v1" data-bucket="perTier">
+    <a class="card" href="./piano.html" style="--accent:var(--piano)" data-key="arcade.piano.v1" data-bucket="perTier">
       <div class="art">
         <span class="num">13</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g fill="none" stroke="#191c3a" stroke-width="2">
+            <line x1="70" y1="30" x2="230" y2="30"/><line x1="70" y1="38" x2="230" y2="38"/>
+            <line x1="70" y1="46" x2="230" y2="46"/><line x1="70" y1="54" x2="230" y2="54"/>
+            <line x1="70" y1="62" x2="230" y2="62"/>
+          </g>
+          <text x="52" y="66" font-family="serif" font-size="42" fill="#191c3a">𝄞</text>
+          <ellipse cx="120" cy="54" rx="7" ry="5" fill="#191c3a" transform="rotate(-16 120 54)"/>
+          <ellipse cx="152" cy="46" rx="7" ry="5" fill="#191c3a" transform="rotate(-16 152 46)"/>
+          <ellipse cx="184" cy="38" rx="7" ry="5" fill="#191c3a" transform="rotate(-16 184 38)"/>
+          <g fill="#fffdf8" stroke="#191c3a" stroke-width="2">
+            <rect x="88" y="78" width="18" height="30" rx="3"/><rect x="108" y="78" width="18" height="30" rx="3"/>
+            <rect x="128" y="78" width="18" height="30" rx="3"/><rect x="148" y="78" width="18" height="30" rx="3"/>
+            <rect x="168" y="78" width="18" height="30" rx="3"/><rect x="188" y="78" width="18" height="30" rx="3"/>
+          </g>
+          <g fill="#191c3a">
+            <rect x="103" y="78" width="11" height="18" rx="2"/><rect x="123" y="78" width="11" height="18" rx="2"/>
+            <rect x="163" y="78" width="11" height="18" rx="2"/><rect x="183" y="78" width="11" height="18" rx="2"/>
+          </g>
+          <text x="150" y="116" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700" fill="#191c3a">r e a d · h e a r · p l a y</text>
+        </svg>
+      </div>
+      <h2>Piano</h2>
+      <p>The staff, the keyboard and the ear. Name a note you can see, name one you only heard, then press the key — and play eight tunes with nothing timed.</p>
+      <div class="tags"><span class="tag">Sight-reading</span><span class="tag">Ear</span><span class="tag">Play</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Play it</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+    <a class="card" href="./physics.html" style="--accent:var(--physics)" data-key="arcade.physics.v1" data-bucket="perTier">
+      <div class="art">
+        <span class="num">14</span>
         <svg viewBox="0 0 300 118" aria-hidden="true"><g fill="none" stroke="#191c3a" stroke-width="2"><circle cx="150" cy="56" r="26" fill="#fffdf8"/><path d="M150 30v-12M150 82v12M124 56h-12M176 56h12"/></g><text x="150" y="63" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="17" font-weight="800" fill="#2f6fd0">F=ma</text><text x="150" y="112" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#191c3a">N · J · W · V · m / s</text></svg>
       </div>
       <h2>Physics</h2>
@@ -444,7 +476,7 @@ footer .dot{opacity:.45;margin:0 8px}
     </a>
     <a class="card" href="./chemistry.html" style="--accent:var(--chem)" data-key="arcade.chemistry.v1" data-bucket="perTier">
       <div class="art">
-        <span class="num">14</span>
+        <span class="num">15</span>
         <svg viewBox="0 0 300 118" aria-hidden="true"><g fill="none" stroke="#191c3a" stroke-width="2"><circle cx="150" cy="58" r="12" fill="#fffdf8"/><ellipse cx="150" cy="58" rx="42" ry="18" fill="none"/><ellipse cx="150" cy="58" rx="42" ry="18" transform="rotate(60 150 58)"/><ellipse cx="150" cy="58" rx="42" ry="18" transform="rotate(120 150 58)"/><circle cx="192" cy="58" r="4" fill="#1e8f6a" stroke="none"/><circle cx="129" cy="22" r="4" fill="#1e8f6a" stroke="none"/><circle cx="129" cy="94" r="4" fill="#1e8f6a" stroke="none"/></g><text x="150" y="112" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#191c3a">a t o m s · m o l e s</text></svg>
       </div>
       <h2>Chemistry</h2>
@@ -452,6 +484,34 @@ footer .dot{opacity:.45;margin:0 8px}
       <div class="tags"><span class="tag">Moles</span><span class="tag">Bonding</span><span class="tag">Balancing</span></div>
       <div class="prog"></div>
       <div class="playrow"><span>Balance it</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
+    </a>
+    <a class="card" href="./how-things-work.html" style="--accent:var(--works)" data-key="arcade.howthingswork.v1" data-bucket="perGroup">
+      <div class="art">
+        <span class="num">16</span>
+        <svg viewBox="0 0 300 118" aria-hidden="true">
+          <g fill="none" stroke="#191c3a" stroke-width="2.4" stroke-linejoin="round">
+            <rect x="86" y="34" width="128" height="70" rx="10" fill="#fffdf8"/>
+            <rect x="98" y="46" width="46" height="46" rx="7" fill="#f2efe7"/>
+            <circle cx="121" cy="69" r="15" fill="#c4dfe4"/>
+            <circle cx="121" cy="69" r="7" fill="#8fb9c2"/>
+            <rect x="154" y="46" width="48" height="9" rx="4" fill="#e7dcc4"/>
+            <rect x="154" y="62" width="48" height="9" rx="4" fill="#e7dcc4"/>
+            <circle cx="196" cy="87" r="7" fill="#f4b829"/>
+            <circle cx="178" cy="87" r="7" fill="#e7dcc4"/>
+            <circle cx="160" cy="87" r="7" fill="#e7dcc4"/>
+          </g>
+          <g fill="none" stroke="#a4581b" stroke-width="2" stroke-dasharray="4 5">
+            <path d="M60 52h20M60 69h20M60 86h20"/>
+          </g>
+          <text x="150" y="24" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="800" fill="#191c3a">see-through</text>
+          <text x="150" y="116" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#191c3a">2 6  m a c h i n e s</text>
+        </svg>
+      </div>
+      <h2>How Things Work</h2>
+      <p>Twenty-six everyday machines, drawn closed and then with the case turned to a ghost. Turn one, switch on See-through, and press the buttons until the part that does the work moves.</p>
+      <div class="tags"><span class="tag">See-through</span><span class="tag">Turn it</span><span class="tag">Press things</span></div>
+      <div class="prog"></div>
+      <div class="playrow"><span>Look inside</span><span class="go">Play <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span></div>
     </a>
   </div>
 
@@ -583,7 +643,7 @@ footer .dot{opacity:.45;margin:0 8px}
     const sub = document.getElementById('sessionSub');
     const go = document.getElementById('sessionGo');
     if (p.done >= p.total) {
-      sub.textContent = 'All nine done today. Tomorrow the maths game rotates on.';
+      sub.textContent = 'All eleven done today. Tomorrow the maths game rotates on.';
       go.textContent = 'See the day →';
     } else {
       sub.textContent = `${p.done} of ${p.total} done. Next: ${next.name}.`;

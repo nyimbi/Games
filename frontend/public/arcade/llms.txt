@@ -1,31 +1,48 @@
-# The Arcade > 15 self-contained pages that teach nine subjects to a child: 14 games plus a daily-session page. No build step, no accounts, no network — everything inline or beside the page, progress in localStorage. Designed to be lifted into its own repository as a folder.
+# The Arcade > 18 self-contained pages that teach eleven subjects to a child: a hub, 16 games, and a daily-session page. No build step, no accounts, no network — everything inline or beside the page, progress in localStorage. No third-party library is loaded or vendored: the entire runtime is the 18 pages plus their sibling `.js` files. The one imported code is 26 MIT-licensed Colorfigures demo figures in `figures/`, copied whole and unmodified, each already a single self-contained file. This folder has its own git repository (branch `main`, no remote), but the parent `games` repo still tracks these files too — see README "This repository" before committing arcade work from the parent.
+
+## Where to start
+
+- **New to the folder**: this file, then README (what everything is and how a game is built), then `docs/design.md` (why each interaction is shaped the way it is).
+- **About to change code**: `dev-llms.txt` — state shapes, function index with line numbers, the five shared deck mechanisms, and the list of known defects.
+- **About to restyle anything**: `docs/design.md` first. Every token has a reason and several were removed on purpose.
 
 ## The hard invariants (break these and the product changes, not the code)
 
 - [Offline-only](index.html): zero `fetch`, zero `XMLHttpRequest`, zero external fonts or icon
-  fonts across all 15 pages. Any new asset must be inline SVG or a sibling `.js`/`.png` file.
-  A page that pulls from a CDN is a broken guarantee, not a slow page. Probe: wire a `request`
-  listener in Playwright and assert every URL starts with the served base.
+  fonts across all 18 pages, and no third-party library at all. Any new asset must be inline SVG
+  or a sibling `.js`/`.png` file. A page that pulls from a CDN is a broken guarantee, not a slow
+  page. Probe: wire a `request` listener in Playwright and assert every URL starts with the served
+  base; then load the page from `file://` with `context.set_offline(True)` and assert it still
+  initialises. Canary the probe with a planted CDN `<link>` — a network check that has never
+  failed is not a network check. The framed figures count: navigate the top page and assert
+  `page.frames[-1]` has its `<svg>` and its buttons, because a blank frame throws nothing in its
+  parent.
 - [Paper design system](docs/design.md): `--paper:#fdf7ea`, `--ink:#191c3a`, 2.5px borders, hard
   offset shadows (`6px 6px 0 var(--ink)`), `ui-rounded` first font, `html{font-size:17px}`,
   `1.05rem`/`1.5` body. Nothing glows, blurs, or floats. The one spectacle is the confetti burst,
-  bounded by `prefers-reduced-motion`. Full rationale with the reason for every token in
-  [docs/design.md](docs/design.md) — read it before restyling anything.
-- [Session alternation](session.js): the 9 subjects are 5 languages (`kind:'lang'`: spelling,
-  french, chinese, swahili, calligraphy) + 4 others (`kind:'other'`). The order spells
-  `lang, other, lang, other, …` and there is a load-time `checkOrder()` that throws if two
-  `lang` subjects end up adjacent. Adding a subject means adding a `kind` and re-slotting; the
-  guard will catch a wrong slot but not a missing one.
+  bounded by `prefers-reduced-motion`. The figures in `figures/` are the sanctioned exception:
+  third-party pages with their own palette, framed rather than restyled. Full rationale with the
+  reason for every token in [docs/design.md](docs/design.md) — read it before restyling anything.
+- [Session alternation](session.js): the 11 subjects are 5 languages (`kind:'lang'`: spelling,
+  french, chinese, swahili, calligraphy) + 6 others (`kind:'other'`: maths, physics, chemistry,
+  typing, piano, howthingswork). The order alternates for as long as the counts allow, and there
+  is a load-time `checkOrder()` that throws if two `lang` subjects end up adjacent or if the plan
+  does not open on a language. Six others against five languages makes strict alternation
+  impossible while spelling stays first, so exactly one `other`-`other` pair is expected, at the
+  end (piano, howthingswork). Adding a subject means adding a `kind` and re-slotting; the guard
+  will catch a wrong slot but not a missing one.
 - [Decks are 50, and the size is per family](number-bonds.html): maths drills and the spelling bee
   declare `const TOTAL = 50`; languages (`lang-engine.js`, `cfg.total`) are 30; sciences
   (`science-engine.js`, `cfg.total`) are 20; calligraphy 20. The deck is the unit of completion.
   Pools are *generated* (`poolFor(level)`, `factsFor(mode,table)`), never stored — no
   question exists to delete. Freshness maps (`seen: {bucket:{key:ts}}`), stamped on *served* not
-  *built*, capped (SEEN_CAP per game), oldest-dropped. A deck smaller than its pool cycles with a
-  pass counter so the fill loop cannot spin.
+  *built*, capped (SEEN_CAP 900 in the five drills, 1400 in the spelling bee, 1200 in the
+  language, science and piano engines, 600 in the arena), oldest-dropped. A deck smaller than its
+  pool cycles with a pass counter so the fill loop cannot spin.
 - [Three completion markers](session.js): stage games toggle `#done` class `on` (`class="stage"`:
-  languages, calligraphy, physics, chemistry); maths/typing toggle `#done` class `show`
-  (`class="done"`); `infinite-arena.html` alone shows `#summaryPanel` class `show`.
+  languages, calligraphy, spelling bee, physics, chemistry, how things work); maths/typing toggle
+  `#done` class `show` (`class="done"`); `infinite-arena.html` alone shows `#summaryPanel` class
+  `show`.
   `session.js` reads the marker the page *declares* via the element's own class — accepting
   either marker on any page lets a class a game never uses count as finished
   (`.stage.on` is true on a stage game's home screen). A new game must declare one of these shapes.
@@ -39,6 +56,12 @@
   bee carries its own engine in `spelling-bee.html`). Mode
   buttons, deck queue, answering, scoring, the tick that flips `#done`. Page supplies a bank and
   target. Does not know about lessons.
+- [piano-engine.js](piano-engine.js): the piano course. Draws the staff from each note's diatonic
+  index (`staffSvg`), lays out a two-octave keyboard (`keyboardHtml`), synthesises pitch with
+  oscillators (`playNote`/`playChord`/`playSeq` — no audio assets, so the offline guarantee holds),
+  and runs a play stage that waits for the learner rather than the clock. One bank, three answer
+  channels: `read` (staff shown), `hear` (staff hidden, played), `find` (press the key; judged on
+  pitch class, not MIDI).
 - [science-engine.js](science-engine.js): quiz engine for physics and chemistry **plus the lesson
   system**. `render()` checks each question's topic against `state.taught` (persisted alongside the
   freshness map) and, on a topic's first encounter, shows the lesson before the question. Resume
@@ -48,11 +71,15 @@
 
 ## Content banks (data beside the page, never inline)
 
-- [spelling-bank.js](spelling-bank.js) ~1000 graded words · [french-bank.js](french-bank.js)
+- [spelling-bank.js](spelling-bank.js) 1,239 graded words (315 / 379 / 545 across three tiers) · [french-bank.js](french-bank.js)
   words+sentences · [swahili-bank.js](swahili-bank.js) noun classes ·
   [chinese-bank.js](chinese-bank.js) characters+pinyin+gloss ·
   [calligraphy-bank.js](calligraphy-bank.js) 440 characters with stroke order ·
   [calligraphy-sketch.js](calligraphy-sketch.js) hand-drawn pictograms + composition sketches ·
+- [piano-bank.js](piano-bank.js): 168 questions across ten topics, generated where the content is
+  systematic (every staff position, every interval, every key signature) and authored where it is
+  not; plus 8 public-domain pieces as `{id, title, note, notes:[{m,b}]}`. [piano-lessons.js](piano-lessons.js):
+  10 lessons keyed by topic id, same shape as the science lessons, two inline SVG figures each.
 - [physics-bank.js](physics-bank.js) · [chemistry-bank.js](chemistry-bank.js): questions by topic,
   each with an explanation written for the *explanation screen*, not the lesson. Lesson text is
   never derived from the bank (spoiler) or from explanations (answers with questions stripped).
@@ -65,6 +92,25 @@
   `example` uses numbers the bank never asks — the lesson must not hand over a bank answer. Every
   lesson carries ≥2 inline SVG figures; the probe checks overflow and zero-height at 390px.
 
+## The machine shelf
+
+- [how-things-work.html](how-things-work.html) · [figures/](figures/): 26 MIT-licensed Colorfigures
+  demo figures by April Zhu, copied whole and unmodified, licence in
+  [figures/LICENSE-colorfigures.txt](figures/LICENSE-colorfigures.txt). Each figure is a complete
+  page — isometric model, drag-to-turn camera, working buttons, a See-through mode that ghosts the
+  case and draws the real parts, and Labels that light the moving one.
+- The wrapper is deliberately thin: it shows one figure in an `<iframe>`, prints the author's own
+  title, hint and (where one exists) "big idea" line, and lists the other 25 in six groups. Do not
+  re-describe the machines there — a second source of truth the figures cannot correct.
+- **Frame, don't inline.** Each figure sets `document.body.innerHTML` at mount and ships its own
+  `:root`, so inlining it would overwrite the page. `file://` lets the frame render in Chromium,
+  WebKit and Firefox but **not** read across it in Chromium or WebKit, so the frame height is fixed
+  (820 px, 740 px on a phone), measured against the tallest of the 26 rather than fitted at runtime.
+- 7 of the 26 ship without an `idea` line; the page shows none for those. Do not invent one.
+- Record: `arcade.howthingswork.v1` = `{ v, explored:{slug:ts}, perGroup:{group:pct}, day }`.
+  One machine met is the day's sitting. `perGroup` exists only so the hub's star rating can read
+  this record like any other game's bucket.
+
 ## The pages and their shape
 
 - [session.html](session.html) · [index.html](index.html) ·
@@ -73,7 +119,8 @@
   [division-diner.html](division-diner.html) · [infinite-arena.html](infinite-arena.html) ·
   [typing-tutor.html](typing-tutor.html) · [spelling-bee.html](spelling-bee.html) ·
   [french.html](french.html) · [swahili.html](swahili.html) · [chinese.html](chinese.html) ·
-  [calligraphy.html](calligraphy.html) · [physics.html](physics.html) · [chemistry.html](chemistry.html)
+  [calligraphy.html](calligraphy.html) · [physics.html](physics.html) · [chemistry.html](chemistry.html) ·
+  [piano.html](piano.html) · [how-things-work.html](how-things-work.html)
 
 ## Session state shape
 
@@ -91,6 +138,8 @@
   every new feature's promised count (`>= 2` figures per lesson), **no overflow at 390px viewport**
   (the design's first width), figure `getBoundingClientRect().height > 40` (no collapsed SVG).
 - Probes are throwaway scripts in `/tmp` — recreate from this recipe, do not hunt for them.
+- Canary each probe: plant the defect, watch the probe fail, restore from a backup, confirm
+  byte-identical. A probe that has never failed has tested nothing.
 
 ## The three failure modes this codebase has actually produced (hunt for these by name)
 
@@ -103,7 +152,10 @@
 
 ## Optional
 
-- [docs/design.md](docs/design.md): 352 lines of design narrative — every game's pedagogy, why
+- [docs/design.md](docs/design.md): the design narrative — every game's pedagogy, why
   deck = 50, why `ui-rounded`, why cream over white, why the confetti is the only spectacle, why
   the uppercase micro-type was removed. Read before substantive UI work here.
-- `docs/design.md` travels with the folder; nothing else in the parent repo references it.
+- [dev-llms.txt](dev-llms.txt): the implementation reference — exact state shapes, the function
+  index per file, the five shared deck mechanisms, and the known defects.
+- `docs/design.md` lives inside this repository; the frontend app that served it before reads the
+  same path, so both checkouts see the same file.

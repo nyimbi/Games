@@ -1,10 +1,10 @@
 /* Daily session tracking for the arcade.
  *
- * A session is one pass over nine subjects in a fixed order. The order is the
+ * A session is one pass over eleven subjects in a fixed order. The order is the
  * point: maths first, because it is the one a child is most likely to skip,
  * then the two word drills, then the three languages, then the three that ask
- * for the most from a learner. Rotating it by day would let a child dodge the
- * same subject every time.
+ * for the most from a learner, and the shelf of machines last. Rotating it by
+ * day would let a child dodge the same subject every time.
  *
  * Nothing here talks to a server and nothing leaves the browser. The record is
  * a small object in localStorage beside the per-game progress each game
@@ -14,7 +14,7 @@
  * screen. Three games signal that three different ways -- `.stage` games
  * toggle `#done.on`, the maths and typing games toggle `#done.show`, and the
  * arena shows `#summaryPanel.show` -- so the tracker watches all three rather
- * than asking fourteen games to change how they finish.
+ * than asking fifteen games to change how they finish.
  */
 (function () {
   'use strict';
@@ -28,13 +28,15 @@
   const MATHS = ['number-bonds', 'addition-quest', 'subtraction-safari',
     'times-table-academy', 'division-diner', 'infinite-arena'];
 
-  /* Order matters as much as content. Five of the nine subjects are languages
+  /* Order matters as much as content. Five of the eleven subjects are languages
      -- spelling, French, Kiswahili, Mandarin and calligraphy, which is Chinese
      character writing -- and a run of five language drills back to back is one
-     skill practised five ways, not five subjects. With five languages and four
-     others, strict alternation is the only order that never puts two languages
-     together, and it uses every subject exactly once. `kind` is what the order
-     is built from; adding a subject means adding it to the right half. */
+     skill practised five ways, not five subjects. The order alternates lang and
+     other for as long as the counts allow; with five languages and six others,
+     one pair of others has to sit together, and it sits at the end where the
+     two subjects ask the most of a learner and are least alike. `kind` is what
+     the order is built from; adding a subject means adding it to the right
+     half. */
   const SUBJECTS = [
     { id: 'spelling', kind: 'lang', name: 'Spelling', note: 'A thousand words', games: ['spelling-bee'] },
     { id: 'maths', kind: 'other', name: 'Maths', note: 'Number facts', games: MATHS },
@@ -44,13 +46,31 @@
     { id: 'chemistry', kind: 'other', name: 'Chemistry', note: 'Atoms to moles', games: ['chemistry'] },
     { id: 'swahili', kind: 'lang', name: 'Kiswahili', note: 'Noun classes', games: ['swahili'] },
     { id: 'typing', kind: 'other', name: 'Typing', note: 'Home row to speed', games: ['typing-tutor'] },
-    { id: 'calligraphy', kind: 'lang', name: 'Calligraphy', note: 'Stroke order', games: ['calligraphy'] }
+    { id: 'calligraphy', kind: 'lang', name: 'Calligraphy', note: 'Stroke order', games: ['calligraphy'] },
+    { id: 'piano', kind: 'other', name: 'Piano', note: 'Read, hear, play', games: ['piano'] },
+    { id: 'howthingswork', kind: 'other', name: 'How things work', note: 'Inside the machine', games: ['how-things-work'] }
   ];
 
   /* The order above is asserted, not trusted: a subject added to the wrong
      place, or a sixth language, would break the one property the order exists
-     for, and it would break it silently. Fail loudly at load instead. */
+     for, and it would break it silently. Fail loudly at load instead.
+
+     Two claims, both of them true of the list above and neither of them
+     obvious. No two languages are adjacent. And the plan starts on a language,
+     because spelling is deliberately first -- it is the drill a child is most
+     likely to skip, so it does not get to hide behind a game.
+
+     Those two together force one pair of adjacent non-language subjects.
+     Perfect alternation with five languages and six others has to start and
+     end on an other; starting on a language instead means the surplus other
+     has to sit beside another one somewhere. It sits at the end, between piano
+     and the machine shelf, which are the two least alike things in the list.
+     A sixth language would make that impossible, which is why the first check
+     is the one that matters. */
   (function checkOrder() {
+    if (!SUBJECTS.length || SUBJECTS[0].kind !== 'lang') {
+      throw new Error('session: the plan must open on a language subject');
+    }
     for (let i = 1; i < SUBJECTS.length; i++) {
       if (SUBJECTS[i].kind === 'lang' && SUBJECTS[i - 1].kind === 'lang') {
         throw new Error('session: ' + SUBJECTS[i].name + ' follows ' + SUBJECTS[i - 1].name +
@@ -199,7 +219,7 @@
 
   /* Inline styles, because the games do not share a stylesheet and several do
      not define the accent variables. The banner must look the same on all
-     fourteen pages without any of them having to know it exists. */
+     fifteen pages without any of them having to know it exists. */
   function toast(title, body, href, label) {
     // The games already carry their own `<div role="status">` for answer
     // feedback, so this needs an id of its own: querying by role would find
@@ -251,7 +271,7 @@
     const p = plan();
     const next = p.find(x => !x.done);
     if (res.done >= res.total) {
-      toast('Session complete', 'All nine subjects done today. That is the whole arcade.', './session.html', 'See the day →');
+      toast('Session complete', 'All eleven subjects done today. That is the whole arcade.', './session.html', 'See the day →');
     } else {
       toast('One down', `${res.done} of ${res.total} today. Next: ${next ? next.name : ''}.`,
         next ? next.href : './session.html', next ? `Play ${next.name} →` : 'See the day →');

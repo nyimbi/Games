@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piano — The Arcade</title>
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;--paper:#fdf7ea;--card:#fffdf8;
+  --accent:#b02a37;--accent-d:#7d1a24;--good:#1e9e6a;--bad:#e5484d;--hard:6px 6px 0 var(--ink);
+}
+*,*::before,*::after{box-sizing:border-box}
+/* `.choices{display:grid}` is an author rule and beats the user agent's
+   `[hidden]{display:none}`, so hiding the choices in keyboard mode silently
+   left them on screen. State the precedence rather than relying on it. */
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(840px 520px at 2% -8%,#ffe2e0 0%,transparent 62%),
+    radial-gradient(780px 520px at 102% 4%,#ffe9c4 0%,transparent 58%),
+    radial-gradient(760px 560px at 50% 118%,#e2ecff 0%,transparent 62%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.09) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);
+  mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.3) 50%,transparent 82%);}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.shell{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:20px 18px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);font-weight:900;font-size:.82rem;background:var(--card);border:2px solid var(--ink);padding:8px 13px;border-radius:999px;box-shadow:0 3px 0 var(--ink);transition:transform .12s}
+.back:hover{transform:translate(-1px,-1px)}
+.chip{display:flex;align-items:center;gap:7px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:10px 16px;font-size:.78rem;font-weight:900;box-shadow:0 3px 0 var(--ink);font-variant-numeric:tabular-nums}
+.kicker{display:inline-block;font-size:.68rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:var(--accent);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 var(--ink);margin-bottom:14px}
+h1{margin:0;font-size:clamp(2rem,6vw,2.9rem);line-height:.98;letter-spacing:-.045em;font-weight:900}
+h1 span{color:var(--accent)}
+.sub{margin:12px 0 0;color:var(--ink-2);font-size:1.06rem;line-height:1.55;max-width:54ch}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:22px;padding:22px;box-shadow:var(--hard);margin-top:20px}
+.sect{margin:22px 0 10px;font-size:.72rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+@media (max-width:640px){.tiers{grid-template-columns:1fr}}
+.tierbtn{font-family:inherit;text-align:left;cursor:pointer;background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:12px 14px;box-shadow:0 3px 0 var(--ink);transition:transform .1s,background .15s}
+.tierbtn:hover{background:#fff}
+.tierbtn[aria-pressed="true"]{background:var(--accent);color:#fff}
+.tierbtn b{display:block;font-size:1rem;font-weight:900}
+.tierbtn span{display:block;font-size:.78rem;opacity:.85;margin-top:3px}
+.modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:720px){.modes{grid-template-columns:1fr}}
+.modebtn{font-family:inherit;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:flex-start;background:#fbf5e6;border:2px solid var(--ink);border-radius:16px;padding:14px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,background .15s}
+.modebtn:hover{background:#fff;transform:translate(-1px,-1px)}
+.modebtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.modebtn .ic{font-size:1.5rem;line-height:1}
+.modebtn b{display:block;font-size:1rem;font-weight:900}
+.modebtn small{display:block;font-size:.78rem;color:var(--ink-2);margin-top:4px;line-height:1.4}
+.topics{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}
+.topicchip{font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:7px;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:8px 13px;font-size:.82rem;font-weight:900;box-shadow:0 2px 0 var(--ink);transition:transform .1s}
+.topicchip:hover{background:#fff5f5}
+.topicchip:active{transform:translateY(2px);box-shadow:none}
+.topicchip span{font-size:.7rem;background:var(--accent);color:#fff;border-radius:999px;padding:1px 7px}
+.topicchip .tick{font-style:normal;font-size:.75rem;background:var(--good);color:#fff;border-radius:999px;padding:1px 6px}
+.topicchip .new{font-style:normal;font-size:.62rem;font-weight:900;background:#ffb703;color:#191c3a;border-radius:999px;padding:1px 6px;letter-spacing:.04em}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+@media (max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.5rem;font-weight:900;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.pieces{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.pieces{grid-template-columns:1fr}}
+.piecebtn{font-family:inherit;text-align:left;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:16px;padding:14px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,background .15s}
+.piecebtn:hover{background:#fff5f5;transform:translate(-1px,-1px)}
+.piecebtn b{display:block;font-size:1rem;font-weight:900}
+.piecebtn small{display:block;font-size:.78rem;color:var(--ink-2);margin-top:4px;line-height:1.4}
+.piecebtn .pmeta{display:block;font-size:.7rem;font-weight:900;color:var(--accent-d);margin-top:8px;letter-spacing:.06em;text-transform:uppercase}
+.stage{display:none}
+.stage.on{display:block}
+.bar{height:12px;background:#efe6d2;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin:14px 0}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums;gap:12px}
+.qtext{font-size:1.2rem;font-weight:800;line-height:1.5;margin:0 0 14px}
+.figure{margin:0 0 16px}
+.figure svg{display:block;width:100%;height:auto;max-height:230px;background:#fffdf8;border:2px solid var(--ink);border-radius:16px}
+.staffsvg{background:#fffdf8}
+.earbox{display:flex;flex-direction:column;align-items:center;gap:12px;padding:26px 16px;background:#fff;border:2px solid var(--ink);border-radius:16px;text-align:center}
+.earbox .earicon{font-size:2.6rem;line-height:1;color:var(--accent)}
+.earbox p{margin:0;font-weight:800;color:var(--ink-2)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.choices{grid-template-columns:1fr}}
+.opt{font-family:inherit;font-size:1.02rem;font-weight:900;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:16px;box-shadow:0 4px 0 var(--ink);transition:transform .1s,background .15s;text-align:left;line-height:1.35}
+.opt:hover{background:#fff5f5}
+.opt:active{transform:translateY(2px);box-shadow:2px 2px 0 var(--ink)}
+.opt.right{background:#d8f5e6;border-color:var(--good)}
+.opt.wrong{background:#ffe0e0;border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:inherit;font-weight:900;cursor:pointer;border:2px solid var(--ink);border-radius:999px;padding:11px 18px;background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--ink);transition:transform .1s}
+.btn:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.small{font-size:.85rem;padding:8px 14px}
+.btn.soft{background:#f4efe2}
+.btn.primary{background:var(--accent);color:#fff}
+.hintbox{margin-top:10px;background:#fffbe8;border:2px dashed #e0b84a;border-radius:12px;padding:12px;font-size:.95rem;line-height:1.5}
+.feedback{margin-top:14px;border-radius:14px;padding:0;border:2px solid transparent;display:none}
+.feedback.on{display:block;padding:14px 16px}
+.feedback.good{background:#e8faf1;border-color:var(--good)}
+.feedback.bad{background:#ffecec;border-color:var(--bad)}
+.feedback h3{margin:0 0 8px;font-size:1.05rem}
+.feedback p{margin:0 0 6px;font-size:.95rem;line-height:1.5}
+.answerline{margin:0 0 8px!important}
+.trickline{color:#7a4b00;font-weight:700}
+.why{margin-top:12px;background:#fbf5e6;border:2px solid var(--ink);border-radius:12px;padding:12px;font-size:.95rem;line-height:1.55}
+.missed{margin-top:18px;background:#fbf5e6;border:2px solid var(--ink);border-radius:16px;padding:16px}
+.missed h4{margin:0 0 10px;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.missrow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px dashed #ddd2b8;font-size:.92rem}
+.missrow:first-of-type{border-top:0}
+.missrow span{flex:1;color:var(--ink-2)}
+.missrow b{white-space:nowrap;color:var(--accent-d)}
+.stars{display:flex;gap:8px;justify-content:center;margin:10px 0 6px;font-size:2rem}
+.stars span{opacity:.22}
+.stars span.on{opacity:1}
+.donebox{text-align:center;padding:8px 0}
+#doneTitle{margin:6px 0;font-size:1.6rem;font-weight:900}
+.navrow{display:flex;gap:8px;justify-content:space-between;margin-top:18px}
+
+/* ---------- keyboard ---------- */
+.kb{position:relative;height:170px;margin:0 auto;max-width:640px;touch-action:manipulation;user-select:none}
+.wkey{position:absolute;top:0;height:100%;background:#fffdf8;border:2px solid var(--ink);border-radius:0 0 9px 9px;box-shadow:inset 0 -6px 0 #efe6d2;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:flex-end;justify-content:center;transition:background .08s,transform .06s}
+.wkey span{font-size:.68rem;font-weight:900;color:var(--muted);padding-bottom:8px;pointer-events:none}
+.wkey:hover{background:#fff5f5}
+.wkey:active,.wkey.on{background:#ffd9d9}
+.wkey.on span{color:var(--accent-d)}
+.wkey.right{background:#d8f5e6;border-color:var(--good)}
+.wkey.wrong{background:#ffe0e0;border-color:var(--bad)}
+.wkey:disabled{cursor:default}
+.bkey{position:absolute;top:0;height:62%;background:var(--ink);border:2px solid var(--ink);border-radius:0 0 7px 7px;cursor:pointer;padding:0;z-index:2;transition:background .08s}
+.bkey:hover{background:#2b2f57}
+.bkey:active,.bkey.on{background:var(--accent)}
+.bkey.right{background:var(--good)}
+.bkey.wrong{background:var(--bad)}
+.bkey:disabled{cursor:default}
+.kbhint{text-align:center;font-size:.78rem;font-weight:800;color:var(--muted);margin-top:10px}
+
+/* ---------- play ---------- */
+.playhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.playhead h2{margin:0;font-size:1.35rem;font-weight:900;letter-spacing:-.02em}
+.playhead .note{margin:0;font-size:.86rem;color:var(--ink-2);font-weight:700}
+.nextnote{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0;padding:12px;background:#fffbe8;border:2px dashed #e0b84a;border-radius:14px}
+.nextnote span{font-size:.78rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#7a4b00}
+.nextnote b{font-size:1.5rem;font-weight:900;color:var(--accent-d);font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.shake{animation:shake .35s}
+
+/* ---------- lesson ---------- */
+.lwhy{margin:0 0 16px;font-size:1.04rem;line-height:1.6;color:var(--ink-2)}
+.lrule{background:#fff1f1;border:2px solid var(--ink);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.lrule b,.lex b,.lremember b{display:block;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-d);margin-bottom:6px}
+.lrule p{margin:0;font-weight:800;font-size:1.05rem;line-height:1.5}
+.lbeats{margin:0 0 18px;padding-left:22px}
+.lbeats li{margin-bottom:11px;line-height:1.58;font-size:.99rem}
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 18px}
+@media (max-width:640px){.figs{grid-template-columns:1fr}}
+.fig{margin:0;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:10px;overflow:hidden}
+.fig svg{display:block;width:100%;height:auto}
+.fig figcaption{margin-top:8px;font-size:.76rem;font-weight:800;color:var(--muted);line-height:1.4}
+.lex{background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.lq{margin:0 0 8px;font-weight:800}
+.lex ol{margin:0 0 10px;padding-left:22px;line-height:1.6}
+.la{margin:0;font-weight:900;color:var(--accent-d)}
+.lremember{background:#e8faf1;border:2px solid var(--ink);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.lremember span{font-weight:800;line-height:1.5}
+.ltrap{margin:0;background:#fff3e0;border:2px solid var(--ink);border-radius:14px;padding:14px 16px;font-size:.95rem;line-height:1.55}
+.lessonrow{display:flex;gap:10px;justify-content:space-between;margin-top:18px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="shell">
+  <div class="top">
+    <a class="back" href="./index.html"><span aria-hidden="true">←</span> Arcade</a>
+    <div class="chip">Best <b id="hudBest">0%</b></div>
+  </div>
+
+  <section class="stage on" id="home">
+    <div class="kicker">Music · piano</div>
+    <h1>Read it, <span>hear it</span>, play it.</h1>
+    <p class="sub">The staff, the keyboard and the ear, from naming a single note to playing a tune with both eyes on the page. Every sound is synthesised in the page, so it works with the network switched off.</p>
+    <div class="panel">
+      <div class="tiers" id="tiers"></div>
+      <div class="sect">Three ways to answer</div>
+      <div class="modes" id="modes"></div>
+      <div class="sect">By topic</div>
+      <div class="topics" id="topics"></div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="sect">Play something</div>
+    <div class="pieces" id="pieces"></div>
+  </section>
+
+  <section class="stage" id="lesson">
+    <div class="meta"><span id="lTopic">Lesson</span><span>Read this first</span></div>
+    <div class="panel">
+      <div id="lBody"></div>
+      <div class="lessonrow">
+        <button class="btn" type="button" id="lHome">Back</button>
+        <button class="btn primary" type="button" id="lDone">I have read it — quiz me →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="quiz">
+    <div class="meta"><span id="qTopic">topic</span><span><b id="qNum">1</b> / <span id="qTot">1</span> · <span id="qScore">0 right</span></span></div>
+    <div class="bar"><i id="qProg"></i></div>
+    <div class="panel">
+      <p class="qtext" id="qText"></p>
+      <div class="figure" id="qFigure"></div>
+      <div class="choices" id="qChoices"></div>
+      <div id="qKeyboard" hidden></div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn soft small" type="button" id="qPlay">♪ Hear it</button>
+        <button class="btn soft small" type="button" id="qHint">Clue</button>
+        <button class="btn soft small" type="button" id="qLesson">Teach me this</button>
+      </div>
+      <div class="hintbox" id="qHintBox" hidden></div>
+      <div class="feedback" id="qFb"></div>
+      <div class="why" id="qExplain" hidden></div>
+      <div class="navrow">
+        <button class="btn" type="button" id="qExit">Exit</button>
+        <button class="btn primary" type="button" id="qNext" hidden>Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="play">
+    <div class="meta"><span>Playing</span><span><b id="pCount">0 / 0</b></span></div>
+    <div class="bar"><i id="pProgress"></i></div>
+    <div class="panel">
+      <div class="playhead">
+        <h2 id="pTitle">Piece</h2>
+        <p class="note" id="pNote"></p>
+      </div>
+      <div class="figure" id="pStaff"></div>
+      <div class="nextnote"><span>Next key</span><b id="pNext">—</b></div>
+      <div id="pKeys"></div>
+      <p class="kbhint">Press the lit key. Nothing is timed — slow and right beats fast and guessing.</p>
+      <div class="feedback" id="pFeedback"></div>
+      <div class="navrow">
+        <button class="btn" type="button" id="pExit">Exit</button>
+        <div class="actions">
+          <button class="btn soft" type="button" id="pHear">♪ Hear the piece</button>
+          <button class="btn primary" type="button" id="pAgain">Start again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" id="done">
+    <div class="panel donebox">
+      <div class="stars" id="stars"><span>★</span><span>★</span><span>★</span></div>
+      <h2 id="doneTitle">Deck complete!</h2>
+      <p class="sub" id="doneText"></p>
+      <div class="missed" id="missed" hidden></div>
+      <div class="actions" style="justify-content:center;margin-top:18px">
+        <button class="btn" type="button" id="rHome">Home</button>
+        <button class="btn primary" type="button" id="rAgain">Another deck</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="./piano-bank.js"></script>
+<script src="./piano-lessons.js"></script>
+<script src="./piano-engine.js"></script>
+<script src="./session.js"></script>
+<script>
+(() => {
+  'use strict';
+  window.PianoGame.init({
+    bank: window.PIANO_BANK,
+    pieces: window.PIANO_PIECES,
+    lessons: window.PIANO_LESSONS,
+    key: 'arcade.piano.v1', total: 20,
+    topics: [
+      { id: 'names', name: 'Note names' },
+      { id: 'staff', name: 'The staff' },
+      { id: 'keys', name: 'The keyboard' },
+      { id: 'rhythm', name: 'Rhythm' },
+      { id: 'intervals', name: 'Intervals' },
+      { id: 'scales', name: 'Scales & keys' },
+      { id: 'chords', name: 'Chords' },
+      { id: 'harmony', name: 'Harmony' },
+      { id: 'sight', name: 'Sight-reading' },
+      { id: 'playing', name: 'Playing' }
+    ],
+    modes: [
+      { id: 'read', icon: '👁', name: 'Read the staff', desc: 'The notes are drawn. Name what you see.' },
+      { id: 'hear', icon: '👂', name: 'Name by ear', desc: 'The staff is hidden. Listen and say what it was.' },
+      { id: 'find', icon: '🎹', name: 'Find the key', desc: 'Press the key on the keyboard, not a button.' }
+    ]
+  });
+})();
+</script>
+</body>
+</html>

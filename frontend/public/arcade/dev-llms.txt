@@ -1,0 +1,439 @@
+# dev-llms.txt — the arcade's implementation reference
+
+Read `README.md` for what the arcade is and `docs/design.md` for why it is shaped that way. This
+file is the other thing: where the code is, what each file owns, the exact shape of every record
+it writes, and the defects already known. It assumes you are about to edit something.
+
+Line numbers are approximate — they drift with every edit. Names and constants are exact.
+
+## The inventory
+
+```
+15,338 lines across 34 source files (18 pages, 16 scripts). No build, no bundler, no test runner.
+
+index.html              663   hub: 16 cards, stars from each game's bucket, suggestion lane
+session.html            324   the day: plan list, meter, 21-day strip
+session.js              313   session state, alternation guard, completion observer, toast
+
+lang-engine.js          473   quiz engine: french, swahili, chinese
+science-engine.js       507   quiz engine + lesson scheduler: physics, chemistry
+piano-engine.js         744   staff renderer, keyboard, synth, play stage
+piano.html              307   home, quiz, play and lesson stages
+calligraphy.html        653   own stroke-matching logic (no engine)
+
+number-bonds.html       880   maths drills — each carries its own engine inline
+addition-quest.html    1068
+subtraction-safari.html 1049
+times-table-academy.html 1126
+division-diner.html     790
+infinite-arena.html     759   weighted generator, not a deck
+typing-tutor.html       615
+spelling-bee.html      1113   own engine + 4 modes
+how-things-work.html    379   iframe wrapper over figures/
+
+banks (data only, no logic)
+spelling-bank.js        SPELL_BANK        1,239 entries (315 / 379 / 545)
+french-bank.js          FRENCH_BANK         300
+swahili-bank.js         SWAHILI_BANK        300
+chinese-bank.js         CHINESE_BANK        300
+calligraphy-bank.js     CALLIGRAPHY_BANK    440, each with stroke polylines
+calligraphy-sketch.js   CALLI_SKETCH        char → hand-drawn SVG
+physics-bank.js         PHYSICS_BANK        240 over 10 topics
+chemistry-bank.js       CHEMISTRY_BANK      240 over 10 topics
+physics-lessons.js      PHYSICS_LESSONS     10, keyed by topic id
+chemistry-lessons.js    CHEMISTRY_LESSONS   10, keyed by topic id
+piano-bank.js           PIANO_BANK          168 over 10 topics, + PIANO_PIECES (8)
+piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
+
+figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
+docs/design.md          370   the design narrative
+```
+
+Which page loads what:
+
+| Page | `<script src>` |
+|---|---|
+| `french/swahili/chinese.html` | own bank, `lang-engine.js`, `session.js` |
+| `physics/chemistry.html` | own bank, `science-engine.js`, own lessons, `session.js` |
+| `piano.html` | `piano-bank.js`, `piano-lessons.js`, `piano-engine.js`, `session.js` |
+| `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `session.js` |
+| `spelling-bee.html` | `spelling-bank.js`, `session.js` |
+| `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
+| six maths pages, `typing-tutor.html` | `session.js` only |
+| `index.html`, `session.html` | `session.js` |
+
+## The five shared deck mechanisms
+
+Five of the six maths drills, the spelling bee and the language engine implement the same deck
+algorithm, near-verbatim. Read one and you have read them all.
+
+**`freshFirst(pool, bucket, keyOf)`** — partitions into unseen (`seen[bucket][key] === 0`) and
+seen, shuffles each, sorts the seen group by timestamp ascending. Unseen first, then least
+recently served. ~12 lines.
+
+**`markSeen(bucket, key)`** — writes `Date.now()`, evicts the oldest once the bucket hits
+`SEEN_CAP`. Called from `renderQuestion`, never from the deck builder: the stamp records what was
+*served*, not what was *planned*.
+
+**`newCycle(pool, bucket, keyOf)`** — re-sorts the pool by oldest-seen, so pass two starts with
+the facts that have waited longest.
+
+**The fill loop** — walk the ordered pool, push, count passes. Pass 0 forbids any duplicate;
+later passes forbid only an immediate repeat. Without the counter the loop never terminates on a
+pool smaller than the deck (Make 10 is 9 splits × 3 blank positions = 27 cards against a deck of
+50). Every implementation also carries a `guard` bound (`total * 400`) as a second backstop.
+
+**`noteFact(key, ok)`** — `review[key] = { n, miss, due }`. `n` counts graded attempts, `miss`
+counts wrong ones, `due` sets on a miss and clears on a correct answer. `buildQueue` pulls up to
+two due facts to the head, filtered to the current level/mode so a review card never arrives from
+a level the learner is not in.
+
+Stars, shared everywhere: `pct >= 90 → 3`, `pct >= 70 → 2`, else 1.
+
+## Per-file reference
+
+### session.js (313)
+
+`KEY = 'arcade.session.v1'`, `KEEP_DAYS = 120`, `MATHS` = the six maths page names.
+
+`SUBJECTS` (38–52) is the single source of order: eleven entries of `{id, kind, name, note, games}`.
+`checkOrder()` (60–72) throws at load if two `kind: 'lang'` are adjacent or if `SUBJECTS[0]` is not
+a language — an IIFE, so it runs before anything else. With six others and five languages, exactly
+one `other`-`other` pair is expected, at the end; the guard does not forbid it because perfect
+alternation is impossible while spelling stays first. `BY_GAME` maps page name → subject.
+
+| Function | Line | Does |
+|---|---|---|
+| `dayKey(d)` | 68 | local `YYYY-MM-DD`, not UTC |
+| `dayNumber(d)` | 73 | days since epoch, drives maths rotation |
+| `read/write` | 78/86 | `write` trims to `KEEP_DAYS` then `setItem` in try/catch |
+| `gameFor(subject, d)` | 104 | `games[dayNumber(d) % games.length]` |
+| `plan(d)` | 111 | every subject in order with game, href, done — never writes |
+| `mark(id)` | 129 | returns `{changed, done, total}`; idempotent per day |
+| `streak(d)` | 142 | run of complete days ending today; today counts only once complete |
+| `history(n)` | 161 | last n days oldest-first, gaps present with done 0 |
+| `isFinished()` | 186 | reads the marker the page *declares* |
+| `toast/announce` | 204/251 | inline-styled banner, `id="sessionToast"` |
+| `check/start` | 268/276 | observer callback and install |
+
+`isFinished()` (186–199) is the load-bearing predicate: if `#done` exists, the marker is `'on'`
+when the element has class `stage`, `'show'` when it has class `done`, and `null` otherwise — a
+page that declares neither can never be finished. Only if there is no `#done` does it fall back to
+`#summaryPanel` + `show`.
+
+`start()` sets `armed = !isFinished()` and installs a `MutationObserver` on `document.body` with
+`{subtree: true, attributes: true, attributeFilter: ['class', 'hidden']}`. The filter is not
+cosmetic: the games repaint on every keystroke. `fired` prevents a second record per page load.
+
+### piano-engine.js (744)
+
+`window.PianoGame = { init, staffSvg, rhythmSvg, esc }` at 743.
+
+**Pitch constants.** MIDI 60 is middle C and 69 is A4; everything else is derived. `pc(m)` is the
+pitch class, `LETTER_AT` maps pitch class → diatonic letter (C♯ shares C's), and `diatonic(m)` =
+`octave*7 + letter` is the vertical axis of the staff. `BOTTOM = { treble: 30, bass: 18 }` are the
+bottom lines, E4 and G2. `freqOf(m) = 440 * 2^((m-69)/12)`.
+
+**Audio (47–95).** Lazy `AudioContext` in try/catch, resumed when suspended. `playNote(midi, when,
+dur)` is a sine plus a triangle an octave up, both decaying. `playChord` offsets by 35 ms so the
+attacks separate; `playSeq(notes, bpm)` steps by `60/bpm`. No samples, no assets.
+
+**Drawing (105–175).** `staffSvg({clef, notes, simul, show, w, h})` draws five lines, the clef
+glyph, a stem per note (shared and direction-set for `simul`), an accidental before a black key,
+and ledger lines at every even step between the staff and the note. `rhythmSvg(items)` draws note
+values (`w h q e`, `dot`, `rest`). `keyboardHtml(mark)` lays out C4–C5 with black keys after the
+whites whose pitch class has one above them — `HAS_BLACK_ABOVE = [0,2,5,7,9]` — and every key
+carries `data-midi`.
+
+| Function | Line | Does |
+|---|---|---|
+| `modePool` | 268 | `hear` keeps questions with `play[]`; `find` keeps those with `midi` |
+| `buildQueue` | 297 | ≤2 due first, then `freshFirst`, capped at `total` |
+| `render` | 340 | paints the figure, picks the answer channel, stamps `seen` |
+| `playQuestion` | 400 | chord if `staff.simul`, sequence if several notes, else one |
+| `answerChoice` / `answerFind` | 410 / 419 | strict equality; pitch-class comparison |
+| `settle` | 435 | scoring, streak, trap on a named distractor, auto-advance |
+| `paintLesson` / `afterLesson` | 305 / 566 | same resume protocol as `science-engine.js` |
+| `openPiece` / `paintPiece` | 592 / 604 | nine-note window, lit key, no timer |
+| `pressKey` / `finishPiece` | 630 / 649 | pitch-class match, shake on a miss, accuracy on finish |
+
+`state` carries `piece, pieceIndex, pieceRight, pieceMiss, playing` alongside the usual deck
+fields; `piecesDone` is loaded and saved but not in the initial literal.
+
+**DOM ids the page must supply:** `home lesson quiz play done confetti hudBest`; home `tiers
+topics modes pieces stats`; quiz `qTopic qNum qTot qScore qProg qText qFigure qChoices qKeyboard
+qPlay qHint qLesson qHintBox qFb qExplain qExit qNext`; play `pCount pProgress pTitle pNote pStaff
+pNext pKeys pFeedback pExit pHear pAgain`; lesson `lTopic lBody lHome lDone`; done `stars doneTitle
+doneText missed rAgain rHome`.
+
+### lang-engine.js (473)
+
+`window.LangGame.init(cfg)` at 127; exports `{init, fold, esc, shuffle, speak}` at 472.
+
+Config keys read: `bank, total (default 30), key, keyOf, tiers, modes, pool(mode,e), prompt(mode,
+e,bank), check(raw,e,spec), word(e), say(e), meaning(e), sentenceHTML(e), extra(e), badges(e),
+speechWord(e), speechSentence(e), lang`. The engine also reads `e.trap` directly — banks must
+carry it.
+
+DOM ids the engine owns (a page must supply all of them): `tiers modes stats hudBest confetti`;
+learn stage `lNum lTot lProg lCard lNext lPrev lExit`; drill stage `dNum dTot dScore dProg dKind
+dFb dNext dPrompt dHintBox dType dChoices dInput dAccents dHint dSay dExit`; done stage `doneText
+stars missed doneTitle rAgain rHome`. Stages are `.stage` elements switched by `show(id)` (214).
+
+| Function | Line | Does |
+|---|---|---|
+| `buildQueue` | 188 | ≤3 due entries first, then `freshFirst`, cycling; guard `total*400` |
+| `modePool` | 171 | `all.filter(cfg.pool)` when that leaves anything, else the whole tier |
+| `noteFact` | 177 | the `{n, miss, due}` record |
+| `render` | 259 | dispatches to `renderLearn` (267) or `renderQuestion` (299) |
+| `checkTyped` | 349 | typed answers via the page's `check` |
+| `pick` | 357 | choice answers, strict `value === spec.answer` |
+| `finishAnswer` | 373 | scoring, streak, feedback, auto-advance |
+| `next` / `finish` | 413 / 418 | advance; `finish` shows `'done'` |
+| `markSeen` / `freshFirst` | 37 / 30 | capped recency map |
+| `speak` / `pickVoice` | 79 / 72 | `speechSynthesis`, exact locale then prefix |
+
+Scoring (380–382): `score += 10 + Math.min(streak,5)*2 - (hintUsed ? 4 : 0)`; correct answers
+auto-advance after 900 ms. `perTier[tier]` keeps the max pct (422); `best` is the best *streak*,
+not the best percentage (381). Learn mode requests `Math.min(TOTAL, pool.length)` (252) and never
+scores.
+
+Storage written (153–156): `{ best, perTier, review, seen, tier }`. `seen` buckets are
+`tierKey(tier) + ':' + mode`, so the same word in drill and learn is two different facts.
+`SEEN_CAP = 1200`, evicting oldest.
+
+Accents: a page's `check` may return the string `'accent'`, which the engine reports as *"right
+word, wrong accents"* rather than a plain miss. Every option list is shuffled — the article and
+tone drills originally put the answer first on every card.
+
+### science-engine.js (507)
+
+`window.ScienceGame.init(cfg)` (149); page supplies `{lessons, bank, key, total: 20, topics,
+modes}`. Same DOM-contract style as the language engine; mode ids are opaque except that the
+engine branches on `'quiz'` vs not-`'quiz'`.
+
+| Function | Line | Does |
+|---|---|---|
+| `freshFirst` | 27 | as above |
+| `num(s)` | 86 | leading number; scientific notation read whole |
+| `unitOf(s)` | 98 | trailing unit token; a trailing digit is not a unit |
+| `isQuantity(s)` | 110 | rejects `2,8,7` / `2, 1, 2` / `2+` |
+| `gradeTyped(given,q)` | 125 | `{ok, unitOnly}` |
+| `init` | 149 | state, load/save, all listeners |
+| `buildQueue` | 183 | ≤2 due, then `freshFirst`, capped at total |
+| `render` | 196 | paints the question; **the lesson gate lives here** |
+| `paintLesson(topic,resume)` | 252 | renders the lesson, records resume intent |
+| `afterLesson` | 297 | sets `taught[topic]`, saves, dispatches keep/render/home |
+| `settle` | 328 | scoring, sounds, distractor naming |
+| `finish` | 382 | pct, stars, missed list |
+
+`gradeTyped` in full: if `want` is null or `!isQuantity(q.a)`, fall back to case-insensitive
+trimmed string equality. Otherwise tolerance `Math.max(Math.abs(want) * 0.02, 0.05)`; then the
+unit — `q.unit.split(',')[0].trim()` if present, else `unitOf(q.a)` — compared lowercased with
+`²→2` and `³→3` folded, because a phone keyboard has no superscripts. A number that passes with a
+failing unit returns `{ok: false, unitOnly: true}`.
+
+Distractors: on a wrong *choice* the engine finds which of `d1/d2/d3` matched by value and prints
+`q.trap`. The lookup is by value, so identical text under two keys still resolves; `q.a` never
+matches.
+
+Lesson gate (202–205): `if (q.topic && lessonFor(q.topic) && !state.taught[q.topic]) {
+paintLesson(q.topic, 'render'); return; }`. `lessonFor` returns null for a topic with no lesson, so
+an untaught lesson-less topic quizzes normally rather than blocking. Chips (416–425): `.tick` when
+taught, `.new` when a lesson exists and is unread, nothing otherwise.
+
+Storage: `{ best, seen, review, perTier, tier, taught }`. `seen` keyed `t< tier>:<mode>` → question
+text → timestamp. `review` keyed by question text.
+
+### The six maths drills
+
+Common shape: `TOTAL = 50`, `SEEN_CAP = 900`, storage `{best, perLevel|perMode, review, seen}`,
+`#done.show`, stars 90/70.
+
+| File | Key | Bucket keys | Pool |
+|---|---|---|---|
+| number-bonds.html | `arcade.bonds.v4` | `ten/teen/mixed` | splits of each whole; blank drawn per card |
+| addition-quest.html | `arcade.addition.v3` | `bond/1/2/3` | enumerated to 2 digits; level 3 is 260 random draws |
+| subtraction-safari.html | `arcade.subtraction.v3` | `bond/1/2/3` | triangular (no negatives); level 3 random |
+| times-table-academy.html | `arcade.times.v2` | `table-N` or mode | 20 facts for one table, else the full grid to 10 or 20 |
+| division-diner.html | `arcade.division.v1` | `1-5/6-10/11-20/all` | divisor × quotient, **divisor 1 excluded** |
+| infinite-arena.html | `arcade.arena.v1` | `skill` | weighted generator, no deck |
+
+Notable per file:
+
+- **number-bonds**: `wholesFor(mode)` (630), `buildQueue` (636), `renderQuestion` (671), `submit`
+  (718), `finish` (758). The blank position is `Math.random() < .3 ? 'whole' : …` per card.
+  Show-me paints `#drillFrame` and never touches the input.
+- **addition-quest**: `poolFor` (735), `plan` (517) computes carries, `stepScript` (533),
+  `workedFor` (848), `checkPlausible` (873) prints the estimation prompt at level 3 from Q3.
+  Carry row hidden during practice (`showCarry(false)`), revealed in the worked solution or on the
+  first two questions. Score bonus `+2` at level 2, `+4` at level 3.
+- **subtraction-safari**: `poolFor` (778), `borrowPlan` (493), `paintLine` (628), `paintBlocks`
+  (658), `animateBreak` (721), `workedFor` (854). Learn tab: two sliders, a number line, base-ten
+  blocks, and a stepper over the borrow plan with the break available as an action.
+- **times-table-academy**: `factsFor` (857), `bucketKey` (866), `buildQueue` (868), `buildGrid`
+  (488), `paintGrid` (515). **No worked solution on a miss** — only "Say it once, then move on."
+  Picture toggle splits the array at `Math.min(5, b)`.
+- **division-diner**: `divisorsFor` (568), `poolFor` (578), `deal` (414), `pack` (479). Share/Group
+  switch runs the same animation to the same quotient. Repeated subtraction and the four-fact
+  family print below the plates.
+- **infinite-arena**: `SKILLS` (333) — 15 generators — `DIFF` (326) — easy/normal/hard/expert —
+  `DEFAULT_ON` (358) six skills. `weightFor` (461) = `clamp(1-ema,.05,1)² + .05`, times
+  `1/(1+served*.25)`. `chooseSkill` (471) roulette, `nextQuestion` (481) rejects the 200-entry
+  `recentSet` and soft-skips seen keys while `attempt < 30`. EMA update before judging:
+  `alpha = n < 5 ? .45 : .22`, clamped `[.02, .99]`. `endRun` (611) shows `#summaryPanel`. Decay on
+  load: `ema += (0.5-ema) * (days*0.12)`, days capped at 7. No `review` at all.
+
+### typing-tutor.html (615)
+
+`arcade.typing.v1` = `{ progress: { lessonId: bestAccuracy } }`. Twelve lessons in `LESSONS`
+(299–324), each `{id, name, desc, lines}`; a run is `lines.slice(0,3).join(' ')` (424). Unlock:
+`unlocked(i) = i === 0 || (progress[LESSONS[i-1].id] || 0) >= 80` (343).
+
+Input path: a visually hidden `#capture` input, refocused by a document-level keydown, drained per
+`input` event through `typeChar` (479). Backspace swallowed at `keydown`; Enter → `typeChar('\n')`
+where the target has a newline. A miss records against the **expected** key (`state.keyErr[want]`),
+which is what `paintWeak` (466) turns into the five worst-key chips.
+
+Accuracy `round(correct/typed*100)` (453); WPM `(correct/5)/elapsedMinutes` (452) shown but not
+used for stars (95/85/80 on accuracy). `progress[id]` written only on completion (524–527); a
+timer expiry calls `finish()` without saving (507–510). `#done.show` (530). Audio is WebAudio
+`tone()` in try/catch — no `speechSynthesis` here.
+
+### spelling-bee.html (1113)
+
+`arcade.spelling.v1` = `{ best, perTier, review, seen, tier }`. `TOTAL = 50`, `BEE_RUN = 20`,
+`SEEN_CAP = 1400`. Tiers 1–3 = Starter/Middle/Champion. `poolFor(tier)` (516); the bee uses
+`tier >= state.tier` (825). `buildQueue` (523) seeds ≤3 due words, then `freshFirst`.
+
+Four modes: study card (`startStudy` 950), typed drill (`checkDrill` 674), four-option differ
+(`renderDiffer` 774, options from `pairs` then `nearMiss` 742), and the bee (`checkBee` 875, three
+lives, queue truncated to attempted words at zero lives). `noteFact` (912) clears `due` only when
+`r.n >= 2`. Speech: `pickVoice` (490) prefers en-GB/en-US by name, `sayWord` (511) speaks twice
+700 ms apart at 0.78. No visual fallback when synthesis is absent.
+
+`#done` is `<section class="stage">`; `show('done')` (939) → `.on`.
+
+### calligraphy.html (653)
+
+`arcade.calligraphy.v1` = `{ best, perTier, review, seen, tier }`, `TOTAL = 20`. Bank strokes are
+`{name, pts:[[x,y]…], hint}` in a 0–100 box.
+
+| Function | Line | Does |
+|---|---|---|
+| `buildQueue` | 329 | `freshFirst` over the tier, sliced to 20 — **no due-first injection** |
+| `renderStroke` | 340 | SVG polyline, `w || 4.2`, round caps; guides dashed cinnabar |
+| `resample` | 404 | 16 points of equal arc length |
+| `scoreStroke` | 422 | pass iff `mean < 9 && endErr < 16` |
+| `endDraw` | 452 | judge, score, completion |
+| `say` | 613 | `zh-CN`, rate 0.75, voice `/^zh/i` |
+
+The endpoint term is the direction check: a reversed stroke covers the same pixels and fails on
+the last resampled point. Each accepted stroke `score += 6`; a wrong stroke resets the streak and
+records `char + ' stroke ' + n` in `review`.
+
+### how-things-work.html (379)
+
+`arcade.howthingswork.v1` = `{ v, explored:{slug:ts}, perGroup:{group:pct}, day }`. A 26-entry
+manifest `M` and six `GROUPS`. `featured()` starts at `dayNumber() % 26` and walks forward to the
+first un-explored entry. `#hadAGo` writes `explored[slug]` and `day = today()`, repaints, and adds
+`.on` to `#done`. `paintButton()` disables the button once `day === today()`. The frame is fixed
+820 px (740 px under the phone media query) — not measured at runtime, because `file://` blocks
+cross-frame reads in Chromium and WebKit.
+
+### index.html (663)
+
+Each card carries `data-key` and `data-bucket`. `bestPct(card)` (519) walks the bucket, taking the
+max numeric value or `v.ema * 100` for a skill record. `paintProgress` (531) writes the stars and
+`aria-label`. `paintSuggest` (557) ranks cards by `arcade.lastplay` then by percentage and takes
+three. `paintSession` (606) reads `ArcadeSession.progress()` so the hub has no second definition
+of the day. A click on any card stamps `arcade.lastplay[href]` (594).
+
+## Conventions
+
+- **`esc()`** — defined in both engines and in the pages that interpolate bank text
+  (`addition-quest`, `calligraphy`, `chinese`, `french`, `spelling-bee`, `swahili`, `piano-engine`). Maths and
+  typing pages carry none because they interpolate only authored numbers; add one before
+  interpolating anything a learner typed or any bank string.
+- **`show(id)`** — stage switching is `s.classList.toggle('on', s.id === id)` in every page that
+  has stages; `.stage { display:none }` / `.stage.on { display:block }`.
+- **Inline styles in `session.js`** — deliberate: the games share no stylesheet and several do
+  not define the accent variables.
+- **Every `localStorage` call is in `try/catch`.** A full quota costs a save, not the game.
+- **`SEEN_CAP` per family**: 900 maths drills, 1,400 spelling, 1,200 language, science and piano
+  engines, 600 arena.
+- **CSS grid `1fr` is `minmax(auto,1fr)`.** Any grid child containing a wide table needs
+  `minmax(0,1fr)` or the child's min-content width wins and the inner `overflow:auto` never
+  scrolls. This is exactly what broke `times-table-academy`'s explore grid.
+
+## Fixed defects
+
+These were found by reading the sources and are now repaired. Each is listed so a future reader
+knows the shape of the bug rather than rediscovering it, and so a regression is recognisable.
+
+1. `science-engine.js` declared `SEEN_CAP = 1200` and never applied it. It now calls a local
+   `markSeen()` (same eviction as the language engine) instead of writing `bucket[key] = Date.now()`
+   directly.
+2. `science-engine.js` never reset `#qHintBox` between questions, so a clue stayed open. `render()`
+   now hides and clears it with the rest of the per-question state.
+3. `#lHome` on the lesson stage had no listener. It now leaves the lesson *without* marking the
+   topic taught, and returns to the quiz when the lesson was opened with "Teach me this"
+   (`lessonResume === 'keep'`), to the home screen when it opened automatically.
+4. `calligraphy.html` set `state.traceMode` and never read it, so trace and order were identical.
+   The ghost is now populated from the character (`#charGhost.textContent = e.char`), shown from
+   the first stroke in trace mode and only on completion in order mode.
+5. `spelling-bee.html` `startStudy()` reset `index` and `mode` but not `right`/`misses`/`hints`,
+   so a study deck running to its end persisted the previous mode's percentage. It now resets them.
+6. `spelling-bee.html` defined `differPool()` and `hasConfusable()` and called neither. Both are
+   removed; the differ drill fills its options with `nearMiss()` as designed.
+7. `infinite-arena.html` initialised `state.length = 10` while the markup marked the **50** button
+   `aria-pressed="true"`. The default is now 50.
+8. `swahili.html` and `chinese.html` each branched on `mode === 'en2fr'` and called an `en2fr`
+   defined in neither file. The dead branch is removed from both `prompt` callbacks.
+9. `favicon.svg` was referenced by no page. It has been redrawn in the arcade's own palette (ink
+   field, cream border, four pips) and every page now declares
+   `<link rel="icon" href="./favicon.svg" type="image/svg+xml">` after the charset meta.
+10. `index.html` defined `--soft`, a blur shadow, in a system with none, and nothing used it. It is
+    removed.
+
+11. `piano.html` hid `#qChoices` with the `hidden` attribute in keyboard mode, but
+    `.choices{display:grid}` is an author rule and beats the user agent's `[hidden]{display:none}`,
+    so the choice buttons stayed on screen beside the keyboard. The page now states the precedence:
+    `[hidden]{display:none!important}`.
+12. `piano-engine.js` built the black keys by testing the *white* key's pitch class, so a black key
+    appeared after every white key except C, E, B and the octave C — seven keys where five belong,
+    and the wrong five. The gap is now computed from `HAS_BLACK_ABOVE` on the white key and the
+    black key is `m + 1`.
+13. `piano-bank.js` gave the eight accidental questions a duplicate option (the natural, listed
+    twice), and the renderer de-duplicates, so they silently became three-option questions. The
+    three options are now the natural, the white key above and the black key above that.
+14. `piano-bank.js` gave the octave interval a `null` third distractor, because the neighbour
+    offsets ran past the end of the table and only two survived. The offsets now walk backwards
+    from the end.
+
+Two properties survive all fourteen: no page makes a request outside its own origin (the favicon
+is a sibling file), and all 18 pages still initialise from `file://`.
+
+## Adding a game
+
+1. Copy the nearest page of the same shape. Do not invent a structure — the shared deck
+   mechanisms are what make a new drill cheap.
+2. Declare a completion marker: `<div class="stage" id="done">` toggled to `.on`, or
+   `<div class="done" id="done">` toggled to `.show`, or `#summaryPanel.show`. Load `session.js`.
+   Nothing else wires the subject.
+3. Storage key `arcade.<game>.v1` with `{best, perLevel|perMode, review, seen}`; wrap every write
+   in `try/catch`; cap `seen` at 900 (or the family's value) and trim on write.
+4. A card in `index.html` with `data-key` and `data-bucket` matching the bucket name.
+5. A subject entry in `session.js` with the right `kind`, slotted so no two `lang` are adjacent and
+   the plan still opens on a language — the load-time guard throws if either breaks.
+6. A row in the README storage table, a section in `docs/design.md` saying what it teaches and why
+   the interaction is shaped that way, and an entry in `llms.txt`.
+7. Probe it: no page errors, no external requests, no overflow at 390 px, and the tracker records
+   the subject once and not on reload. Canary each probe.
+
+Two traps found while building `piano.html`, both cheap to avoid and invisible when you hit them.
+**A `hidden` attribute loses to any author `display` rule on the same element** — a grid or flex
+container needs `[hidden]{display:none!important}` or the element stays visible. **An option
+duplicated in the bank is deleted by the renderer's de-duplication**, so the question silently
+loses a choice; assert `new Set([a,d1,d2,d3]).size === 4` over the whole bank, not just the first
+few entries.
