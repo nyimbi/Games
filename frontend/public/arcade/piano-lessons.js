@@ -35,9 +35,13 @@
       const y = top + gap * 4 - n.step * (gap / 2);
       const ledger = n.step < 0 || n.step > 8
         ? `<line x1="${x - 11}" y1="${y}" x2="${x + 11}" y2="${y}" stroke="${INK}" stroke-width="1.4"/>` : '';
+      // A figure that says "C minor: C E♭ G" has to show the flat, or it is a
+      // picture of three notes with the one fact the caption is about missing.
+      const sign = n.sign
+        ? `<text x="${x - 20}" y="${y + 4}" ${mono} font-size="13" font-weight="800" fill="${INK}">${n.sign}</text>` : '';
       const label = n.label
         ? `<text x="${x}" y="${h - 6}" text-anchor="middle" ${mono} font-size="10" font-weight="700" fill="${MUTED}">${n.label}</text>` : '';
-      return `${ledger}<ellipse cx="${x}" cy="${y}" rx="6.4" ry="4.6" fill="${INK}" transform="rotate(-14 ${x} ${y})"/>${label}`;
+      return `${ledger}${sign}<ellipse cx="${x}" cy="${y}" rx="6.4" ry="4.6" fill="${INK}" transform="rotate(-14 ${x} ${y})"/>${label}`;
     }).join('');
     const cap = caption ? `<text x="${w / 2}" y="16" text-anchor="middle" ${mono} font-size="10" font-weight="800" fill="${INK}">${caption}</text>` : '';
     return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${caption}">${cap}${lines}${clefMark}${dots}</svg>`;

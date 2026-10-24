@@ -78,10 +78,19 @@
     tone(f * 2, (dur || .7) * .6, 'triangle', .022, when || 0);
   }
   const playChord = notes => notes.forEach((m, i) => playNote(m, i * .035, .9));
+  /* A sequence of MIDI numbers, or of `{m, b}` pairs. The pairs carry their
+     own durations, which is what makes a piece sound like itself: playing
+     Hot Cross Buns at one beat per note removes the minims that give it its
+     shape. A bare number is one beat. */
   const playSeq = (notes, bpm) => {
     const beat = 60 / (bpm || 80);
     let t = 0;
-    notes.forEach(m => { playNote(m, t, Math.max(.35, beat * .9)); t += beat; });
+    notes.forEach(n => {
+      const m = typeof n === 'number' ? n : n.m;
+      const b = typeof n === 'number' ? 1 : (n.b || 1);
+      playNote(m, t, Math.max(.35, beat * b * .9));
+      t += beat * b;
+    });
   };
 
   const goodSound = s => { const b = 523.25 * Math.pow(2, Math.min(s, 7) / 12); tone(b, .1, 'sine', .05); setTimeout(() => tone(b * 1.25, .12, 'sine', .045), 70); };
@@ -130,6 +139,50 @@
    */
   const HALF = 6;
 
+  /* A flat is a lowered letter, and a sharp a raised one -- but the bank's
+     notes arrive as MIDI, which has lost that distinction. C♯4 and D♭4 are
+     the same key and the same staff position; only the spelling says which
+     sign is drawn. A caller that cares passes the letter it means; the
+     default falls back to the sharp, which is what the bank uses. */
+  function accidentalOf(midi, spelled) {
+    const p = pc(midi);
+    if (BLACK.indexOf(p) < 0) return '';
+    if (spelled) return spelled;
+    return '♯';
+  }
+
+  /* One note as it is written. `beats` drives the shape: four beats hollow
+     and stemless, two hollow with a stem, one filled, half filled with one
+     flag, a quarter filled with two. Anything shorter than a semiquaver is
+     drawn as a semiquaver, because a third flag at this size is a smudge
+     rather than a fact.
+   */
+  function noteHead(x, y, beats, dot) {
+    const v = beats >= 4 ? 'w' : beats >= 2 ? 'h' : beats >= 1 ? 'q' : beats >= 0.5 ? 'e' : 's';
+    const filled = v !== 'w' && v !== 'h';
+    let out = `<ellipse cx="${x}" cy="${y}" rx="7" ry="5.2" fill="${filled ? '#191c3a' : '#fffdf8'}" stroke="#191c3a" stroke-width="1.5" transform="rotate(-16 ${x} ${y})"/>`;
+    if (v !== 'w') out += `<line x1="${x + 6.5}" y1="${y}" x2="${x + 6.5}" y2="${y - 32}" stroke="#191c3a" stroke-width="1.7"/>`;
+    // A quaver has one flag, a semiquaver two. The second sits a little lower
+    // on the same stem; they are the difference between half a beat and a
+    // quarter, so drawing one for both would misname the note.
+    if (v === 'e') out += `<path d="M${x + 6.5} ${y - 32}q10 6 8 16" fill="none" stroke="#191c3a" stroke-width="1.7"/>`;
+    if (v === 's') {
+      out += `<path d="M${x + 6.5} ${y - 32}q10 6 8 16" fill="none" stroke="#191c3a" stroke-width="1.7"/>`;
+      out += `<path d="M${x + 6.5} ${y - 22}q10 6 8 16" fill="none" stroke="#191c3a" stroke-width="1.7"/>`;
+    }
+    if (dot) out += `<circle cx="${x + 15}" cy="${y - 1}" r="2.6" fill="#191c3a"/>`;
+    return out;
+  }
+
+  /* The time signature, drawn the way it is printed: two numbers stacked on
+     the middle of the staff, numerator above the middle line and
+     denominator below it. */
+  function timeSigGlyph(x, middleY, sig) {
+    const [num, den] = sig.split('/');
+    return `<text x="${x}" y="${middleY - 5}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="19" font-weight="900" fill="#191c3a">${num}</text>` +
+      `<text x="${x}" y="${middleY + 19}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="19" font-weight="900" fill="#191c3a">${den}</text>`;
+  }
+
   function staffSvg(opts) {
     const clef = opts.clef || 'treble';
     const notes = opts.notes || [];
@@ -146,8 +199,16 @@
       ? `<text x="${left - 40}" y="${bottomY + 8}" font-family="serif" font-size="62" fill="#191c3a">𝄞</text>`
       : `<text x="${left - 38}" y="${bottomY + 2}" font-family="serif" font-size="44" fill="#191c3a">𝄢</text>`;
 
+    const sig = opts.timeSig || '';
+    const sigGlyph = sig ? timeSigGlyph(left + 30, top + 2 * HALF * 2, sig) : '';
+    // One sign per note, for the notes that need one. An array on the option
+    // rather than a property of each note keeps the bank's notes plain MIDI.
+    const spell = opts.spell || [];
+    const beats = opts.beats || [];
+    const dots = opts.dots || [];
+
     const span = simul ? 0 : Math.min(56, (right - left - 70) / Math.max(notes.length - 1, 1));
-    const startX = simul ? left + (right - left) / 2 : left + 52;
+    const startX = simul ? left + (right - left) / 2 : left + 52 + (sig ? 22 : 0);
 
     const parts = notes.map((midi, i) => {
       const delta = diatonic(midi) - BOTTOM[clef];
@@ -166,18 +227,25 @@
           out += `<line x1="${x - 13}" y1="${bottomY - s * HALF}" x2="${x + 13}" y2="${bottomY - s * HALF}" stroke="#191c3a" stroke-width="1.5"/>`;
         }
       }
-      // An accidental, for a black key, before the note head.
-      const black = BLACK.indexOf(pc(midi)) >= 0;
-      if (black) {
-        out += `<text x="${x - 24}" y="${y + 5}" font-family="ui-monospace,Menlo,monospace" font-size="17" font-weight="700" fill="#191c3a">♯</text>`;
+      // An accidental, for a black key, before the note head. The sign is
+      // whatever spelling the caller gave; `♯` is the default because that is
+      // what the bank's accidental questions are about.
+      const sign = accidentalOf(midi, spell[i]);
+      if (sign) {
+        out += `<text x="${x - 24}" y="${y + 5}" font-family="ui-monospace,Menlo,monospace" font-size="17" font-weight="700" fill="#191c3a">${sign}</text>`;
       }
-      out += `<ellipse cx="${x}" cy="${y}" rx="7" ry="5.2" fill="#191c3a" transform="rotate(-16 ${x} ${y})"/>`;
-      return { out, x, y, delta };
+      // A caller that knows the duration gets a note drawn at that duration,
+      // stem and fill included. A caller that does not -- every bank question,
+      // which is about pitch -- gets the plain filled head it always got.
+      const known = typeof beats[i] === 'number';
+      out += known ? noteHead(x, y, beats[i], !!dots[i]) : `<ellipse cx="${x}" cy="${y}" rx="7" ry="5.2" fill="#191c3a" transform="rotate(-16 ${x} ${y})"/>`;
+      return { out, x, y, delta, selfStem: known };
     });
 
     // Stems: one per note, up when the note is low and down when it is high.
     // In a chord the stem is shared and its direction follows the chord's
-    // furthest note, which is what an engraver does.
+    // furthest note, which is what an engraver does. A note drawn from a known
+    // duration already carries its own stem, so it is left alone here.
     let stems = '';
     if (simul && parts.length) {
       const d = Math.max.apply(null, parts.map(p => p.delta));
@@ -186,43 +254,108 @@
         ? `<line x1="${x + 6.5}" y1="${topY}" x2="${x + 6.5}" y2="${botY + 34}" stroke="#191c3a" stroke-width="1.7"/>`
         : `<line x1="${x - 6.5}" y1="${topY - 34}" x2="${x - 6.5}" y2="${botY}" stroke="#191c3a" stroke-width="1.7"/>`;
     } else {
-      stems = parts.map(p => p.delta >= 4
+      stems = parts.filter(p => !p.selfStem).map(p => p.delta >= 4
         ? `<line x1="${p.x + 6.5}" y1="${p.y}" x2="${p.x + 6.5}" y2="${p.y + 32}" stroke="#191c3a" stroke-width="1.7"/>`
         : `<line x1="${p.x - 6.5}" y1="${p.y - 32}" x2="${p.x - 6.5}" y2="${p.y}" stroke="#191c3a" stroke-width="1.7"/>`).join('');
     }
 
+    // Barlines. The note list carries beats, so a bar ends where the running
+    // total reaches the time signature's numerator. A note that straddles a
+    // barline would put the line through the middle of a note head; the
+    // pieces are checked for that when they are written, and the line is
+    // simply not drawn here if the totals do not divide.
+    let bars = '';
+    const timed = sig && beats.length === notes.length && !simul;
+    if (timed) {
+      const per = parseInt(sig.split('/')[0], 10);
+      // A window into the middle of a piece starts mid-bar, so the running
+      // total begins at the beats already elapsed rather than at zero. Without
+      // this the barlines land on the wrong notes for every window but the
+      // first, which is worse than no barlines at all.
+      let acc = opts.offset || 0;
+      notes.forEach((_, i) => {
+        acc += beats[i];
+        const endsBar = Math.abs(acc / per - Math.round(acc / per)) < 1e-9;
+        const x = Math.round(startX + i * span + (span || 0) / 2 + 6);
+        if (endsBar && i < notes.length - 1 && x < right) {
+          bars += `<line x1="${x}" y1="${top}" x2="${x}" y2="${bottomY}" stroke="#191c3a" stroke-width="1.5"/>`;
+        }
+      });
+    }
+
     return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="staff notation" class="staffsvg">` +
-      (show ? lines + clefGlyph + stems + parts.map(p => p.out).join('') : '') + `</svg>`;
+      (show ? lines + clefGlyph + sigGlyph + bars + stems + parts.map(p => p.out).join('') : '') + `</svg>`;
   }
 
   /* ---------- rhythm figures ----------
    *
    * A note value drawn as it is written: hollow for a semibreve, hollow with a
    * stem for a minim, filled with a stem for a crotchet, filled with a stem
-   * and a flag for a quaver. A dot sits to the right. Rests are blocks.
+   * and a flag for a quaver. A dot sits to the right.
+   *
+   * The figures sit on a staff with a time signature and barlines, because a
+   * note value on its own is a fact about arithmetic and a note value in a bar
+   * is the thing a reader has to decode. Width follows duration, so the bar a
+   * learner sees is the bar they would count.
+   *
+   * The two rests are drawn where an engraver puts them: the semibreve rest
+   * hangs under the fourth line, the minim rest sits on the third. They were
+   * the same rectangle at the same height, which made the figure for "how long
+   * is a minim rest" identical to the one for a semibreve rest.
    */
-  function rhythmSvg(items, w) {
-    const W = w || 300, H = 96, baseY = 62;
-    let x = 26, out = '';
-    items.forEach(it => {
+  function rhythmSvg(items, w, opts) {
+    const W = w || 300;
+    const gap = 12, top = 22, bottomY = top + 4 * gap, midY = top + 2 * gap;
+    const H = bottomY + 26;
+    // Two signatures, because they answer different questions. `timeSig` is
+    // printed on the staff; `barSig` is the numerator the barlines are drawn
+    // from. They differ only for "which signature is this bar in", where
+    // printing the signature would print the answer.
+    const sig = (opts && opts.timeSig) || '';
+    const barSig = (opts && opts.barSig) || sig;
+    const per = barSig ? parseInt(barSig.split('/')[0], 10) : 0;
+    const UNIT = 26;              // pixels per beat at the widest
+    const startX = 26 + (sig ? 34 : 0);
+
+    const lines = [0, 1, 2, 3, 4].map(i =>
+      `<line x1="16" y1="${top + i * gap}" x2="${W - 12}" y2="${top + i * gap}" stroke="#191c3a" stroke-width="1.3"/>`).join('');
+    const sigGlyph = sig ? timeSigGlyph(startX - 16, midY, sig) : '';
+
+    // `v` here is the bank's own vocabulary: w, h, q and e are whole, half,
+    // quarter and eighth -- `e` is a quaver, not a semiquaver. It is a
+    // different scale from `noteHead`'s beats argument, which is why the two
+    // are not derived from each other.
+    let x = startX, out = '', acc = 0;
+    items.forEach((it, i) => {
       const v = it.v || 'q';
-      const filled = v === 'q' || v === 'e';
-      const stem = v !== 'w';
-      const hollow = !filled;
-      const rx = 7, ry = 5;
+      const beats = { w: 4, h: 2, q: 1, e: 0.5 }[v] || 1;
+      const dur = beats * (it.dot ? 1.5 : 1);
+      const adv = Math.max(26, dur * UNIT);
+      const cx = x + adv / 2;
+
       if (it.rest) {
-        if (v === 'w') out += `<rect x="${x - 9}" y="${baseY - 14}" width="18" height="7" fill="#191c3a"/>`;
-        else if (v === 'h') out += `<rect x="${x - 9}" y="${baseY - 14}" width="18" height="7" fill="#191c3a"/>`;
-        else out += `<path d="M${x - 5} ${baseY - 18}l6 8-6 8-6-8z" fill="#191c3a"/>`;
+        // Rests hang from or sit on the line that names them, not on the note
+        // head's line. The semibreve rest is the one that hangs from the
+        // fourth line; every shorter rest sits inside the staff.
+        if (v === 'w') out += `<rect x="${cx - 9}" y="${top + 3 * gap + 1}" width="18" height="7" fill="#191c3a"/>`;
+        else if (v === 'h') out += `<rect x="${cx - 9}" y="${midY - 8}" width="18" height="7" fill="#191c3a"/>`;
+        else out += `<path d="M${cx - 4} ${midY - 14}l7 9-7 9-4-6 5-3-5-3z" fill="#191c3a"/>`;
       } else {
-        out += `<ellipse cx="${x}" cy="${baseY}" rx="${rx}" ry="${ry}" fill="${hollow ? '#fffdf8' : '#191c3a'}" stroke="#191c3a" stroke-width="1.6" transform="rotate(-16 ${x} ${baseY})"/>`;
-        if (stem) out += `<line x1="${x + 6.4}" y1="${baseY}" x2="${x + 6.4}" y2="${baseY - 32}" stroke="#191c3a" stroke-width="1.7"/>`;
-        if (v === 'e') out += `<path d="M${x + 6.4} ${baseY - 32}q10 6 8 16" fill="none" stroke="#191c3a" stroke-width="1.7"/>`;
-        if (it.dot) out += `<circle cx="${x + 15}" cy="${baseY - 2}" r="2.6" fill="#191c3a"/>`;
+        const filled = v === 'q' || v === 'e';
+        out += `<ellipse cx="${cx}" cy="${midY}" rx="7" ry="5.2" fill="${filled ? '#191c3a' : '#fffdf8'}" stroke="#191c3a" stroke-width="1.6" transform="rotate(-16 ${cx} ${midY})"/>`;
+        if (v !== 'w') out += `<line x1="${cx + 6.4}" y1="${midY}" x2="${cx + 6.4}" y2="${midY - 32}" stroke="#191c3a" stroke-width="1.7"/>`;
+        if (v === 'e') out += `<path d="M${cx + 6.4} ${midY - 32}q10 6 8 16" fill="none" stroke="#191c3a" stroke-width="1.7"/>`;
+        if (it.dot) out += `<circle cx="${cx + 15}" cy="${midY - 2}" r="2.6" fill="#191c3a"/>`;
       }
-      x += 44;
+
+      acc += dur;
+      x += adv;
+      // A barline after the item that completes a bar, never after the last.
+      if (per && i < items.length - 1 && Math.abs(acc / per - Math.round(acc / per)) < 1e-9) {
+        out += `<line x1="${Math.round(x - 6)}" y1="${top}" x2="${Math.round(x - 6)}" y2="${bottomY}" stroke="#191c3a" stroke-width="1.5"/>`;
+      }
     });
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="note values">${out}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="note values in a bar">${lines}${sigGlyph}${out}</svg>`;
   }
 
   /* ---------- the keyboard ----------
@@ -407,7 +540,7 @@
       } else if (q.staff) {
         fig.innerHTML = staffSvg(q.staff);
       } else if (q.rhythm) {
-        fig.innerHTML = rhythmSvg(q.rhythm);
+        fig.innerHTML = rhythmSvg(q.rhythm, 300, { timeSig: q.shownSig || '', barSig: q.barSig || '' });
       } else {
         fig.innerHTML = '';
       }
@@ -594,7 +727,15 @@
       const start = Math.max(0, Math.min(state.pieceIndex - 2, p.notes.length - WINDOW));
       const slice = p.notes.slice(start, start + WINDOW);
       const midis = slice.map(n => n.m);
-      $('pStaff').innerHTML = staffSvg({ clef: 'treble', notes: midis, w: 340, h: 150 });
+      let elapsed = 0;
+      for (let i = 0; i < start; i++) elapsed += p.notes[i].b;
+      $('pStaff').innerHTML = staffSvg({
+        clef: 'treble', notes: midis, w: 340, h: 150,
+        timeSig: start === 0 ? (p.timeSig || '4/4') : '',
+        beats: slice.map(n => n.b),
+        offset: elapsed,
+        spell: slice.map(n => n.s || '')
+      });
       const next = p.notes[state.pieceIndex];
       $('pNext').textContent = next ? NAMES[pc(next.m)] + octaveOf(next.m) : '—';
       $('pProgress').style.width = (state.pieceIndex / p.notes.length * 100) + '%';
@@ -631,7 +772,12 @@
       state.piecesDone = state.piecesDone || {};
       state.piecesDone[p.id] = Math.max(state.piecesDone[p.id] || 0, pct);
       save();
-      $('pStaff').innerHTML = staffSvg({ clef: 'treble', notes: p.notes.map(n => n.m), w: 340, h: 150 });
+      $('pStaff').innerHTML = staffSvg({
+        clef: 'treble', notes: p.notes.map(n => n.m), w: 340, h: 150,
+        timeSig: p.timeSig || '4/4',
+        beats: p.notes.map(n => n.b),
+        spell: p.notes.map(n => n.s || '')
+      });
       $('pKeys').innerHTML = '';
       $('pNext').textContent = 'Done';
       $('pCount').textContent = p.notes.length + ' / ' + p.notes.length;
@@ -733,7 +879,7 @@
     $('pHear').addEventListener('click', () => {
       const p = state.piece;
       if (!p) return;
-      playSeq(p.notes.map(n => n.m), 84);
+      playSeq(p.notes, 84);   // the pairs, so each note lasts as long as it is written
     });
     $('pAgain').addEventListener('click', () => { if (state.piece) openPiece(state.piece); });
     document.addEventListener('keydown', ev => {

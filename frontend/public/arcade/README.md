@@ -555,7 +555,7 @@ the max.
 ### 15 · Piano — `piano.html`
 
 `arcade.piano.v1` → `{ best, seen, review, perTier, tier, taught, piecesDone }`, run by
-`piano-engine.js` at `total: 20`. 168 questions across ten topics, plus eight pieces.
+`piano-engine.js` at `total: 20`. 181 questions across ten topics, plus eight pieces.
 
 This is the one game that makes a sound, and it does it without a single asset. Pitch is
 synthesised from oscillators: `playNote` runs a sine for the body and a quieter triangle an octave

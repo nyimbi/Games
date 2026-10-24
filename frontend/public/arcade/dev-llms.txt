@@ -42,7 +42,7 @@ physics-bank.js         PHYSICS_BANK        240 over 10 topics
 chemistry-bank.js       CHEMISTRY_BANK      240 over 10 topics
 physics-lessons.js      PHYSICS_LESSONS     10, keyed by topic id
 chemistry-lessons.js    CHEMISTRY_LESSONS   10, keyed by topic id
-piano-bank.js           PIANO_BANK          168 over 10 topics, + PIANO_PIECES (8)
+piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
@@ -125,7 +125,7 @@ page that declares neither can never be finished. Only if there is no `#done` do
 `{subtree: true, attributes: true, attributeFilter: ['class', 'hidden']}`. The filter is not
 cosmetic: the games repaint on every keystroke. `fired` prevents a second record per page load.
 
-### piano-engine.js (744)
+### piano-engine.js (895)
 
 `window.PianoGame = { init, staffSvg, rhythmSvg, esc }` at 743.
 
@@ -134,16 +134,36 @@ pitch class, `LETTER_AT` maps pitch class → diatonic letter (C♯ shares C's),
 `octave*7 + letter` is the vertical axis of the staff. `BOTTOM = { treble: 30, bass: 18 }` are the
 bottom lines, E4 and G2. `freqOf(m) = 440 * 2^((m-69)/12)`.
 
-**Audio (47–95).** Lazy `AudioContext` in try/catch, resumed when suspended. `playNote(midi, when,
+**Audio (60–100).** Lazy `AudioContext` in try/catch, resumed when suspended. `playNote(midi, when,
 dur)` is a sine plus a triangle an octave up, both decaying. `playChord` offsets by 35 ms so the
-attacks separate; `playSeq(notes, bpm)` steps by `60/bpm`. No samples, no assets.
+attacks separate. `playSeq(notes, bpm)` takes MIDI numbers or `{m, b}` pairs and steps by
+`60/bpm * b`, so a piece keeps its minims instead of being flattened to one beat per note. No
+samples, no assets.
 
-**Drawing (105–175).** `staffSvg({clef, notes, simul, show, w, h})` draws five lines, the clef
-glyph, a stem per note (shared and direction-set for `simul`), an accidental before a black key,
-and ledger lines at every even step between the staff and the note. `rhythmSvg(items)` draws note
-values (`w h q e`, `dot`, `rest`). `keyboardHtml(mark)` lays out C4–C5 with black keys after the
-whites whose pitch class has one above them — `HAS_BLACK_ABOVE = [0,2,5,7,9]` — and every key
-carries `data-midi`.
+**Drawing (131–310).** `staffSvg({clef, notes, simul, show, w, h, timeSig, beats, spell, dots,
+offset})` draws five lines, the clef glyph, a stem per note (shared and direction-set for
+`simul`), an accidental before a black key, and ledger lines at every even step between the staff
+and the note.
+
+Three of those options are new and each fixes a gap that made the picture say less than the text:
+
+- `spell: ['♭']` picks the sign. `accidentalOf` defaults to `♯` because MIDI has already lost the
+  distinction between C♯4 and D♭4 — they are one key and one staff position — so a caller that
+  means a flat has to say so. Sixteen accidental questions carry it, eight sharp and eight flat.
+- `timeSig` prints two stacked digits after the clef; `beats` makes each note draw at its written
+  duration (`noteHead`: ≥4 hollow stemless, ≥2 hollow stemmed, ≥1 filled, ≥0.5 one flag, less two)
+  and draws a barline wherever the running total completes the numerator. `offset` is the beats
+  already elapsed before the first note in the window, so a slice taken from the middle of a piece
+  puts its barlines in the right places instead of behaving as if it started at bar one.
+- `rhythmSvg(items, w, {timeSig, barSig})` draws the note values on a staff with barlines and
+  optional signature. `timeSig` is printed and `barSig` is what the barlines are counted from;
+  they differ only for "which signature is this bar in", where printing it would print the answer.
+  Note the two vocabularies: here `v` is `w h q e` = whole/half/quarter/**eighth**, while
+  `noteHead` takes a beat count. They are not derived from each other and `e` means different
+  things in each.
+
+`keyboardHtml(mark)` lays out C4–C5 with black keys after the whites whose pitch class has one
+above them — `HAS_BLACK_ABOVE = [0,2,5,7,9]` — and every key carries `data-midi`.
 
 | Function | Line | Does |
 |---|---|---|
@@ -410,8 +430,20 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
 14. `piano-bank.js` gave the octave interval a `null` third distractor, because the neighbour
     offsets ran past the end of the table and only two survived. The offsets now walk backwards
     from the end.
+15. The piano page taught rhythm as text and drew note values as bare glyphs: no staff, no time
+    signature, no barline. A learner could recite "4/4 means four crotchets" and never decode a
+    bar. `rhythmSvg` now draws a bar on a staff with a signature and barlines, and the bank asks
+    five questions about a complete bar.
+16. Every accidental on the page was a sharp. `staffSvg` emitted `♯` unconditionally, so the
+    eight flat spellings of the same five black keys did not exist as questions and a flat sign
+    was never drawn. `spell` picks the sign and the flat questions answer with the flat letter.
+17. The play stage discarded each piece note's beat count: `p.notes.map(n => n.m)` dropped `.b`,
+    so Hot Cross Buns's minims and semibreves were drawn and played as even crotchets. The staff
+    is rhythmically wrong without it, and the defect is invisible because the notes are right.
+18. The semibreve rest and the minim rest were the same 18×7 rectangle at the same `y`. The
+    figure for "how many beats of silence is a minim rest" was the semibreve rest's figure.
 
-Two properties survive all fourteen: no page makes a request outside its own origin (the favicon
+Two properties survive all eighteen: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 18 pages still initialise from `file://`.
 
 ## Adding a game

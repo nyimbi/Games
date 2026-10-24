@@ -110,25 +110,39 @@
     });
   });
 
-  /* Accidentals: the same position, a different key. Tier 3. */
-  [[61, 'treble'], [63, 'treble'], [66, 'treble'], [68, 'treble'], [70, 'treble'],
-   [66, 'bass'], [68, 'bass'], [70, 'bass']].forEach(([midi, clef]) => {
+  /* Accidentals: the same position, a different key. Tier 3.
+   *
+   * Each entry carries the spelling it is written in, because a flat and a
+   * sharp are different signs on the staff and the answer is the letter the
+   * sign produces. D♭4 and C♯4 are the same key; a learner who only ever sees
+   * ♯ learns half of the accidentals.
+   */
+  [[61, 'treble', '♯', 'C♯'], [63, 'treble', '♯', 'D♯'], [66, 'treble', '♯', 'F♯'],
+   [68, 'treble', '♯', 'G♯'], [70, 'treble', '♯', 'A♯'],
+   [61, 'treble', '♭', 'D♭'], [63, 'treble', '♭', 'E♭'], [66, 'treble', '♭', 'G♭'],
+   [68, 'treble', '♭', 'A♭'], [70, 'treble', '♭', 'B♭'],
+   [66, 'bass', '♯', 'F♯'], [68, 'bass', '♯', 'G♯'], [70, 'bass', '♯', 'A♯'],
+   [66, 'bass', '♭', 'G♭'], [68, 'bass', '♭', 'A♭'], [70, 'bass', '♭', 'B♭']
+  ].forEach(([midi, clef, sign, spelled]) => {
     add({
       tier: 3, topic: 'names', kind: 'note', midi, clef,
       q: 'Which note is this?',
-      staff: { clef, notes: [midi] },
+      staff: { clef, notes: [midi], spell: [sign] },
       play: [midi],
       // The natural spelling is the mistake a learner makes by ignoring the
       // accidental, so it is always one option. The other two are the white
       // key above and the black key above that -- not the semitone below,
       // which for every sharp is the natural itself and would leave the
-      // renderer with three options after de-duplicating.
-      a: NAMES[pc(midi)],
+      // renderer with three options after de-duplicating. The answer is the
+      // spelled letter, so D♭ is right where C♯ would be wrong.
+      a: spelled,
       d1: letterOf(midi), d2: NAMES[pc(midi + 1)], d3: NAMES[pc(midi + 2)],
       trap: 'The accidental changes the key, not the line. The note is still ' +
         positionOf(midi, clef) + '.',
-      explain: 'The accidental sits before the note head, so the position is unchanged: ' +
-        positionOf(midi, clef) + ', raised or lowered by a semitone.'
+      explain: 'The ' + (sign === '♭' ? 'flat' : 'sharp') + ' sits before the note head, so the ' +
+        'position is unchanged: ' + positionOf(midi, clef) + ', ' +
+        (sign === '♭' ? 'lowered' : 'raised') + ' by a semitone. Written this way it is ' +
+        spelled + '; the same key is also ' + NAMES[pc(midi)] + '.'
     });
   });
 
@@ -380,6 +394,53 @@
     rhythm: rhythm || null
   }));
 
+  /* A bar, read as a bar. Everything above asks about a note value in
+     isolation, which is arithmetic; the skill is looking at a bar and saying
+     what fills it. Each figure is a complete bar and the answer is the time
+     signature that bar is in, so the learner has to total the note values and
+     match the total to the numerator.
+   *
+   * Only signatures with a crotchet beat (x/4) appear here. A 6/8 bar drawn
+   * with this renderer would be six quavers totalling three crotchets, and
+   * every total would be right for the wrong reason -- the unit of the beat is
+   * what 6/8 changes, and that is a question about the bottom number, which
+   * the text questions already ask. */
+  const Q = [{ v: 'q' }, { v: 'q' }, { v: 'q' }, { v: 'q' }];
+  const H = [{ v: 'h' }, { v: 'h' }];
+  const BARS = [
+    ['Which time signature is this bar in?', '4/4', ['3/4', '2/4', '6/8'],
+      'Total the note values, then find the signature whose top number matches.',
+      'Four crotchets fill the bar, so the top number is four and the bottom is four: 4/4.',
+      '4/4', Q, null],
+    ['Which time signature is this bar in?', '3/4', ['4/4', '2/4', '6/8'],
+      'Three crotchets is three beats, not two and not four.',
+      'Three crotchets fill the bar, so it is 3/4: three beats, each a crotchet.',
+      '3/4', [{ v: 'q' }, { v: 'q' }, { v: 'q' }], null],
+    ['Which time signature is this bar in?', '2/4', ['3/4', '4/4', '2/2'],
+      'Two crotchets is two beats.',
+      'Two crotchets fill the bar, so it is 2/4: two beats, each a crotchet.',
+      '2/4', [{ v: 'q' }, { v: 'q' }], null],
+    ['Which time signature is this bar in?', '4/4', ['3/4', '2/4', '4/2'],
+      'A minim is two crotchets, so the two of them make four.',
+      'Two minims are four crotchets, which fills a 4/4 bar. Two minims alone would also fit 2/2, but the bottom number here is the crotchet.',
+      '4/4', H, null],
+    ['How many crotchet beats does this bar hold?', '3', ['4', '2', '6'],
+      'The top number of the signature is the count, whatever the notes add up to.',
+      'The signature is 3/4, so the bar holds three crotchet beats. The notes in it should add up to exactly that.',
+      '3/4', [{ v: 'q' }, { v: 'q' }, { v: 'q' }], '3/4']
+  ];
+  BARS.forEach(([q, a, d, trap, explain, barSig, rhythm, shownSig], i) => add({
+    tier: i < 2 ? 1 : i < 4 ? 2 : 3, topic: 'rhythm', kind: 'text',
+    q, a, d1: d[0], d2: d[1], d3: d[2], trap, explain,
+    rhythm,
+    // `barSig` is the numerator the barlines are drawn from; `shownSig` is the
+    // signature printed on the staff. They are the same for "how many beats",
+    // and different for "which signature is this": a figure that printed the
+    // answer would be a question about reading a number that is already on
+    // the page.
+    barSig, shownSig: shownSig || null
+  }));
+
   /* ---------- scales ---------- */
   const SCALES = [
     ['How many different notes are in a major scale before it repeats the first?', '7', ['8', '5', '12'],
@@ -491,6 +552,11 @@
    */
   const n = (m, b) => ({ m, b });
 
+  /* Every piece below is in common time. Stated rather than assumed, because
+     the play stage draws a barline every four beats and a piece that was in
+     3/4 would get its barlines in the wrong places without anything failing. */
+  const PIECE_SIG = '4/4';
+
   const PIECES = [
     {
       id: 'cscale', title: 'C major scale', note: 'Eight notes, one octave. Right hand.',
@@ -540,6 +606,8 @@
         n(60, 1), n(60, 1), n(62, 1), n(64, 1), n(62, 1.5), n(60, 0.5), n(60, 2)]
     }
   ];
+
+  PIECES.forEach(p => { p.timeSig = PIECE_SIG; });
 
   window.PIANO_BANK = BANK;
   window.PIANO_PIECES = PIECES;

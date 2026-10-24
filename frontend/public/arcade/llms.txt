@@ -76,7 +76,7 @@
   [chinese-bank.js](chinese-bank.js) characters+pinyin+gloss ·
   [calligraphy-bank.js](calligraphy-bank.js) 440 characters with stroke order ·
   [calligraphy-sketch.js](calligraphy-sketch.js) hand-drawn pictograms + composition sketches ·
-- [piano-bank.js](piano-bank.js): 168 questions across ten topics, generated where the content is
+- [piano-bank.js](piano-bank.js): 181 questions across ten topics, generated where the content is
   systematic (every staff position, every interval, every key signature) and authored where it is
   not; plus 8 public-domain pieces as `{id, title, note, notes:[{m,b}]}`. [piano-lessons.js](piano-lessons.js):
   10 lessons keyed by topic id, same shape as the science lessons, two inline SVG figures each.
