@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Division Diner — Math Arcade</title>
 <style>
@@ -272,6 +273,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="./session.js"></script>
+<script src="./maths-engine.js"></script>
+<script src="./maths-lessons.js"></script>
 <script>
 (() => {
   'use strict';
@@ -279,92 +282,18 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   const KEY = 'arcade.division.v1';
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
+  const MG = window.MathsGame;
   /* ---------------- freshness ----------------
      Unseen facts first, then the least recently served. A level smaller than a
      deck (÷1–5 is 80 facts) starts a new cycle rather than repeating. */
-  const SEEN_CAP = 900;
-  function freshFirst(pool, seen, level) {
-    const bucket = seen[level] || {};
-    const fresh = [], stale = [];
-    pool.forEach(f => ((bucket[`${f.divisor}|${f.dividend}`] || 0) === 0 ? fresh : stale).push(f));
-    shuffle(stale).sort((x, y) =>
-      (bucket[`${x.divisor}|${x.dividend}`] || 0) - (bucket[`${y.divisor}|${y.dividend}`] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
-  function markSeen(seen, level, key) {
-    const bucket = seen[level] || (seen[level] = {});
-    if (!bucket[key]) {
-      if (Object.keys(bucket).length >= SEEN_CAP) {
-        const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
-        if (oldest) delete bucket[oldest[0]];
-      }
-    }
-    bucket[key] = Date.now();
-  }
-  function newCycle(pool, seen, level) {
-    const bucket = seen[level] || {};
-    return pool.slice().sort((x, y) =>
-      (bucket[`${x.divisor}|${x.dividend}`] || 0) - (bucket[`${y.divisor}|${y.dividend}`] || 0));
-  }
+  const freshFirst = MG.freshFirst, markSeen = MG.markSeen, newCycle = MG.newCycle;
+  const shuffle = MG.shuffle;
 
-  const shuffle = a => {
-    for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  };
-
-  let ctx = null;
-  function tone(freq, dur = .12, type = 'sine', gain = .05) {
-    try {
-      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === 'suspended') ctx.resume();
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(0, ctx.currentTime);
-      g.gain.linearRampToValueAtTime(gain, ctx.currentTime + .012);
-      g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + dur);
-      o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + .02);
-    } catch (_) {}
-  }
-  const goodSound = s => {
-    const b = 523.25 * Math.pow(2, Math.min(s, 6) / 12);
-    tone(b, .1, 'sine', .045); setTimeout(() => tone(b * 1.25, .12, 'sine', .04), 70);
-    if (s >= 5) setTimeout(() => tone(b * 1.5, .16, 'triangle', .035), 150);
-  };
-  const badSound = () => { tone(196, .16, 'triangle', .045); setTimeout(() => tone(155, .2, 'triangle', .04), 110); };
-  const clickSound = () => tone(660, .05, 'square', .02);
+  const tone = MG.tone, goodSound = MG.goodSound, badSound = MG.badSound;
+  const clickSound = MG.clickSound;
   const plopSound = () => tone(420 + Math.random() * 120, .05, 'sine', .02);
 
-  const canvas = $('confetti'), cx = canvas.getContext('2d');
-  let bits = [], raf = null;
-  function sizeCanvas() {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
-    canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
-    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  addEventListener('resize', sizeCanvas); sizeCanvas();
-  const COLORS = ['#ffb703', '#ff6b6b', '#0fb5a1', '#5b6cff', '#9b5de5', '#7cb518'];
-  function burst(n = 30) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    for (let i = 0; i < n; i++) bits.push({
-      x: innerWidth / 2 + (Math.random() - .5) * 160, y: innerHeight * .34 + (Math.random() - .5) * 40,
-      vx: (Math.random() - .5) * 9, vy: -Math.random() * 10 - 2, r: 3 + Math.random() * 5,
-      rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3, c: COLORS[i % COLORS.length], life: 1
-    });
-    if (!raf) tick();
-  }
-  function tick() {
-    cx.clearRect(0, 0, innerWidth, innerHeight);
-    for (const b of bits) {
-      b.vy += .32; b.vx *= .992; b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.life -= .008;
-      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.rot); cx.globalAlpha = Math.max(b.life, 0);
-      cx.fillStyle = b.c; cx.fillRect(-b.r / 2, -b.r / 2, b.r, b.r * 1.7); cx.restore();
-    }
-    bits = bits.filter(b => b.life > 0 && b.y < innerHeight + 40);
-    if (bits.length) raf = requestAnimationFrame(tick);
-    else { cx.clearRect(0, 0, innerWidth, innerHeight); raf = null; }
-  }
+  const burst = MG.burst;
 
   /* ================= SHARE ================= */
   const S = { cookies: 12, plates: 3, dealt: false, model: 'share' };
@@ -590,10 +519,11 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
       .slice(0, 2)
       .map(([k]) => { const [d, n] = k.split('|').map(Number); return { dividend: n, divisor: d, quotient: n / d, review: true }; })
       .filter(f => ds.includes(f.divisor));
-    let pool = freshFirst(shuffle(poolFor(state.level)), state.seen, state.level);
+    const keyOf = f => `${f.divisor}|${f.dividend}`;
+    let pool = freshFirst(shuffle(poolFor(state.level)), state.seen, state.level, keyOf);
     let i = 0, pass = 0;
     while (out.length < TOTAL) {
-      if (i >= pool.length) { pool = newCycle(poolFor(state.level), state.seen, state.level); i = 0; pass++; }
+      if (i >= pool.length) { pool = newCycle(poolFor(state.level), state.seen, state.level, keyOf); i = 0; pass++; }
       const fact = pool[i++];
       const last = out[out.length - 1];
       if (pass === 0 && out.some(o => o.dividend === fact.dividend && o.divisor === fact.divisor)) continue;
@@ -784,6 +714,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   }
 
   load(); buildPad(); resetShare();
+  MG.init(window.MATHS_LESSONS['division-diner']);
 })();
 </script>
 </body>

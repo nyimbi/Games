@@ -9,7 +9,8 @@ Line numbers are approximate — they drift with every edit. Names and constants
 ## The inventory
 
 ```
-15,338 lines across 34 source files (18 pages, 16 scripts). No build, no bundler, no test runner.
+16,306 lines across 36 source files (18 pages, 18 scripts). No build, no bundler, no test runner.
+Verification is `node --check` per inline block plus four Playwright probes in `probes/`.
 
 index.html              663   hub: 16 cards, stars from each game's bucket, suggestion lane
 session.html            324   the day: plan list, meter, 21-day strip
@@ -17,19 +18,20 @@ session.js              313   session state, alternation guard, completion obser
 
 lang-engine.js          473   quiz engine: french, swahili, chinese
 science-engine.js       507   quiz engine + lesson scheduler: physics, chemistry
-piano-engine.js         744   staff renderer, keyboard, synth, play stage
+piano-engine.js         895   staff renderer, keyboard, synth, play stage
+maths-engine.js         348   deck, audio, confetti + lesson overlay: the five maths drills
 piano.html              307   home, quiz, play and lesson stages
-calligraphy.html        653   own stroke-matching logic (no engine)
+calligraphy.html        661   own stroke-matching logic (no engine)
 
-number-bonds.html       880   maths drills — each carries its own engine inline
-addition-quest.html    1068
-subtraction-safari.html 1049
-times-table-academy.html 1126
-division-diner.html     790
-infinite-arena.html     759   weighted generator, not a deck
-typing-tutor.html       615
-spelling-bee.html      1113   own engine + 4 modes
-how-things-work.html    379   iframe wrapper over figures/
+number-bonds.html       809   maths drills — each carries its own interaction inline
+addition-quest.html     992
+subtraction-safari.html 974
+times-table-academy.html 1057
+division-diner.html     720
+infinite-arena.html     760   weighted generator, not a deck
+typing-tutor.html       616
+spelling-bee.html      1115   own engine + 4 modes
+how-things-work.html    380   iframe wrapper over figures/
 
 banks (data only, no logic)
 spelling-bank.js        SPELL_BANK        1,239 entries (315 / 379 / 545)
@@ -42,9 +44,11 @@ physics-bank.js         PHYSICS_BANK        240 over 10 topics
 chemistry-bank.js       CHEMISTRY_BANK      240 over 10 topics
 physics-lessons.js      PHYSICS_LESSONS     10, keyed by topic id
 chemistry-lessons.js    CHEMISTRY_LESSONS   10, keyed by topic id
+maths-lessons.js        MATHS_LESSONS       20 (4 per drill), keyed by drill then topic id
 piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
+probes/                 4 Playwright probes: lessons, grading, shell, freshness
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
 docs/design.md          370   the design narrative
 ```
@@ -59,24 +63,28 @@ Which page loads what:
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
-| six maths pages, `typing-tutor.html` | `session.js` only |
+| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` |
+| `infinite-arena.html`, `typing-tutor.html` | `session.js` only |
 | `index.html`, `session.html` | `session.js` |
 
 ## The five shared deck mechanisms
 
-Five of the six maths drills, the spelling bee and the language engine implement the same deck
-algorithm, near-verbatim. Read one and you have read them all.
+Four of the five maths drills, the spelling bee and the language engine implement the same deck
+algorithm, near-verbatim. The five maths drills no longer each carry a copy: they load
+`maths-engine.js` and alias its functions. Read that one file and you have read the four drills.
 
-**`freshFirst(pool, bucket, keyOf)`** — partitions into unseen (`seen[bucket][key] === 0`) and
+**`freshFirst(pool, seen, bucket, keyOf)`** — partitions into unseen (`seen[bucket][key] === 0`) and
 seen, shuffles each, sorts the seen group by timestamp ascending. Unseen first, then least
-recently served. ~12 lines.
+recently served. `keyOf` is per drill: `whole|a` for bonds, `a|b` for the three column drills,
+`divisor|dividend` for division.
 
-**`markSeen(bucket, key)`** — writes `Date.now()`, evicts the oldest once the bucket hits
-`SEEN_CAP`. Called from `renderQuestion`, never from the deck builder: the stamp records what was
-*served*, not what was *planned*.
+**`markSeen(seen, bucket, key)`** — writes `Date.now()`, evicts the oldest once the bucket hits
+`SEEN_CAP` (900). Called from `renderQuestion`, never from the deck builder: the stamp records what
+was *served*, not what was *planned*. This matters for testing — the count is already 1 before the
+first answer, so it cannot be used to prove a submit was graded.
 
-**`newCycle(pool, bucket, keyOf)`** — re-sorts the pool by oldest-seen, so pass two starts with
-the facts that have waited longest.
+**`newCycle(pool, seen, bucket, keyOf)`** — re-sorts the pool by oldest-seen, so pass two starts
+with the facts that have waited longest.
 
 **The fill loop** — walk the ordered pool, push, count passes. Pass 0 forbids any duplicate;
 later passes forbid only an immediate repeat. Without the counter the loop never terminates on a
@@ -267,8 +275,33 @@ text → timestamp. `review` keyed by question text.
 
 ### The six maths drills
 
-Common shape: `TOTAL = 50`, `SEEN_CAP = 900`, storage `{best, perLevel|perMode, review, seen}`,
-`#done.show`, stars 90/70.
+Common shape: `TOTAL = 50`, storage `{best, perLevel|perMode, review, seen}`, `#done.show`,
+stars 90/70. The five drills load `maths-engine.js` + `maths-lessons.js`; the arena loads neither.
+
+### maths-engine.js (332)
+
+`window.MathsGame`. Loaded before the drill's inline script, so the aliasing at the top of each
+page (`const MG = window.MathsGame; const freshFirst = MG.freshFirst, …`) is safe.
+
+| Export | What it does |
+|---|---|
+| `freshFirst / markSeen / newCycle / SEEN_CAP` | the shared deck; `keyOf` is the drill's argument |
+| `tone / goodSound / badSound / clickSound / audio` | oscillators, lazy context, everything in try/catch |
+| `burst(n)` | canvas confetti; mounts `#confetti` lazily, reuses the page's existing one |
+| `init(cfg) / open / close / lessonTopic` | the lesson overlay |
+| `$ / rnd / shuffle / esc` | the four one-liners every drill had a copy of |
+
+`init(cfg)` takes `{topics, lessons}` and returns `null` if either is missing, so a page without
+written content shows no button. `render(topicId)` escapes every authored string but injects
+`figs[].svg` as markup — the same split as `science-engine.js`. The dialog injects
+`<style id="mathsLessonCSS">` on first build rather than editing five stylesheets; the five drills
+have five palettes and a lesson should look like the page it is on.
+
+**Per-drill sounds that stayed local.** `tickSound` (bonds), `whoosh` (addition), `breakSound`
+(subtraction), `plopSound` (division) are one-line compositions over `tone`. They are the drill's
+own noise, not shared machinery, so they stayed in the page.
+
+### The five drills' page-level state
 
 | File | Key | Bucket keys | Pool |
 |---|---|---|---|
@@ -442,8 +475,23 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     is rhythmically wrong without it, and the defect is invisible because the notes are right.
 18. The semibreve rest and the minim rest were the same 18×7 rectangle at the same `y`. The
     figure for "how many beats of silence is a minim rest" was the semibreve rest's figure.
+19. The five maths drills each carried their own copy of `freshFirst`/`markSeen`/`newCycle` and
+    the audio, and the copies had drifted: `freshFirst` took four different signatures, `SEEN_CAP`
+    was applied in three and only declared in two, and the streak flourish existed in three of
+    five. They now load `maths-engine.js`. The interaction stayed inline — the engine owns the
+    deck, not the drill.
+20. A maths drill had a worked example and no page saying what the idea was. `maths-lessons.js`
+    adds twenty lessons (four per drill), opened from a **Learn** button rather than scheduled:
+    a drill has modes and a generated pool, so unlike the science engine there is no first
+    question on a topic to hang an automatic lesson on.
+21. Moving the freshness deck into `maths-engine.js` silently broke division's key. The old local
+    `freshFirst` hardcoded `divisor|dividend`; the shared one defaults to `a|b`, and a division
+    fact has no `a` or `b`, so every fact keyed as `undefined|undefined` while `markSeen` still
+    wrote `divisor|dividend`. Nothing failed: the drill played, graded and scored, and only
+    forgot what it had served. Both division and number bonds now pass their own `keyOf`.
+    `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all eighteen: no page makes a request outside its own origin (the favicon
+Two properties survive all twenty-one: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 18 pages still initialise from `file://`.
 
 ## Adding a game

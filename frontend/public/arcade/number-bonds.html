@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Number Bonds — Math Arcade</title>
 <style>
@@ -329,6 +330,8 @@ h1 span{color:var(--teal-d)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="./session.js"></script>
+<script src="./maths-engine.js"></script>
+<script src="./maths-lessons.js"></script>
 <script>
 (() => {
   'use strict';
@@ -337,97 +340,22 @@ h1 span{color:var(--teal-d)}
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const shuffle = a => {
-    for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  };
+  const MG = window.MathsGame;
+  const shuffle = MG.shuffle;
 
   /* ---------------- freshness ----------------
      A fact served in an earlier set is moved behind every unseen fact, so a
      second deck in the same week is genuinely a second deck. The record is
      bounded and per mode, and a mode whose fact space is smaller than a deck
      simply starts a new cycle rather than repeating inside one. */
-  const SEEN_CAP = 900;
-  function freshFirst(pool, seen, mode, keyOf) {
-    const bucket = seen[mode] || {};
-    const fresh = [], stale = [];
-    pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
-    // within each group, least recently served first, then shuffle the ties
-    shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
-  function markSeen(seen, mode, key) {
-    const bucket = seen[mode] || (seen[mode] = {});
-    const now = Date.now();
-    if (!bucket[key]) {
-      const n = Object.keys(bucket).length;
-      if (n >= SEEN_CAP) {
-        const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
-        if (oldest) delete bucket[oldest[0]];
-      }
-    }
-    bucket[key] = now;
-  }
-  function newCycle(pool, seen, mode) {
-    const bucket = seen[mode] || {};
-    const ordered = pool.slice().sort((x, y) => (bucket[`${x.whole}|${x.a}`] || 0) - (bucket[`${y.whole}|${y.a}`] || 0));
-    return ordered;
-  }
+  const freshFirst = MG.freshFirst, markSeen = MG.markSeen, newCycle = MG.newCycle;
 
   /* ---------------- audio ---------------- */
-  let ctx = null;
-  function tone(freq, dur = .12, type = 'sine', gain = .05) {
-    try {
-      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === 'suspended') ctx.resume();
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(0, ctx.currentTime);
-      g.gain.linearRampToValueAtTime(gain, ctx.currentTime + .012);
-      g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + dur);
-      o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur + .02);
-    } catch (_) {}
-  }
-  const goodSound = s => {
-    const b = 523.25 * Math.pow(2, Math.min(s, 7) / 12);
-    tone(b, .1, 'sine', .045); setTimeout(() => tone(b * 1.25, .12, 'sine', .04), 70);
-    if (s >= 5) setTimeout(() => tone(b * 1.5, .16, 'triangle', .035), 150);
-  };
-  const badSound = () => { tone(196, .16, 'triangle', .045); setTimeout(() => tone(155, .2, 'triangle', .04), 110); };
+  const tone = MG.tone, goodSound = MG.goodSound, badSound = MG.badSound;
   const tickSound = () => tone(780, .035, 'square', .015);
 
   /* ---------------- confetti ---------------- */
-  const canvas = $('confetti'), cx = canvas.getContext('2d');
-  let bits = [], raf = null;
-  function sizeCanvas() {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
-    canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
-    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  addEventListener('resize', sizeCanvas); sizeCanvas();
-  const COLORS = ['#0aa392', '#f5a300', '#f0554f', '#4a5cf0', '#8b46d9', '#6aa312'];
-  function burst(n = 30) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    for (let i = 0; i < n; i++) bits.push({
-      x: innerWidth / 2 + (Math.random() - .5) * 160, y: innerHeight * .34 + (Math.random() - .5) * 40,
-      vx: (Math.random() - .5) * 9, vy: -Math.random() * 10 - 2, r: 3 + Math.random() * 5,
-      rot: Math.random() * 6.28, vr: (Math.random() - .5) * .3, c: COLORS[i % COLORS.length], life: 1
-    });
-    if (!raf) tick();
-  }
-  function tick() {
-    cx.clearRect(0, 0, innerWidth, innerHeight);
-    for (const b of bits) {
-      b.vy += .32; b.vx *= .992; b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.life -= .008;
-      cx.save(); cx.translate(b.x, b.y); cx.rotate(b.rot); cx.globalAlpha = Math.max(b.life, 0);
-      cx.fillStyle = b.c; cx.fillRect(-b.r / 2, -b.r / 2, b.r, b.r * 1.7); cx.restore();
-    }
-    bits = bits.filter(b => b.life > 0 && b.y < innerHeight + 40);
-    if (bits.length) raf = requestAnimationFrame(tick);
-    else { cx.clearRect(0, 0, innerWidth, innerHeight); raf = null; }
-  }
+  const burst = MG.burst;
 
   /* ================= EXPLORE ================= */
   const WHOLES = [5, 6, 7, 8, 9, 10, 11, 12, 15, 20];
@@ -654,7 +582,9 @@ h1 span{color:var(--teal-d)}
     let fresh = freshFirst(pool, state.seen, state.mode, f => `${f.whole}|${f.a}`);
     let i = 0, pass = 0;
     while (out.length < TOTAL) {
-      if (i >= fresh.length) { fresh = newCycle(pool, state.seen, state.mode); i = 0; pass++; }
+      // The same keyOf as the line above; without it newCycle falls back to
+      // `a|b`, which a bond does not have, so pass two would reorder by nothing.
+      if (i >= fresh.length) { fresh = newCycle(pool, state.seen, state.mode, f => `${f.whole}|${f.a}`); i = 0; pass++; }
       const f = fresh[i++];
       const blank = blankFor();
       const prev = out[out.length - 1];
@@ -874,6 +804,7 @@ h1 span{color:var(--teal-d)}
   }
 
   load(); buildWholes(); buildPad(); renderAll();
+  MG.init(window.MATHS_LESSONS['number-bonds']);
 })();
 </script>
 </body>

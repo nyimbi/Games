@@ -3,7 +3,7 @@
 ## Where to start
 
 - **New to the folder**: this file, then README (what everything is and how a game is built), then `docs/design.md` (why each interaction is shaped the way it is).
-- **About to change code**: `dev-llms.txt` — state shapes, function index with line numbers, the five shared deck mechanisms, and the list of known defects.
+- **About to change code**: `dev-llms.txt` — state shapes, function index with line numbers, the shared deck mechanism, and the list of known defects.
 - **About to restyle anything**: `docs/design.md` first. Every token has a reason and several were removed on purpose.
 
 ## The hard invariants (break these and the product changes, not the code)
@@ -68,6 +68,13 @@
   modes: `'keep'` returns to the same question, `'render'` re-renders, otherwise home. Topic chips
   carry a `.tick` (taught) or `.new` badge. `esc()` everything that passes `innerHTML`; SVG figure
   markup is the one sanctioned exception (caption still escaped).
+- [maths-engine.js](maths-engine.js): shared by the five maths drills. Owns the freshness deck
+  (`freshFirst`/`markSeen`/`newCycle`, each taking the drill's own `keyOf`), the oscillators
+  (`tone`/`goodSound`/`badSound`), the confetti canvas (mounted lazily, reusing a page's existing
+  `#confetti` rather than adding a second one) and the lesson overlay. Does **not** own the
+  interaction — bonds drag a divider, the column drills animate base-ten blocks, times tables step
+  an array, division deals cookies. `init({topics, lessons})` mounts a fixed-position **Learn**
+  button; the dialog injects its own CSS so it takes the palette of whichever page it is on.
 
 ## Content banks (data beside the page, never inline)
 
@@ -91,6 +98,11 @@
   `{ title, why, rule, beats[2-3], example{q,steps[2+],a}, remember, trap, figs[2]{cap,svg} }`.
   `example` uses numbers the bank never asks — the lesson must not hand over a bank answer. Every
   lesson carries ≥2 inline SVG figures; the probe checks overflow and zero-height at 390px.
+- [maths-lessons.js](maths-lessons.js): 20 lessons, 4 per drill, keyed
+  `MATHS_LESSONS['<drill-id>'] → {topics:[{id,name}], lessons:{<topic-id>: lesson}}`. Same shape as
+  the science lessons. They are **opened, not scheduled** — a maths drill has modes and a generated
+  pool, so there is no "first question on this topic" to hang an automatic lesson on. The overlay
+  is a dialog, not a stage, because the five drills have five different stage machines.
 
 ## The machine shelf
 
@@ -156,6 +168,6 @@
   deck = 50, why `ui-rounded`, why cream over white, why the confetti is the only spectacle, why
   the uppercase micro-type was removed. Read before substantive UI work here.
 - [dev-llms.txt](dev-llms.txt): the implementation reference — exact state shapes, the function
-  index per file, the five shared deck mechanisms, and the known defects.
+  index per file, the shared deck mechanism, and the known defects.
 - `docs/design.md` lives inside this repository; the frontend app that served it before reads the
   same path, so both checkouts see the same file.

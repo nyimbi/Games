@@ -56,6 +56,22 @@ The queue is deliberately small. Two injected facts per deck keeps the review pr
 
 Every game has a speaker button reading `#qsay`, an `aria-live` region containing the question in words ("seven plus eight equals"). The region is `sr-only` so it does not duplicate on screen; the button calls `speechSynthesis` so a child who cannot yet read the symbols can still hear the question. Screen readers get the same text through the live region whether or not the button is pressed.
 
+### A lesson is opened, not scheduled
+
+Physics and chemistry paint a lesson *instead of* the first question on a topic. That works because their decks are drawn from a bank that has topics: there is a well-defined first question about photosynthesis, and it is the moment to teach it. A maths drill has no topics — it has a mode, and its questions are generated. There is no first question about carrying, because carrying is a property of the numbers, not a field on a record.
+
+So the five maths drills do the opposite. A **Learn** button sits in the bottom-right corner of every drill, and the lesson is a dialog behind it: four topics, a picker, the rule, a worked example, the mistake that usually goes with it. The drill never interrupts itself.
+
+The reason is not only mechanical. A drill is a place a child goes to *practise*, and a lesson arriving unbidden in the middle of a deck is a change of activity the child did not ask for. The child who is getting it right does not need the lesson; the child who is getting it wrong is the one who will press the button, or whose adult will point at it. Making it available rather than automatic respects both.
+
+The overlay is a dialog rather than a stage because the five drills have five different stage machines — `#stage`, `.stage`, four tabs, none at all. A shared engine that guessed where to paint would be wrong on three of them. A fixed-position dialog sits over whatever the page is doing and leaves it alone, and it injects its own stylesheet rather than asking five palettes to agree: a lesson should look like the page it is on.
+
+### The engine owns the deck, not the drill
+
+The five drills had drifted into five copies of the same four things — `$`, a shuffle, the freshness deck, the WebAudio blips — and the copies had diverged. `freshFirst` took four different signatures across the five. `SEEN_CAP` was applied in three and only declared in two. The streak flourish existed in three of five. This is what a shared mechanism is for, so the four things moved into `maths-engine.js`.
+
+What did *not* move is the interaction. Number bonds drag a divider along a track; addition and subtraction animate base-ten blocks column by column; the times tables have an array you step through; division deals cookies onto plates. Those are the drills. An engine that owned them would have made five drills into one drill, which is the opposite of what a shared engine is for — the sharing is cheap only where the five genuinely do the same thing.
+
 ### Operator colours
 
 `--op-plus:#5b6cff`, `--op-minus:#ff6b6b`, `--op-times:#7cb518`, `--op-div:#ffb703`. Fixed across every file. The operator sign is the one character in a question that changes the entire procedure, so it gets the strongest visual anchor in the card, and the colour is the same everywhere the sign appears. Red for minus is a mnemonic, not a warning.
@@ -391,9 +407,16 @@ Every game's back link now points at `session.html` rather than `index.html`, so
 
 ## Verification
 
-Each inline `<script>` block is extracted and run through `node --check` after every edit. That catches syntax errors and nothing else: it does not render the page, so it cannot catch a layout break, a missing element id, or a wrong value written into the DOM. There is no build step and no test runner; the files are the artefact, and the remaining check is opening them.
+Each inline `<script>` block is extracted and run through `node --check` after every edit. That catches syntax errors and nothing else: it does not render the page, so it cannot catch a layout break, a missing element id, or a wrong value written into the DOM. There is no build step and no test runner; the files are the artefact.
 
-The session tracker is the exception, because its whole job is a predicate that no static check can exercise. It was probed in a browser: for each of the sixteen games, the class the page declares records that page's subject and the class it does not declare is ignored; a typing lesson played to its summary by typing the passage records `typing`; the maths rotation covers all six games across six days; the streak, history and 120-day trim were exercised against a stub store; and corrupt, missing and wrong-typed storage all read as empty rather than throwing. The machine shelf was probed the same way, including the revisit that must not record twice: the first click writes the day and the subject, and a reload shows `#done.on` already set with `armed` false and no toast.
+Where a claim cannot be checked statically, it is probed in a real browser from `file://` — the way the pages are opened. The probes live in `probes/` and are run with `python3 -I probes/<name>.py`. They are written to fail: each was canaried by planting the defect it guards, watching it trip, and restoring the file byte-identical.
+
+- **`probes/lessons.py` — the lesson overlay.** For each of the five drills: the engine and bank load, one Learn button mounts, the dialog opens, every topic in the picker renders its title, why, rule, remember, trap, worked answer and figures, the picker marks itself pressed, and Escape and the backdrop both close it and restore body scroll.
+- **`probes/grading.py` — the drills still play.** One question is answered in each drill and the submit is confirmed *graded*: a correct answer advances by itself, a wrong one reveals **Next**. A keystroke that is dropped does neither. This is the check that a click landed is not enough for — `markSeen` runs when a question is *rendered*, so the freshness record is already one before the first answer and cannot be used as the signal.
+- **`probes/shell.py` — the whole arcade.** All 18 pages load from `file://` with no page exception and no duplicate element id, which is what the confetti change risked: the engine now mounts a canvas lazily and reuses a page's existing `#confetti` rather than adding a second one.
+- **`probes/freshness.py` — the deck reads the keys it writes.** This one exists because the other three cannot see the bug it guards. A drill with a mismatched freshness key plays perfectly: every question renders, every answer is graded, and the only thing wrong is that the drill has forgotten what it served. So the probe seeds the record — every fact in a mode served except one — and asserts the unserved fact comes first. It is the check that the shared `keyOf` argument actually reaches `freshFirst`, and it caught a real regression during the engine swap.
+
+The session tracker and the machine shelf were probed the same way. For the session tracker: for each of the sixteen games, the class the page declares records that page's subject and the class it does not declare is ignored; a typing lesson played to its summary by typing the passage records `typing`; the maths rotation covers all six games across six days; the streak, history and 120-day trim were exercised against a stub store; and corrupt, missing and wrong-typed storage all read as empty rather than throwing. For the machine shelf, including the revisit that must not record twice: the first click writes the day and the subject, and a reload shows `#done.on` already set with `armed` false and no toast.
 
 ## What is deliberately absent
 

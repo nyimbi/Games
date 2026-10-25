@@ -10,9 +10,9 @@ serves it. The folder also has its own git repository — see "This repository" 
 that does and does not change.
 
 **No third-party library is loaded, so there is nothing to vendor.** No framework, no bundler, no
-icon font, no analytics, not even a polyfill. The runtime is the seventeen pages and the `.js`
-files beside them. All seventeen were loaded from `file://` with the browser context forced
-offline and every one initialised and stayed interactive; the same seventeen, served over HTTP,
+icon font, no analytics, not even a polyfill. The runtime is the eighteen pages and the `.js`
+files beside them. All eighteen were loaded from `file://` with the browser context forced
+offline and every one initialised and stayed interactive; the same eighteen, served over HTTP,
 make zero requests outside their own origin. If a future change needs a library, the answer is
 still no network — copy the file into this folder and load it with a relative `<script src>`.
 
@@ -35,6 +35,7 @@ session.js             session state — plan, streak, completion, the alternati
 lang-engine.js         French, Kiswahili, Mandarin — one quiz engine, three vocabularies
 science-engine.js      physics, chemistry — one quiz engine plus the lesson system
 piano-engine.js        the piano course — staff renderer, keyboard, synth, play stage
+maths-engine.js        the five maths drills — freshness deck, audio, confetti, lesson overlay
 
 ── content banks ──
 spelling-bank.js       1,239 words in three tiers, each with a rule and an origin
@@ -47,6 +48,7 @@ physics-bank.js        240 questions across 10 topics
 chemistry-bank.js      240 questions across 10 topics
 physics-lessons.js     ten physics lessons, one per bank topic, each with two figures
 chemistry-lessons.js   ten chemistry lessons, one per bank topic, each with two figures
+maths-lessons.js       twenty maths lessons, four per drill, keyed by the drill's id
 
 ── one page per game ──
 number-bonds.html  addition-quest.html  subtraction-safari.html  times-table-academy.html
@@ -60,6 +62,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
+probes/               four Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -72,7 +75,8 @@ Which page loads what:
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |
-| the six maths pages, `typing-tutor.html` | `session.js` only — each carries its own engine inline |
+| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` — the drill's own model inline |
+| `infinite-arena.html`, `typing-tutor.html` | `session.js` only — each carries its own engine inline |
 | `index.html`, `session.html` | `session.js` |
 
 The split is deliberate: a page that carried its own 1,239-word bank inline would triple in size
@@ -100,6 +104,14 @@ its bank (440 characters) and carries no cap; the science engine declares one an
 it — see the defect list. A deck
 shorter than its pool cycles rather than repeats, governed by a pass counter so the fill loop
 cannot spin on a small pool — Make 10 has nine splits and three blank positions, and a deck is 50.
+
+The five drills share `maths-engine.js`, which owns the freshness deck, the oscillators, the
+confetti and the lesson overlay. What it does *not* own is the interaction: number bonds drag a
+divider along a track, addition and subtraction animate base-ten blocks column by column, times
+tables have an array you can step through, division deals cookies onto plates. Those are the
+drills. An engine that owned them would have made five drills into one drill. The freshness key
+stays per game — `whole|a` for bonds, `a|b` for the three column drills, `divisor|dividend` for
+division — so each passes its own `keyOf`.
 
 **Language decks.** `lang-engine.js` runs the French, Kiswahili and Mandarin pages at 30
 questions each. The page supplies a bank, the completion target and a speech locale; the engine
@@ -643,6 +655,29 @@ answer to every question drawn from it; one generated from the explanations woul
 answers with the questions stripped off. The worked example deliberately uses numbers the bank
 never asks.
 
+### The maths lessons — `maths-lessons.js`
+
+Twenty lessons, four per drill, keyed by drill id and then by topic id. Same shape as the science
+lessons. Two differences, both forced by the games.
+
+**They are not scheduled.** The science engine paints a lesson *instead of* the first question on
+a topic, which works because a science deck is drawn from a bank with topics. A maths drill has no
+topics — it has a mode, and its questions are generated. There is no moment at which a lesson is
+"the first one about this", so the drill never interrupts itself. Instead every drill grows a
+**Learn** button in the bottom-right corner, and the lesson is a dialog the child opens when they
+want it, or when an adult points at it.
+
+**The dialog is not a stage.** The five drills have five different stage machines — `#stage`,
+`.stage`, four tabs, none at all — so a shared engine that guessed where to paint would have been
+wrong on three of them. A fixed-position dialog sits over whatever the page is doing and leaves it
+alone. It injects its own stylesheet rather than asking five palettes to agree, because a lesson
+should look like the page it is on.
+
+The topic picker is the part that matters: a child stuck on remainders should not have to read
+four lessons to find the one about remainders. The worked example in each lesson uses numbers the
+drill does not ask, for the same reason as the science lessons — reading a lesson must never be a
+rehearsal of the next question.
+
 ---
 
 ## Storage contract
@@ -727,7 +762,7 @@ only has to declare the two attributes.
 
 ## Plans and methods
 
-The arcade is finished in the sense that all seventeen pages work, and unfinished in the sense
+The arcade is finished in the sense that all eighteen pages work, and unfinished in the sense
 that it is a teaching artefact with a design thesis that can always be tested harder. What
 follows is how changes get decided, so a new contributor does not have to guess.
 
@@ -746,9 +781,11 @@ drills (the typing tutor's optional clock is the only one); a score on the machi
 **The likely next units, in the order the design argues for them:**
 
 1. **More lessons where a fact is not self-explanatory.** The science lesson system is the
-   strongest mechanism in the arcade and only physics and chemistry have it. Calligraphy has
-   per-stroke hints but no lesson; the maths drills have worked examples that fade but no
-   concept page.
+   strongest mechanism in the arcade. Physics, chemistry and the five maths drills have it;
+   calligraphy has per-stroke hints but no lesson. The maths lessons are opened rather than
+   scheduled — a drill has no topics to hang an automatic lesson on — so the next question is
+   whether a drill could notice what a child keeps getting wrong and offer the one lesson that
+   covers it.
 2. **A second sitting on the machine shelf.** The shelf currently records a visit; the figures
    expose more than a visit uses. Anything added must stay derived from the figures rather than
    described by the wrapper — a second source of truth the figures cannot correct is the one
