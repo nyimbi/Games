@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Infinite Arena — Math Arcade</title>
 <style>
@@ -154,6 +155,7 @@ h1 span{color:var(--grape-d)}
   border-radius:999px;padding:9px 16px;box-shadow:0 3px 0 var(--ink);color:var(--ink)}
 .speak:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -360,7 +362,7 @@ h1 span{color:var(--grape-d)}
   /* ================= STATE ================= */
   const state = {
     difficulty: 'normal',
-    length: 10,
+    length: 50,
     enabled: new Set(DEFAULT_ON),
     running: false,
     question: null,
@@ -418,7 +420,7 @@ h1 span{color:var(--grape-d)}
   function save() {
     try {
       localStorage.setItem(KEY, JSON.stringify({ best: state.best, skill: state.skill, seen, savedAt: Date.now() }));
-    } catch (_) {}
+    } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
 
   /* ---------- setup UI ---------- */

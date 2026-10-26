@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Calligraphy — Chinese Character Writing</title>
 <style>
@@ -147,6 +148,7 @@ h1 span{color:var(--seal)}
 #doneTitle{margin:6px 0;font-size:1.6rem;font-weight:900}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <canvas id="confetti"></canvas>
@@ -263,7 +265,7 @@ h1 span{color:var(--seal)}
   const save = () => {
     try {
       localStorage.setItem(KEY, JSON.stringify({ best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier }));
-    } catch (_) { }
+    } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   };
 
   /* ---------------- audio ---------------- */
@@ -356,6 +358,10 @@ h1 span{color:var(--seal)}
     const e = state.queue[state.index];
     if (!e) return;
     $('pChar').textContent = e.char;
+    // The ghost is the character itself, drawn in the same rice grid the
+    // learner draws on. In trace mode it is visible from the first stroke;
+    // in order mode it appears only once the character is finished.
+    $('charGhost').textContent = e.char;
     $('pMeaning').textContent = e.meaning;
     $('pPinyin').textContent = e.pinyin;
     $('pSketch').innerHTML = SKETCH[e.char] || '';
@@ -521,7 +527,10 @@ h1 span{color:var(--seal)}
   function render() {
     if (state.index >= state.queue.length) return finish();
     const e = state.queue[state.index];
-    state.step = 0; state.drawn = []; state.answered = false; state.showGhost = false;
+    state.step = 0; state.drawn = []; state.answered = false;
+    // Trace shows the character under the hand for the whole run; order
+    // shows it only after the last stroke.
+    state.showGhost = !!state.traceMode;
     $('pNum').textContent = state.index + 1;
     $('pTot').textContent = state.queue.length;
     $('pProg').style.width = (state.index / state.queue.length * 100) + '%';

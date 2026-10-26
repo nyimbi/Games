@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Spelling Bee — a thousand words, and why they are spelled that way</title>
 <meta name="description" content="A spelling learner and tester for a thousand competition words. Study the etymology, the rule, and the confusables; then spell from sound, from meaning, and from context.">
@@ -263,6 +264,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
   .actions .btn{flex:1 1 auto;justify-content:center}
 }
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -429,7 +431,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
   const state = {
     best: 0, perTier: {}, review: {}, seen: {},
     tier: 1, mode: 'study', queue: [], index: 0, input: '',
-    right: 0, misses: [], streak: 0, lives: 3, reveals: {},
+    right: 0, misses: [], streak: 0, lives: 3, reveals: {}, hints: 0,
   };
 
   function load() {
@@ -511,10 +513,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
   const sayWord = w => { say(w.w, .78); setTimeout(() => say(w.w, .78), 700); };
 
   /* ---------------- pools ---------------- */
-  const hasConfusable = w => (w.pairs || []).some(p =>
-    p.toLowerCase() !== w.w.toLowerCase() && BY_WORD.has(p.toLowerCase()));
   const poolFor = tier => BANK.filter(w => w.tier === tier);
-  const differPool = tier => BANK.filter(w => w.tier === tier && hasConfusable(w));
 
   /* ---------------- queue builder ----------------
      Unseen words first, then least recently seen. A pool smaller than a deck
@@ -950,7 +949,11 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
   function startStudy() {
     const pool = poolFor(state.tier);
     state.queue = buildQueue(pool, tierKey(state.tier) + ':study', TOTAL);
-    state.index = 0; state.mode = 'study';
+    // The card is not scored, but finish() reads these counters: leaving the
+    // previous mode's tally in place would persist a percentage for a run
+    // that was never answered.
+    state.index = 0; state.right = 0; state.misses = []; state.hints = 0;
+    state.mode = 'study';
     show('study');
     renderStudy();
   }

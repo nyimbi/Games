@@ -24,6 +24,18 @@
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   const SEEN_CAP = 1200;
+  /* Same cap as the language engine: stamp the served question, dropping the
+     oldest entry once the bucket is full, so a long-lived record stays small
+     enough to write. */
+  function markSeen(bucket, key) {
+    const now = Date.now();
+    if (!bucket[key] && Object.keys(bucket).length >= SEEN_CAP) {
+      const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
+      if (oldest) delete bucket[oldest[0]];
+    }
+    bucket[key] = now;
+  }
+
   function freshFirst(pool, bucket, keyOf) {
     const fresh = [], stale = [];
     pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
@@ -168,7 +180,7 @@
     const save = () => {
       try {
         localStorage.setItem(KEY, JSON.stringify({ best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier, taught: state.taught }));
-      } catch (_) { }
+      } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
     };
 
     const poolFor = t => BANK.filter(q => q.tier === t);
@@ -215,6 +227,9 @@
       $('qNext').hidden = true;
       $('qExplain').hidden = true;
       $('qExplain').innerHTML = '';
+      // A clue opened on the previous question is about that question.
+      $('qHintBox').hidden = true;
+      $('qHintBox').textContent = '';
 
       if (state.mode === 'quiz') {
         $('qChoices').hidden = false;
@@ -233,7 +248,7 @@
       }
 
       const bucket = state.seen[tierKey() + ':' + state.mode];
-      if (bucket) bucket[keyOf(q)] = Date.now();
+      if (bucket) markSeen(bucket, keyOf(q));
       save();
     }
 
@@ -467,6 +482,17 @@
     $('rAgain').addEventListener('click', () => start(state.mode));
     $('rHome').addEventListener('click', () => { paintHome(); show('home'); });
     $('lDone').addEventListener('click', afterLesson);
+    // Back leaves the lesson without marking the topic taught: reading is what
+    // teaches it, and a learner who backs out has not read it.
+    $('lHome').addEventListener('click', () => {
+      const resume = state.lessonResume;
+      state.lessonResume = null;
+      // Opened from the quiz with "Teach me this": the question is still
+      // painted, so go back to it. Opened automatically before a question,
+      // there is nothing to return to but the home screen.
+      if (resume === 'keep') { show('quiz'); return; }
+      paintHome(); show('home');
+    });
     $('qLesson').addEventListener('click', lessonFromQuiz);
     document.addEventListener('keydown', ev => {
       if (ev.key === 'Enter' && $('lesson') && $('lesson').classList.contains('on')) {

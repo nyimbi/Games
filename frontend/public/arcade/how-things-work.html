@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Things Work — Local Arcade</title>
+<meta name="description" content="Twenty-six everyday machines, drawn from the outside and again from the inside. Turn one, switch on See-through, and watch the parts that actually do the work.">
+<style>
+:root{
+  --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
+  --paper:#fdf7ea;--card:#fffdf8;--line:#e7dcc4;
+  --sun:#ffb703;--coral:#ff6b6b;--teal:#0fb5a1;--indigo:#5b6cff;
+  --grape:#9b5de5;--lime:#7cb518;--sky:#2b8fd6;
+  --works:#a4581b;
+  --accent:var(--works);
+  --hard:6px 6px 0 var(--ink);
+  --wash-1:#ffe6b0;--wash-2:#dbe2ff;--wash-3:#cdf5ec;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:17px}
+body{
+  margin:0;min-height:100vh;color:var(--ink);font-size:1.05rem;line-height:1.5;
+  font-family:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Nunito","Trebuchet MS",system-ui,sans-serif;
+  background:
+    radial-gradient(900px 540px at 6% -10%,var(--wash-1) 0%,transparent 62%),
+    radial-gradient(860px 540px at 102% 0%,var(--wash-2) 0%,transparent 58%),
+    radial-gradient(820px 600px at 50% 118%,var(--wash-3) 0%,transparent 64%),
+    var(--paper);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(25,28,58,.10) 1px,transparent 1.3px);
+  background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 45%,transparent 78%);
+  mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.35) 45%,transparent 78%);
+}
+.shell{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:26px 20px 72px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px;flex-wrap:wrap}
+.back{
+  display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink);
+  font-weight:900;font-size:.82rem;background:var(--card);border:2.5px solid var(--ink);
+  padding:8px 13px;border-radius:999px;box-shadow:0 3px 0 var(--ink);transition:transform .12s
+}
+.back:hover{transform:translate(-1px,-1px)}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;background:var(--card);border:2.5px solid var(--ink);
+  padding:8px 14px;border-radius:999px;font-size:.82rem;font-weight:900;box-shadow:0 3px 0 var(--ink)
+}
+
+header{margin-bottom:24px}
+.eyebrow{
+  display:inline-block;font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--accent);color:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:6px 13px;
+  box-shadow:0 3px 0 var(--ink);margin:0 0 16px
+}
+h1{margin:0 0 10px;font-size:clamp(2.1rem,6vw,3.2rem);line-height:.98;letter-spacing:-.045em;font-weight:900}
+h1 span{color:var(--accent)}
+.lede{margin:0;color:var(--ink-2);font-weight:600;max-width:58ch;text-wrap:pretty}
+
+.panel{
+  background:var(--card);border:2.5px solid var(--ink);border-radius:22px;padding:20px;
+  box-shadow:var(--hard);margin-bottom:26px
+}
+.panel h2{margin:0;font-size:1.3rem;letter-spacing:-.03em;font-weight:900}
+.fig-no{
+  font-family:ui-monospace,Menlo,monospace;font-size:.78rem;font-weight:800;letter-spacing:.06em;
+  color:var(--muted);margin:0 0 4px
+}
+.hint{margin:8px 0 14px;font-size:.95rem;font-weight:700;color:var(--ink-2)}
+.idea{
+  margin:0 0 16px;background:#fff;border:2px dashed var(--line);border-radius:14px;padding:12px 14px;
+  font-size:.92rem;line-height:1.55;font-weight:600;color:var(--ink-2)
+}
+.idea b{
+  display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);
+  font-weight:900;margin-bottom:3px
+}
+.idea[hidden]{display:none}
+
+/* The figure is a whole page of its own, so it lives in a frame with the
+   arcade's border around it. Its own paper is warmer than ours; the frame is
+   what makes the difference read as a window rather than a mistake. */
+/* The frame's height is fixed, not measured: a page cannot read another
+   frame's document from `file://` in Chromium or WebKit, and measuring would
+   only work when the arcade is served over HTTP. Measured against all 26
+   figures at the two widths the frame actually takes — 314 px on a phone and
+   about 812 px on a desktop — the tallest needs 728 px and 747 px, so 820 px
+   and 740 px leave room for a figure to grow without clipping its controls. */
+.frame{border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;background:#f2efe7;box-shadow:0 4px 0 var(--ink)}
+.frame iframe{display:block;width:100%;height:820px;border:0}
+
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
+.link{font-weight:900;font-size:.9rem;color:var(--ink);text-decoration:none;border-bottom:2.5px solid var(--accent);padding-bottom:1px}
+.btn{
+  font:inherit;font-size:.95rem;font-weight:900;color:var(--ink);background:var(--sun);
+  border:2.5px solid var(--ink);border-radius:999px;padding:10px 18px;cursor:pointer;
+  box-shadow:0 3px 0 var(--ink);transition:transform .12s
+}
+.btn:hover{transform:translate(-1px,-1px)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn[disabled]{background:var(--card);color:var(--muted);cursor:default;transform:none;box-shadow:0 3px 0 var(--ink)}
+
+/* ---------- the shelf ---------- */
+.shelf h2{margin:0 0 4px;font-size:1.3rem;letter-spacing:-.03em;font-weight:900}
+.shelf .sub{margin:0 0 20px;font-size:.88rem;color:var(--muted);font-weight:700}
+.group{margin-bottom:22px}
+.group h3{
+  margin:0 0 10px;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;font-weight:900;color:var(--ink-2)
+}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pick{
+  display:flex;align-items:baseline;gap:8px;text-align:left;font:inherit;font-size:.92rem;font-weight:800;
+  color:var(--ink);background:var(--card);border:2.5px solid var(--ink);border-radius:14px;
+  padding:10px 12px;cursor:pointer;box-shadow:0 3px 0 var(--ink);transition:transform .12s
+}
+.pick:hover{transform:translate(-1px,-1px)}
+.pick .tick{
+  flex:0 0 auto;width:16px;height:16px;border:2px solid var(--line);border-radius:5px;
+  font-size:.7rem;line-height:12px;text-align:center;color:#fff;font-weight:900
+}
+.pick[aria-current="true"]{border-color:var(--accent);box-shadow:0 3px 0 var(--accent)}
+.pick.met .tick{background:var(--accent);border-color:var(--ink)}
+
+/* ---------- done ---------- */
+.stage{display:none}
+.stage.on{display:block}
+.donebox{border-color:var(--accent);box-shadow:7px 7px 0 var(--accent)}
+.donebox h2{margin:0 0 8px}
+.donebox p{margin:0;color:var(--ink-2);font-weight:700;font-size:.95rem}
+
+footer{margin-top:36px;text-align:center;color:var(--muted);font-size:.84rem;line-height:1.8;font-weight:600}
+footer .dot{opacity:.45;margin:0 8px}
+footer a{color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:560px){
+  .shell{padding:18px 14px 54px}
+  .frame iframe{height:740px}
+  .cards{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+  .pick{font-size:.86rem;padding:9px 10px}
+}
+</style>
+  <script src="./errors.js"></script>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <a class="back" href="./index.html">← Arcade</a>
+    <span class="pill">26 machines · offline</span>
+  </div>
+
+  <header>
+    <p class="eyebrow">How things work · what is inside</p>
+    <h1>Take it <span>apart</span>.</h1>
+    <p class="lede">Every machine here is drawn twice from the same model: once as you would see it in a shop, and once with the case turned to a ghost so the working parts show through. Turn it with a drag. Switch on See-through. Press the buttons and watch which part moves.</p>
+  </header>
+
+  <section class="panel" id="todayPanel">
+    <p class="fig-no" id="figNo">Fig. 01</p>
+    <h2 id="figTitle">Washing machine</h2>
+    <p class="hint" id="figHint"></p>
+    <p class="idea" id="figIdea" hidden><b>The big idea</b><span id="figIdeaText"></span></p>
+    <div class="frame">
+      <iframe id="figFrame" src="./figures/washer.html" title="Interactive figure" allow="fullscreen"></iframe>
+    </div>
+    <div class="row">
+      <a class="link" id="figOpen" href="./figures/washer.html">Open it on its own →</a>
+      <button class="btn" type="button" id="hadAGo">I've had a go</button>
+    </div>
+  </section>
+
+  <section class="stage" id="done">
+    <div class="panel donebox">
+      <h2>You have met today's machine.</h2>
+      <p>Every part you saw moves for a reason. Tomorrow the arcade opens a different one, and the shelf below keeps the rest within reach.</p>
+    </div>
+  </section>
+
+  <section class="shelf">
+    <h2>The whole shelf</h2>
+    <p class="sub">Twenty-six machines in six groups. Pick one and it loads above — nothing leaves this browser.</p>
+    <div id="shelf"></div>
+  </section>
+
+  <footer>
+    Figures made with <a href="./figures/LICENSE-colorfigures.txt">Colorfigures</a> by April Zhu, MIT.
+    <span class="dot">·</span> Every figure is one self-contained file with no outside requests.
+    <span class="dot">·</span> Progress is stored in this browser only.
+  </footer>
+</div>
+
+<script src="./session.js"></script>
+<script>
+(() => {
+  'use strict';
+  const KEY = 'arcade.howthingswork.v1';
+
+  /* Every field below is read off the figure's own mountFigure call, not
+     invented here: the title, the hint and the big-idea line are the author's
+     words, and seven of the twenty-six ship without an idea line, so this page
+     shows none for those rather than writing one to fill the gap. */
+  const M = [
+    { s:'washer',      n:'01', t:'Washing machine',      g:'wash',   h:'load the laundry, add soap, pick a program, start — then unload', i:'Spinning fast flings the water out through the little holes in the drum, while the clothes get pressed against the wall.' },
+    { s:'espresso',    n:'02', t:'Espresso machine',     g:'kitchen',h:'power on, pull a shot, froth milk under the wand, pour a latte', i:'Hot water is squeezed through tightly packed coffee at about 9 times the push of the air around us.' },
+    { s:'vending',     n:'03', t:'Vending machine',      g:'coins',  h:'insert a coin, punch a code or tap a product', i:'The machine counts your coins; when there is enough, it pushes your drink off the shelf and it drops into the tray.' },
+    { s:'toaster',     n:'04', t:'Toaster',              g:'kitchen',h:'Push the lever (space) · shade dial (D) · click the toast to take it (T)', i:'A metal strip inside bends as it gets hot, and when it bends far enough it lets the toast pop up.' },
+    { s:'microwave',   n:'05', t:'Microwave',            g:'kitchen',h:'pick a food, add time, START — then open the door to take it out', i:'Microwaves make the water inside food jiggle, and jiggling makes heat. The plate turns so every side gets its turn.' },
+    { s:'sharpener',   n:'06', t:'Pencil sharpener',     g:'desk',   h:'Hold the crank or TURN (space) · TAKE pencil (T) · EMPTY drawer (E)', i:'The blade is set at a slant, so as the pencil turns it shaves the wood away in a cone and leaves a sharp point.' },
+    { s:'windup',      n:'07', t:'Wind-up toy',          g:'move',   h:'click the key to wind · click the car to let go', i:'Winding the key stores energy in a coiled spring; as the spring unwinds it turns the gears and the wheels.' },
+    { s:'crossing',    n:'08', t:'Traffic light',        g:'light',  h:'Press WAIT (or space) to cross', i:'Red means stop, amber means slow down, green means go — and the green walking man means it is safe to cross.' },
+    { s:'smokealarm',  n:'09', t:'Smoke alarm',          g:'light',  h:'Puff smoke: toast, PUFF or space · Clear: fan, CLEAR or C · Test: T', i:'Inside is a tiny dark chamber with a hidden light. Smoke bounces the light onto a sensor, and that sets off the beep.' },
+    { s:'fridge',      n:'10', t:'Fridge',               g:'kitchen',h:'open the doors · take a snack · don’t leave it open', i:'A fridge doesn’t make cold — it carries heat out of the box and lets it go from the coil on the back. Turn it around to see.' },
+    { s:'cistern',     n:'11', t:'Toilet flush',         g:'wash',   h:'Click the handle or Flush (or press space)', i:'A float rises with the water and shuts the tap off when the tank is full, so it never overflows.' },
+    { s:'gashapon',    n:'12', t:'Capsule toy machine',  g:'coins',  h:'insert a coin, turn the crank, open the capsule', i:'Each turn of the crank lines up one capsule-sized hole, so exactly one capsule drops out for each coin.' },
+    { s:'foodtruck',   n:'13', t:'Food truck',           g:'move',   h:'lift the awning, order from the menu board, grab your food', i:'A whole little kitchen fits in a van because everything is in one line: grill, counter, window.' },
+    { s:'pourover',    n:'14', t:'Pour-over coffee set', g:'kitchen',h:'heat, grind, add the grounds, pour, serve', i:'' },
+    { s:'lamp',        n:'15', t:'Desk lamp',            g:'desk',   h:'switch it on, then bend the arm and tilt the shade', i:'' },
+    { s:'ekettle',     n:'16', t:'Electric kettle',      g:'kitchen',h:'switch it on and watch what switches it off', i:'Boiling water makes steam; a tube carries it to a bimetal disc that snaps when hot and trips the switch.' },
+    { s:'fan',         n:'17', t:'Desk fan',             g:'desk',   h:'pick a speed, let it swing, tilt the head', i:'' },
+    { s:'claw',        n:'18', t:'Claw machine',         g:'coins',  h:'insert a coin, steer with the arrow keys, drop to grab', i:'The claw only holds a prize it closes around squarely; off-centre, it slips out on the way to the chute.' },
+    { s:'vacuum',      n:'19', t:'Upright vacuum',       g:'wash',   h:'switch on, push it over the rug, empty the bin when it shows FULL', i:'' },
+    { s:'blender',     n:'20', t:'Blender',              g:'kitchen',h:'pick fruit and a liquid, lid on, blend, then pour', i:'' },
+    { s:'booth',       n:'21', t:'Toilet booth',         g:'wash',   h:'click the door, light or bowl', i:'Locking the door also flips the sign outside to IN USE, so everyone knows to wait.' },
+    { s:'gumball',     n:'22', t:'Gumball machine',      g:'coins',  h:'Insert a coin (0) · turn the crank (space) · take the gum (T)', i:'' },
+    { s:'recordplayer',n:'23', t:'Record player',        g:'light',  h:'Put on a record · drop the needle', i:'' },
+    { s:'musicbox',    n:'24', t:'Music box',            g:'light',  h:'turn the crank: drag it, click it, or press space for one line', i:'Pins on a turning drum pluck metal teeth: long teeth make low notes, short teeth make high notes.' },
+    { s:'photobooth',  n:'25', t:'Photo booth',          g:'light',  h:'open the curtain, insert a coin, press start', i:'The flash fires for a tiny moment, so even if you move, the photo freezes you.' },
+    { s:'arcade',      n:'26', t:'Arcade cabinet',       g:'coins',  h:'insert a coin, press 1P start, then ← → and space', i:'A joystick is just four little switches — leaning it presses one, and the game moves your ship.' }
+  ];
+
+  const GROUPS = [
+    { id:'kitchen', name:'Kitchen' },
+    { id:'wash',    name:'Wash and clean' },
+    { id:'coins',   name:'Coins and capsules' },
+    { id:'light',   name:'Light, sound and machines that play' },
+    { id:'move',    name:'On the move' },
+    { id:'desk',    name:'Desk and studio' }
+  ];
+
+  const $ = id => document.getElementById(id);
+  const BY_SLUG = {};
+  M.forEach(m => { BY_SLUG[m.s] = m; });
+
+  function read() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (s && typeof s === 'object' && s.explored && typeof s.explored === 'object') return s;
+    } catch (_) { }
+    return { v: 1, explored: {}, perGroup: {}, day: '' };
+  }
+
+  /* `perGroup` is a percentage of each group's machines that have been met.
+     It exists so the hub card can read this record the same way it reads every
+     other game's bucket, without the hub having to know what a machine is. */
+  function write(s) {
+    GROUPS.forEach(g => {
+      const all = M.filter(m => m.g === g.id);
+      const met = all.filter(m => s.explored[m.s]).length;
+      s.perGroup[g.id] = Math.round(met / all.length * 100);
+    });
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
+  }
+
+  function dayNumber(d) {
+    d = d || new Date();
+    return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+  }
+
+  /* The machine to open today: the date picks a starting point and the page
+     walks forward to the first one not yet met, so a child who comes back gets
+     something new until the shelf runs out. Nothing here is stored — the date
+     and the record decide it, the same way the maths rotation does. */
+  function featured(s) {
+    const start = dayNumber() % M.length;
+    for (let k = 0; k < M.length; k++) {
+      const m = M[(start + k) % M.length];
+      if (!s.explored[m.s]) return m;
+    }
+    return M[start];
+  }
+
+  let current = null;
+
+  function show(m) {
+    current = m;
+    $('figNo').textContent = 'Fig. ' + m.n;
+    $('figTitle').textContent = m.t;
+    $('figHint').textContent = m.h;
+    const box = $('figIdea');
+    $('figIdeaText').textContent = m.i;
+    box.hidden = !m.i;
+    const src = './figures/' + m.s + '.html';
+    const frame = $('figFrame');
+    if (frame.getAttribute('src') !== src) frame.setAttribute('src', src);
+    frame.setAttribute('title', m.t + ', interactive');
+    $('figOpen').setAttribute('href', src);
+    paintButton();
+    document.querySelectorAll('.pick').forEach(b => {
+      b.setAttribute('aria-current', String(b.dataset.slug === m.s));
+    });
+  }
+
+  /* The button is about *today*, not about ever: a machine met last week can
+     still be the one that finishes today's session. One sitting per day is the
+     same unit as one deck, so a day already spent closes the button. */
+  function paintButton() {
+    const spent = read().day === today();
+    const b = $('hadAGo');
+    b.disabled = spent;
+    b.textContent = spent ? 'Met today ✓' : "I've had a go";
+  }
+
+  function today() {
+    return window.ArcadeSession ? window.ArcadeSession.dayKey() : '';
+  }
+
+  function paintShelf() {
+    const s = read();
+    const box = $('shelf');
+    box.textContent = '';
+    GROUPS.forEach(g => {
+      const list = M.filter(m => m.g === g.id);
+      if (!list.length) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'group';
+      const h = document.createElement('h3');
+      h.textContent = g.name + ' · ' + list.length;
+      const grid = document.createElement('div');
+      grid.className = 'cards';
+      list.forEach(m => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pick' + (s.explored[m.s] ? ' met' : '');
+        b.dataset.slug = m.s;
+        b.setAttribute('aria-current', String(current && current.s === m.s));
+        const tick = document.createElement('span');
+        tick.className = 'tick';
+        tick.setAttribute('aria-hidden', 'true');
+        tick.textContent = s.explored[m.s] ? '✓' : '';
+        const t = document.createElement('span');
+        t.textContent = m.t;
+        b.append(tick, t);
+        b.setAttribute('aria-label', (s.explored[m.s] ? 'Met: ' : 'Not yet met: ') + m.t);
+        b.addEventListener('click', () => {
+          show(m);
+          $('todayPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        grid.append(b);
+      });
+      wrap.append(h, grid);
+      box.append(wrap);
+    });
+  }
+
+  /* One machine met is the day's sitting, the same unit as one deck in the
+     other subjects. `#done` carries `class="stage"`, so the session tracker
+     reads this page the way it reads every stage game — and because the page
+     loads already finished once a machine has been met today, the tracker's
+     `armed = !isFinished()` keeps a revisit from counting as a second
+     completion. */
+  $('hadAGo').addEventListener('click', () => {
+    if (!current) return;
+    const s = read();
+    if (!s.explored[current.s]) s.explored[current.s] = Date.now();
+    s.day = today();
+    write(s);
+    paintShelf();
+    paintButton();
+    $('done').classList.add('on');
+  });
+
+  const s0 = read();
+  show(featured(s0));
+  paintShelf();
+  if (s0.day === today()) $('done').classList.add('on');
+})();
+</script>
+</body>
+</html>
