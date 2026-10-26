@@ -21,28 +21,15 @@
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   };
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Shared escapes: esc for text nodes, escAttr for quoted attribute
+  // values. See escape.js for why the split is not a union.
+  const esc = window.ArcadeEscape.esc, escAttr = window.ArcadeEscape.escAttr;
 
-  const SEEN_CAP = 1200;
-  /* Same cap as the language engine: stamp the served question, dropping the
-     oldest entry once the bucket is full, so a long-lived record stays small
-     enough to write. */
-  function markSeen(bucket, key) {
-    const now = Date.now();
-    if (!bucket[key] && Object.keys(bucket).length >= SEEN_CAP) {
-      const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
-      if (oldest) delete bucket[oldest[0]];
-    }
-    bucket[key] = now;
-  }
-
-  function freshFirst(pool, bucket, keyOf) {
-    const fresh = [], stale = [];
-    pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
-    shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
+  // One deck, in deck.js; see the note there on why `keyOf` has no default.
+  const SEEN_CAP = window.ArcadeDeck.SEEN_CAP;
+  const freshFirst = (pool, bucket, keyOf) => window.ArcadeDeck.freshFirst(pool, bucket, keyOf);
+  const markSeen = (bucket, key) => window.ArcadeDeck.markSeen(bucket, key);
+  const newCycle = (pool, bucket, keyOf) => window.ArcadeDeck.newCycle(pool, bucket, keyOf);
 
   let ctx = null;
   function tone(freq, dur = .12, type = 'sine', gain = .05) {
@@ -236,7 +223,7 @@
         $('qType').hidden = true;
         const opts = shuffle([q.a, q.d1, q.d2, q.d3].filter((v, i, a) => v && a.indexOf(v) === i));
         $('qChoices').innerHTML = opts.map(v =>
-          `<button class="opt" type="button" data-opt="${esc(v)}">${esc(v)}</button>`).join('');
+          `<button class="opt" type="button" data-opt="${escAttr(v)}">${esc(v)}</button>`).join('');
         $('qChoices').querySelectorAll('[data-opt]').forEach(b =>
           b.addEventListener('click', () => answer(b.dataset.opt, q)));
       } else {

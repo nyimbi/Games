@@ -26,7 +26,9 @@
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   };
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Shared escapes: esc for text nodes, escAttr for quoted attribute
+  // values. See escape.js for why the split is not a union.
+  const esc = window.ArcadeEscape.esc, escAttr = window.ArcadeEscape.escAttr;
 
   /* ---------- pitch ---------- */
   const NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
@@ -400,7 +402,7 @@
     const TOTAL = cfg.total || 20;
     const KEY = cfg.key;
     const keyOf = q => q.id;
-    const SEEN_CAP = 1200;
+    const SEEN_CAP = window.ArcadeDeck.SEEN_CAP;
 
     const state = {
       tier: 1, mode: 'read', queue: [], index: 0, right: 0, score: 0,
@@ -429,22 +431,12 @@
       } catch (_) { }
     };
 
-    function markSeen(bucket, key) {
-      const now = Date.now();
-      if (!bucket[key] && Object.keys(bucket).length >= SEEN_CAP) {
-        const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
-        if (oldest) delete bucket[oldest[0]];
-      }
-      bucket[key] = now;
-    }
-
-    function freshFirst(pool, bucket) {
-      const fresh = [], stale = [];
-      pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
-      shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
-      shuffle(fresh);
-      return fresh.concat(stale);
-    }
+    /* One deck, in deck.js. This copy closed over `keyOf` instead of taking it,
+       which is why it had a different signature from the other five -- and why
+       migrating it is the one place the shared signature had to be spelled out
+       at the call site. */
+    const markSeen = (bucket, key) => window.ArcadeDeck.markSeen(bucket, key);
+    const freshFirst = (pool, bucket) => window.ArcadeDeck.freshFirst(pool, bucket, keyOf);
 
     const tierKey = () => 't' + state.tier;
     const poolFor = t => BANK.filter(q => q.tier === t);
@@ -562,7 +554,7 @@
         $('qChoices').hidden = false;
         const opts = shuffle([q.a, q.d1, q.d2, q.d3].filter((v, i, a) => v && a.indexOf(v) === i));
         $('qChoices').innerHTML = opts.map(v =>
-          `<button class="opt" type="button" data-opt="${esc(v)}">${esc(v)}</button>`).join('');
+          `<button class="opt" type="button" data-opt="${escAttr(v)}">${esc(v)}</button>`).join('');
         $('qChoices').querySelectorAll('[data-opt]').forEach(b =>
           b.addEventListener('click', () => answerChoice(b.dataset.opt, q)));
       }

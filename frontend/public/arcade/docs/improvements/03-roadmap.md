@@ -75,9 +75,17 @@ Seven nodes. F-13 is the feature `README.md:783-788` asks for by name. Everythin
 
 1. All four existing probes pass.
 2. The pass-two probe (P5) passes: serve a full deck, assert the next cycle's first fact is the least recently served.
-3. `grep -c "function freshFirst" *.js *.html` returns 1.
-4. `grep -n "esc = " *.html` returns nothing — every page uses the shared one.
+3. `grep -c "function freshFirst" *.js *.html` returns 1 — `deck.js` and nothing else.
+4. No page defines its own `esc`. *(As first written this said `grep -n "esc = " *.html` returns nothing, which can never pass: every page has to bind `esc` to something. The assertion that means what was intended is `probes/escape.py`'s source scan, which rejects a local definition and accepts a binding to the shared module.)*
 5. The division A/B test (`04-probes.md` P3) passes: with two out-of-level due facts seeded, the in-level due fact is still served first.
+
+**Phase 1 as landed.**
+
+- **F-47 / F-48 — `deck.js`.** One implementation; `keyOf` required. Removing the default immediately caught two callers relying on it: subtraction and times-table passed none and were right only by coincidence. `markSeen` also evicts down to the cap now, not one per call — the probe seeds 905 into a 900 cap and all five originals stayed at 905 forever.
+- **The preserved disagreement.** `freshFirst` shuffles the stale half before sorting (stable sort would otherwise keep insertion order); `newCycle` does not (least-recently-served is the point). Collapsing them would have been tidy and wrong. `probes/deck.py`'s tie test measures the shuffle over 200 draws, because a single run cannot tell a shuffle from a stable sort — the first version of that probe passed the shuffle canary.
+- **F-49 — `escape.js`.** Two functions, because a text node and a quoted attribute are different contexts. The probe drives the difference through the DOM and shows the union collapsing `data-opt` to `""` with an injected `onmouseover`.
+- **D-9 — refuted.** `seen` keys the fact and `review` keys the question; the bucket carries the context for the first and the flat map pays for it in the second. Measured off a live run: `seen['ten']` holds `10|5`, `review` holds `10|5|whole`. Unifying them would retire the whole-blank review on a part-blank miss and stop the drill ever scheduling the harder form.
+- **`tone` remains eight copies** and is not in this phase. It is not a correctness surface — a wrong tone is a wrong sound, not a wrong record — and consolidating it would add a seventh file to a commit whose risk is already concentrated in the deck.
 
 ---
 

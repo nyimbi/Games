@@ -265,6 +265,8 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
 }
 </style>
   <script src="./errors.js"></script>
+  <script src="./escape.js"></script>
+  <script src="./deck.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -457,26 +459,16 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
   /* ---------------- freshness ---------------- */
   const tierKey = t => 'tier' + t;
 
-  function freshFirst(pool, key) {
-    const bucket = state.seen[key] || {};
-    const fresh = [], stale = [];
-    pool.forEach(w => ((bucket[w.w] || 0) === 0 ? fresh : stale).push(w));
-    shuffle(stale).sort((x, y) => (bucket[x.w] || 0) - (bucket[y.w] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
-  function markSeen(key, word) {
-    const bucket = state.seen[key] || (state.seen[key] = {});
-    if (!bucket[word] && Object.keys(bucket).length >= SEEN_CAP) {
-      const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
-      if (oldest) delete bucket[oldest[0]];
-    }
-    bucket[word] = Date.now();
-  }
-  function newCycle(pool, key) {
-    const bucket = state.seen[key] || {};
-    return pool.slice().sort((x, y) => (bucket[x.w] || 0) - (bucket[y.w] || 0));
-  }
+  /* One deck, in deck.js. A word's identity is its spelling; the bucket is
+     the tier (or tier:mode) the word was served under. Both are stated here
+     rather than closed over, which is the difference between a deck that
+     orders by the right identity and one that happens to. */
+  const wordKey = w => w.w;
+  const freshFirst = (pool, key) => window.ArcadeDeck.freshFirst(pool, state.seen[key] || {}, wordKey);
+  const markSeen = (key, word) => {
+    window.ArcadeDeck.markSeen(state.seen[key] || (state.seen[key] = {}), word);
+  };
+  const newCycle = (pool, key) => window.ArcadeDeck.newCycle(pool, state.seen[key] || {}, wordKey);
 
   const shuffle = a => {
     for (let i = a.length - 1; i > 0; i--) {
@@ -485,7 +477,9 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     }
     return a;
   };
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Shared escapes: esc for text nodes, escAttr for quoted attribute
+  // values. See escape.js for why the split is not a union.
+  const esc = window.ArcadeEscape.esc, escAttr = window.ArcadeEscape.escAttr;
 
   /* ---------------- speech ---------------- */
   let voice = null;
@@ -553,7 +547,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     // a misspelling shown beside the right spelling teaches the wrong one.
     const pairs = (w.pairs || [])
       .filter(p => p.toLowerCase() !== w.w.toLowerCase() && BY_WORD.has(p.toLowerCase()))
-      .map(p => `<button class="pairchip" type="button" data-pair="${esc(p)}">${esc(p)}</button>`)
+      .map(p => `<button class="pairchip" type="button" data-pair="${escAttr(p)}">${esc(p)}</button>`)
       .join('');
 
     $('sCard').innerHTML = `
@@ -789,7 +783,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     const real = (w.pairs || []).filter(p => BY_WORD.has(p.toLowerCase()) && p.toLowerCase() !== w.w.toLowerCase());
     const opts = shuffle([w.w, ...pickDistractors(w, real)]);
     $('fOpts').innerHTML = opts.map(o =>
-      `<button class="opt" type="button" data-opt="${esc(o)}">${esc(o)}</button>`).join('');
+      `<button class="opt" type="button" data-opt="${escAttr(o)}">${esc(o)}</button>`).join('');
     $('fOpts').querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
       pickOption(b.dataset.opt, w);
     }));

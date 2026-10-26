@@ -213,6 +213,8 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
 .speak:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
 </style>
   <script src="./errors.js"></script>
+  <script src="./escape.js"></script>
+  <script src="./deck.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -809,12 +811,13 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
       .slice(0, 2)
       .map(([k]) => { const [a, b] = k.split('|').map(Number); return { a, b, prod: a * b }; });
     const key = bucketKey();
-    let pool = freshFirst(factsFor(state.mode, state.table), state.seen, key);
+    const keyOf = f => `${f.a}|${f.b}`;
+    let pool = freshFirst(factsFor(state.mode, state.table), state.seen, key, keyOf);
     let i = 0, pass = 0;
     while (out.length < TOTAL) {
       // A single table holds 20 facts, so a 50-question set must cycle. Unseen
       // facts are served first and the cycle restarts only once they run out.
-      if (i >= pool.length) { pool = newCycle(factsFor(state.mode, state.table), state.seen, key); i = 0; pass++; }
+      if (i >= pool.length) { pool = newCycle(factsFor(state.mode, state.table), state.seen, key, keyOf); i = 0; pass++; }
       const f = pool[i++];
       const last = out[out.length - 1];
       if (pass === 0 && out.some(o => o.a === f.a && o.b === f.b)) continue;

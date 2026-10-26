@@ -18,7 +18,9 @@
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   };
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Shared escapes: esc for text nodes, escAttr for quoted attribute
+  // values. See escape.js for why the split is not a union.
+  const esc = window.ArcadeEscape.esc, escAttr = window.ArcadeEscape.escAttr;
 
   /* Diacritics are a keyboard problem, not a knowledge problem. Compare the
      folded forms so an answer typed without accents is accepted, and report
@@ -26,22 +28,14 @@
   const fold = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
 
-  const SEEN_CAP = 1200;
-  function freshFirst(pool, bucket, keyOf) {
-    const fresh = [], stale = [];
-    pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
-    shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
-  function markSeen(bucket, key) {
-    const now = Date.now();
-    if (!bucket[key] && Object.keys(bucket).length >= SEEN_CAP) {
-      const oldest = Object.entries(bucket).sort((a, b) => a[1] - b[1])[0];
-      if (oldest) delete bucket[oldest[0]];
-    }
-    bucket[key] = now;
-  }
+  // One deck, in deck.js. `keyOf` is required there and passed through here
+  // unchanged: this engine has always taken it, and the callers that omitted
+  // it were the maths drills, not these.
+  const SEEN_CAP = window.ArcadeDeck.SEEN_CAP;
+  const freshFirst = (pool, bucket, keyOf) => window.ArcadeDeck.freshFirst(pool, bucket, keyOf);
+  const markSeen = (bucket, key) => window.ArcadeDeck.markSeen(bucket, key);
+  const newCycle = (pool, bucket, keyOf) => window.ArcadeDeck.newCycle(pool, bucket, keyOf);
+
 
   /* ---------------- audio ---------------- */
   let ctx = null;
@@ -316,7 +310,7 @@
         $('dType').hidden = true;
         $('dChoices').hidden = false;
         $('dChoices').innerHTML = spec.options.map(o =>
-          `<button class="opt" type="button" data-opt="${esc(o.value)}">${o.html || esc(o.label || o.value)}</button>`).join('');
+          `<button class="opt" type="button" data-opt="${escAttr(o.value)}">${o.html || esc(o.label || o.value)}</button>`).join('');
         $('dChoices').querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
           if (state.answered) return;
           pick(b.dataset.opt, spec);

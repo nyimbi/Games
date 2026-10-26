@@ -149,6 +149,8 @@ h1 span{color:var(--seal)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
   <script src="./errors.js"></script>
+  <script src="./escape.js"></script>
+  <script src="./deck.js"></script>
 </head>
 <body>
 <canvas id="confetti"></canvas>
@@ -244,7 +246,9 @@ h1 span{color:var(--seal)}
   const SKETCH = window.CALLI_SKETCH || {};
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Shared escapes: esc for text nodes, escAttr for quoted attribute
+  // values. See escape.js for why the split is not a union.
+  const esc = window.ArcadeEscape.esc, escAttr = window.ArcadeEscape.escAttr;
   const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
   const KEY = 'arcade.calligraphy.v1';
@@ -319,13 +323,8 @@ h1 span{color:var(--seal)}
 
   /* ---------------- pools & queue ---------------- */
   const poolFor = t => BANK.filter(e => e.tier === t);
-  function freshFirst(pool, bucket, keyOf) {
-    const fresh = [], stale = [];
-    pool.forEach(f => ((bucket[keyOf(f)] || 0) === 0 ? fresh : stale).push(f));
-    shuffle(stale).sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
+  // One deck, in deck.js.
+  const freshFirst = (pool, bucket, keyOf) => window.ArcadeDeck.freshFirst(pool, bucket, keyOf);
   const keyOf = e => e.char;
 
   function buildQueue(pool, total) {
@@ -381,7 +380,7 @@ h1 span{color:var(--seal)}
     $('pStrokeName').textContent = cur ? cur.name : 'All strokes drawn.';
     if (!cur) { $('pHintBox').hidden = true; $('pHintBox').textContent = ''; }
     $('pDone').innerHTML = e.strokes.map((s, i) =>
-      `<i class="${i < state.step ? 'now' : ''}" title="${esc(s.name)}">${i + 1}</i>`).join('');
+      `<i class="${i < state.step ? 'now' : ''}" title="${escAttr(s.name)}">${i + 1}</i>`).join('');
     $('pUndo').disabled = state.step === 0;
   }
 

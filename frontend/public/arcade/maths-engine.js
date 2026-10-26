@@ -23,7 +23,9 @@
 
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Shared escapes: esc for text nodes, escAttr for quoted attribute
+  // values. See escape.js for why the split is not a union.
+  const esc = window.ArcadeEscape.esc, escAttr = window.ArcadeEscape.escAttr;
 
   function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
@@ -40,30 +42,19 @@
    * The bucket is keyed by whatever the game says identifies a fact; the
    * default is `a|b`, which is what four of the five use.
    */
-  const SEEN_CAP = 900;
+  /* One deck, in deck.js. These are adapters, not copies: the maths drills
+     pass the whole `seen` map plus a bucket name, the shared module takes the
+     bucket object, and a wrapper is cheaper than rewriting twelve call sites
+     in the same commit that changes the behaviour. `keyOf` has no default here
+     either -- it is required by ArcadeDeck and the TypeError surfaces on the
+     first question rather than as a deck ordered by the wrong identity. */
+  const SEEN_CAP = window.ArcadeDeck.SEEN_CAP;
 
-  function freshFirst(pool, seen, bucket, keyOf) {
-    const k = keyOf || (f => f.a + '|' + f.b);
-    const b = seen[bucket] || {};
-    const fresh = [], stale = [];
-    pool.forEach(f => ((b[k(f)] || 0) === 0 ? fresh : stale).push(f));
-    shuffle(stale).sort((x, y) => (b[k(x)] || 0) - (b[k(y)] || 0));
-    shuffle(fresh);
-    return fresh.concat(stale);
-  }
+  const freshFirst = (pool, seen, bucket, keyOf) =>
+    window.ArcadeDeck.freshFirst(pool, seen[bucket] || {}, keyOf);
 
   function markSeen(seen, bucket, key) {
-    const b = seen[bucket] || (seen[bucket] = {});
-    if (!b[key]) {
-      const n = Object.keys(b).length;
-      if (n >= SEEN_CAP) {
-        // Evict the oldest rather than growing without bound: an unbounded
-        // record in localStorage is a leak that eventually throws on write.
-        const oldest = Object.entries(b).sort((x, y) => x[1] - y[1])[0];
-        if (oldest) delete b[oldest[0]];
-      }
-    }
-    b[key] = Date.now();
+    return window.ArcadeDeck.markSeen(seen[bucket] || (seen[bucket] = {}), key);
   }
 
   /* ---------- the review map ----------
@@ -127,11 +118,8 @@
 
   /* Every fact, ordered by how long ago it was served. A deck shorter than the
      fact space needs the whole space in that order, not a slice of it. */
-  function newCycle(pool, seen, bucket, keyOf) {
-    const k = keyOf || (f => f.a + '|' + f.b);
-    const b = seen[bucket] || {};
-    return pool.slice().sort((x, y) => (b[k(x)] || 0) - (b[k(y)] || 0));
-  }
+  const newCycle = (pool, seen, bucket, keyOf) =>
+    window.ArcadeDeck.newCycle(pool, seen[bucket] || {}, keyOf);
 
   /* ---------- audio ----------
    *

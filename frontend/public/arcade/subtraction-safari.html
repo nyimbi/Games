@@ -255,6 +255,8 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
 .speak:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
 </style>
   <script src="./errors.js"></script>
+  <script src="./escape.js"></script>
+  <script src="./deck.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -717,13 +719,18 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     return facts;
   }
 
+  /* The fact identity, stated rather than defaulted. `a|b` was the
+     shared default and happens to be right here; saying so is what makes
+     the next drill's omission an error instead of a silent wrong deck. */
+  const keyOf = f => `${f.a}|${f.b}`;
+
   function buildQueue(level) {
     const out = reviewFacts(level).slice(0, 2)
       .map(f => ({ a: f.a, b: f.b, diff: f.a - f.b, level, review: true }));
-    let pool = freshFirst(shuffle(poolFor(level)), state.seen, level);
+    let pool = freshFirst(shuffle(poolFor(level)), state.seen, level, keyOf);
     let i = 0, pass = 0;
     while (out.length < TOTAL) {
-      if (i >= pool.length) { pool = newCycle(poolFor(level), state.seen, level); i = 0; pass++; }
+      if (i >= pool.length) { pool = newCycle(poolFor(level), state.seen, level, keyOf); i = 0; pass++; }
       const f = pool[i++];
       const last = out[out.length - 1];
       // Unique on the first sweep; only no-immediate-repeat afterwards, so a

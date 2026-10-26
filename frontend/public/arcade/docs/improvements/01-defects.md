@@ -238,26 +238,27 @@ as the attempt count for ranking.
 
 ---
 
-## D-9 — `review` and `seen` disagree about what a fact is
+## D-9 — REFUTED. `review` and `seen` key different objects, on purpose
 
-**Severity: low-medium. Two identity functions for one object.**
-**Read.**
+**Status: refuted by measurement. The "fix" would have been a regression.**
 
-In every drill, `seen` is keyed by the fact's display identity and `review` by a composite that includes the level or the blank:
+In every drill, `seen` is keyed by one string and `review` by another, and the original entry called that "two identity functions for one object". They are not the same object.
 
-| Game | `seen` key (`markSeen`) | `review` key (`factKey`) |
-|---|---|---|
-| number-bonds | `whole\|a` (`:605`) | `whole\|a\|blank` (`:550`) |
-| addition | `a\|b` (`:709`) | `level\|a\|b` (`:643`) |
-| subtraction | `a\|b` (`:743`) | `level\|a\|b` (`:689`) |
-| times | `a\|b` (`:825`) | `a\|b` (`:779`) |
-| division | `divisor\|dividend` (`:540`) | `divisor\|dividend` (`:489`) |
+| Game | `seen` bucket | `seen` key | `review` key | what the difference is |
+|---|---|---|---|---|
+| number-bonds | mode | `whole\|a` | `whole\|a\|blank` | the blank position |
+| addition | level | `a\|b` | `level\|a\|b` | the bucket, folded in |
+| subtraction | level | `a\|b` | `level\|a\|b` | the bucket, folded in |
+| times | mode | `a\|b` | `a\|b` | none |
+| division | level | `divisor\|dividend` | `divisor\|dividend` | none |
 
-Three games have two identity functions for the same fact. `freshFirst` orders by `seen`; `buildQueue` seeds from `review`. A fact can be simultaneously "never served" to the deck and "due for review" to the queue.
+Read off a live run rather than from the source (`number-bonds.html`, one wrong answer, then `localStorage`): `seen['ten']` holds `10|5`; `review` holds `10|5|whole`. Two keys, one question.
 
-**Consequence.** Not a live bug — the two are read by different mechanisms and neither corrupts the other. It is the shape that produces D-2, and it is why a fact served in level 2 does not count as seen for the same fact in level 1.
+**Why the difference is right.** `seen` answers *has this child met this fact*, and its bucket is already the level or mode — the bucket is the context, so the key is the fact. `review` is one flat map across every level, so a key that did not carry the level would collide between levels. That is not duplication, it is a flat map paying for its flatness.
 
-**Fix.** Decide whether identity is the fact or the fact-in-context, write it once, and pass it. The `keyOf` parameter exists for this.
+Number-bonds is the case that settles it. `10 split into 7 and ?` and `10 split into ? and 3` are different questions with different answers and different failure modes: a child can know the bond and still freeze when the whole is the blank. Collapsing the key to `whole|a` — which is what "write it once, and pass it" would mean — would make a miss on the whole-blank retire the review for the part-blank too, and would stop the drill ever scheduling the harder form again.
+
+**What is actually true.** The two maps are not kept in sync, and that is a real observation: a fact served in level 2 does not count as seen in level 1, because the bucket differs. Whether that is a defect depends on whether "seen" means "met this fact" or "met this fact at this level" — and for a drill that sequences by level, the second is the honest answer. It is a design question, not a bug, and it belongs to F-1's spaced repetition rather than to a rename.
 
 ---
 
