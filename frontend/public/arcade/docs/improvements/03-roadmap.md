@@ -41,12 +41,14 @@ Seven nodes. F-13 is the feature `README.md:783-788` asks for by name. Everythin
 
 **Why F-50 here.** `session.js:203` reads `BY_GAME[FILE]` and `:296` returns early when it is falsy. A game missing from `SUBJECTS` silently never marks its day. `checkOrder()` (`session.js:70-81`) already proves the load-time-assertion pattern; this is the same pattern applied to the other half of the same list.
 
+**F-50 as landed — the check has three clauses, not one.** Two-way set comparison (a page with no subject; a subject naming a page that does not exist) plus an explicit claim count. The third exists because the first two cannot see a duplicate: adding `physics` to the piano subject leaves every key in `BY_GAME` and every key a page, so both scans pass while one game answers to the wrong subject. The canary found this — the check was written without the clause, the duplicate canary returned `[]`, and the comment that claimed the forward scan caught it was wrong. A key-count comparison would also have caught it, but only by accident, and an accidental catch is one refactor from gone.
+
 **Gate 0.**
 
 1. `python3 -I probes/grading.py` passes (unchanged).
 2. A new probe: a typing lesson run to timeout with fewer than all characters typed leaves `ArcadeSession.isFinished()` false and `arcade.session.v1` unchanged. **Canary it** by reverting `typing-tutor.html:531` to unconditional and watching it fail.
 3. `review` size after 500 answers is ≤ `REVIEW_CAP`, and the evicted entries are the ones with the lowest `miss`.
-4. A page not in `SUBJECTS` throws at load rather than returning `undefined`.
+4. A page not in `SUBJECTS` throws at load rather than returning `undefined`. `probes/manifest.py` carries four canaries — a page with no subject, a subject naming a missing page, two subjects claiming one game, and the maths subject under another id — each of which must throw a *distinct* message. The fourth was first written by adding `physics` to `MATHS`, which also duplicates a claim and tripped the wrong check; a canary whose mutation is not disjoint from what it tests proves nothing about its own predicate.
 
 ---
 

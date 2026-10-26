@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Typing Tutor — Math Arcade</title>
 <style>
@@ -209,6 +210,21 @@ h1 span{color:var(--sky-d)}
         <button class="btn" id="again">Try it again</button>
         <button class="btn ghost" id="nextLesson">Next lesson →</button>
         <button class="btn ghost" id="toLessons">All lessons</button>
+      </div>
+    </div>
+
+    <!-- The clock running out is not a finished deck. It gets its own panel
+         because session.js reads `#done.show` as "this subject is done for
+         today" -- showing that panel on a timeout credited the day to a child
+         who typed one letter. Same content, different id: the result is still
+         shown, the day is not claimed. -->
+    <div class="done" id="timeUp">
+      <div class="badge" id="timeUpMedal">⌨️</div>
+      <h2 id="timeUpTitle">Time!</h2>
+      <p id="timeUpText"></p>
+      <div class="actions">
+        <button class="btn" id="timeUpAgain">Try it again</button>
+        <button class="btn ghost" id="timeUpLessons">All lessons</button>
       </div>
     </div>
   </section>
@@ -527,15 +543,22 @@ h1 span{color:var(--sky-d)}
     }
     $('target').classList.add('done');
     document.querySelectorAll('#kb .key.next').forEach(k => k.classList.remove('next'));
-    $('done').classList.add('show');
-    $('doneTitle').textContent = completed ? (acc >= 95 ? 'Flawless!' : acc >= 80 ? 'Lesson complete!' : 'Finished — keep practising') : 'Time!';
-    $('doneText').textContent = `${wpm} words per minute · ${acc}% accuracy · ${state.errors} mistake${state.errors === 1 ? '' : 's'}`;
-    const stars = acc >= 95 && completed ? 3 : acc >= 85 && completed ? 2 : completed && acc >= 80 ? 1 : 0;
-    [...$('stars').children].forEach((s, i) => s.classList.toggle('on', i < stars));
-    $('medal').textContent = stars === 3 ? '🏆' : stars === 2 ? '🥇' : stars === 1 ? '🥈' : '⌨️';
     const next = LESSONS[state.lesson + 1];
-    $('nextLesson').style.display = next && unlocked(state.lesson + 1) ? '' : 'none';
-    if (stars >= 2) { burst(70); goodSound(); }
+    if (completed) {
+      $('done').classList.add('show');
+      $('doneTitle').textContent = acc >= 95 ? 'Flawless!' : acc >= 80 ? 'Lesson complete!' : 'Finished — keep practising';
+      $('doneText').textContent = `${wpm} words per minute · ${acc}% accuracy · ${state.errors} mistake${state.errors === 1 ? '' : 's'}`;
+      const stars = acc >= 95 ? 3 : acc >= 85 ? 2 : acc >= 80 ? 1 : 0;
+      [...$('stars').children].forEach((s, i) => s.classList.toggle('on', i < stars));
+      $('medal').textContent = stars === 3 ? '🏆' : stars === 2 ? '🥇' : stars === 1 ? '🥈' : '⌨️';
+      $('nextLesson').style.display = next && unlocked(state.lesson + 1) ? '' : 'none';
+      if (stars >= 2) { burst(70); goodSound(); }
+    } else {
+      // Out of time, not out of work. Report what was done; claim nothing.
+      $('timeUp').classList.add('show');
+      $('timeUpText').textContent = `${state.pos} of ${state.text.length} characters · ${wpm} words per minute · ${acc}% accuracy`;
+      $('timeUpMedal').textContent = '⏱️';
+    }
     renderLessons();
   }
 
@@ -549,6 +572,7 @@ h1 span{color:var(--sky-d)}
     $('pickPanel').hidden = true;
     $('playPanel').hidden = false;
     $('done').classList.remove('show');
+    $('timeUp').classList.remove('show');
     $('target').classList.remove('done');
     $('target').style.display = '';
     $('hint').textContent = LESSONS[i].desc + '. Type the highlighted letter.';
@@ -602,6 +626,8 @@ h1 span{color:var(--sky-d)}
   $('backBtn').addEventListener('click', toLessons);
   $('toLessons').addEventListener('click', toLessons);
   $('again').addEventListener('click', () => startLesson(state.lesson));
+  $('timeUpAgain').addEventListener('click', () => startLesson(state.lesson));
+  $('timeUpLessons').addEventListener('click', () => toLessons());
   $('nextLesson').addEventListener('click', () => {
     const next = state.lesson + 1;
     if (next < LESSONS.length && unlocked(next)) startLesson(next);

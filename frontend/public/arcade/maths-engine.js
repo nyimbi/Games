@@ -66,6 +66,65 @@
     b[key] = Date.now();
   }
 
+  /* ---------- the review map ----------
+   *
+   * `seen` is capped above; `review` was capped nowhere. Its key space is the
+   * level x fact space, and subtraction level 3 draws its operands at random,
+   * so it grows with every distinct question ever asked. Every save() is
+   * inside a bare catch, so the eventual QuotaExceededError presents as
+   * progress silently not saving -- the failure session.js guards against for
+   * its own record and no drill guarded against for this one.
+   *
+   * Eviction is by miss count, not age: a fact the child keeps getting wrong
+   * is the one review exists for, and dropping it to bound the object would
+   * bound the object by deleting its purpose. Entries not `due` go first, so
+   * a clean fact outranks a missed one of the same count.
+   */
+  const REVIEW_CAP = 400;
+
+  function capReview(review) {
+    const keys = Object.keys(review);
+    if (keys.length <= REVIEW_CAP) return review;
+    keys.sort((x, y) => {
+      const a = review[x], b = review[y];
+      // due first (kept), then most misses, then most attempts
+      if (!!a.due !== !!b.due) return a.due ? 1 : -1;
+      if ((a.miss || 0) !== (b.miss || 0)) return (a.miss || 0) - (b.miss || 0);
+      return (a.n || 0) - (b.n || 0);
+    });
+    const drop = keys.length - REVIEW_CAP;
+    for (let i = 0; i < drop; i++) delete review[keys[i]];
+    return review;
+  }
+
+  /* Record one attempt against a review entry.
+   *
+   * All six drills used to inline `if (!right) due = true; else if (due) due =
+   * false`, which retires a missed fact after a single correct answer -- review
+   * that forgets. spelling-bee.html had a guard, `r.due && r.n >= 2`, but `n`
+   * counts attempts, not successes: trace correct, correct, miss, correct and
+   * the miss lands at n=3, so one right answer still retires it.
+   *
+   * `ok` counts consecutive correct answers since the last miss, and a fact
+   * leaves the queue after two. That is the smallest schedule that is a
+   * schedule: one success cannot distinguish knowing it from having guessed.
+   */
+  const REVIEW_PASSES = 2;
+
+  function noteReview(review, key, right) {
+    const r = review[key] || (review[key] = { n: 0, miss: 0, ok: 0, due: false });
+    r.n = (r.n || 0) + 1;
+    if (right) {
+      r.ok = (r.ok || 0) + 1;
+      if (r.due && r.ok >= REVIEW_PASSES) r.due = false;
+    } else {
+      r.miss = (r.miss || 0) + 1;
+      r.ok = 0;
+      r.due = true;
+    }
+    return r;
+  }
+
   /* Every fact, ordered by how long ago it was served. A deck shorter than the
      fact space needs the whole space in that order, not a slice of it. */
   function newCycle(pool, seen, bucket, keyOf) {
@@ -341,7 +400,7 @@
 
   window.MathsGame = {
     $, rnd, shuffle, esc,
-    freshFirst, markSeen, newCycle, SEEN_CAP,
+    freshFirst, markSeen, newCycle, SEEN_CAP, capReview, REVIEW_CAP, noteReview, REVIEW_PASSES,
     tone, goodSound, badSound, clickSound, burst, audio,
     init, open: () => open(null), close, lessonTopic: () => current
   };

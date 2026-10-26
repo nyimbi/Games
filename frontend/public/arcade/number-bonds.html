@@ -349,6 +349,7 @@ h1 span{color:var(--teal-d)}
      bounded and per mode, and a mode whose fact space is smaller than a deck
      simply starts a new cycle rather than repeating inside one. */
   const freshFirst = MG.freshFirst, markSeen = MG.markSeen, newCycle = MG.newCycle;
+  const capReview = MG.capReview, noteReview = MG.noteReview;
 
   /* ---------------- audio ---------------- */
   const tone = MG.tone, goodSound = MG.goodSound, badSound = MG.badSound;
@@ -543,16 +544,13 @@ h1 span{color:var(--teal-d)}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review, seen: state.seen }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen }));
     } catch (_) {}
   };
 
   const factKey = q => `${q.whole}|${q.a}|${q.blank}`;
   function noteFact(q, right) {
-    const k = factKey(q);
-    const r = state.review[k] || { n: 0, miss: 0, due: false };
-    r.n++; if (!right) { r.miss++; r.due = true; } else if (r.due) r.due = false;
-    state.review[k] = r;
+    noteReview(state.review, factKey(q), right);
   }
 
   function wholesFor(mode) {
@@ -563,14 +561,18 @@ h1 span{color:var(--teal-d)}
 
   function buildQueue() {
     const ws = wholesFor(state.mode);
+    // Level first, then rank, then take two. Slicing before the level filter
+    // let two due facts from another whole take both slots, so the in-level
+    // fact was never served -- and the deck stayed 50 long, so it looked fine.
     const out = Object.entries(state.review)
       .filter(([k, r]) => r.due)
+      .filter(([k]) => ws.includes(+k.split('|')[0]))
+      .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)
       .map(([k]) => {
         const [whole, a, blank] = k.split('|');
         return { whole: +whole, a: +a, b: +whole - +a, blank, review: true };
-      })
-      .filter(q => ws.includes(q.whole));
+      });
     const pool = [];
     ws.forEach(w => { for (let a = 1; a < w; a++) pool.push({ whole: w, a, b: w - a }); });
     const blankFor = () => Math.random() < .3 ? 'whole' : (Math.random() < .5 ? 'a' : 'b');
@@ -624,12 +626,20 @@ h1 span{color:var(--teal-d)}
     $('progress').style.width = (state.index / TOTAL * 100) + '%';
     $('pbar').setAttribute('aria-valuenow', String(state.index));
     $('ask').textContent = blank === 'whole' ? 'What is the whole?' : 'What is the missing part?';
+    // Say only what is on screen. When the `a` part is blanked the old wording
+    // was "10 split into 7 and what?", which speaks the answer to a screen
+    // reader; the `b` wording was right by luck, not by design. Both part
+    // cases name the part that is shown.
     $('qsay').textContent = blank === 'whole'
       ? `${a} and ${b}. What is the whole?`
-      : `${whole} split into ${a} and what?`;
+      : blank === 'a'
+        ? `${whole} split into what and ${b}?`
+        : `${whole} split into ${a} and what?`;
     $('hint').textContent = blank === 'whole'
       ? `Count both parts together.`
-      : `Count up from ${a} to ${whole}.`;
+      : blank === 'a'
+        ? `Count up from ${b} to ${whole}.`
+        : `Count up from ${a} to ${whole}.`;
   }
 
   function paintInput() {

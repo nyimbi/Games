@@ -195,10 +195,10 @@ The signatures disagree: `maths-engine.js:45` takes `(pool, seen, bucket, keyOf)
 
 ---
 
-## D-8 — A review fact is cleared by one correct answer
+## D-8 — A review fact is cleared by one correct answer, in all six copies
 
 **Severity: medium. It is the difference between review and a queue.**
-**Read.**
+**Read, then traced.**
 
 `number-bonds.html:553-555`, `addition-quest.html:646-650`, `subtraction-safari.html:692-694`, `times-table-academy.html:782-784`, `division-diner.html:492-494`, `calligraphy.html:516-518`:
 
@@ -206,16 +206,35 @@ The signatures disagree: `maths-engine.js:45` takes `(pool, seen, bucket, keyOf)
 r.n++; if (!right) { r.miss++; r.due = true; } else if (r.due) r.due = false;
 ```
 
-`spelling-bee.html:910-916` is the exception and gets it right:
+`spelling-bee.html:910-916` looks like the exception:
 
 ```js
 if (!right) { r.miss++; r.due = true; }
 else if (r.due && r.n >= 2) r.due = false;
 ```
 
-**Consequence.** A fact answered wrongly then correctly once is retired. The literature this product is built on (spaced repetition) needs the interval to grow with successful retrievals; here it is one, everywhere but spelling. Combined with D-2, review in three drills is: never served; in the other two, served once.
+**It is not.** `r.n` counts *total attempts*, not successful ones, and it is
+incremented before the branch. Tracing the spelling rule over
+`correct, correct, miss, correct` gives `n=1,2,3,4` and `due=False,False,True,False`
+— the miss lands at `n=3`, so `n >= 2` holds and a single correct answer retires
+it. The guard only suppresses retirement for a fact missed on its *very first*
+attempt, which is the one case where it does not matter. Every copy, spelling
+included, retires a missed fact after one success.
 
-**Fix.** Port `spelling-bee.html:914`'s condition. `r.n` is already recorded at every site, so this is a one-line change in six places, and it is the cheapest real improvement in this document.
+This correction was made while implementing the fix: the earlier text of this
+entry called spelling "the exception that gets it right" and proposed porting
+its condition. That would have changed nothing, and the change would have looked
+like a fix.
+
+**Consequence.** A fact answered wrongly then correctly once is retired. Spaced
+repetition needs the interval to grow with *successful retrievals*; here it is
+one, everywhere. Combined with D-2, review in three drills was never served; in
+the other two it was served once.
+
+**Fix.** Track successes, not attempts. `r.ok` increments only on a correct
+answer; `due` clears when `r.ok >= 2` since the last miss, and a miss resets
+`r.ok` to 0. That is the two-success rule the audit claimed existed. `r.n` stays
+as the attempt count for ranking.
 
 ---
 
@@ -260,14 +279,25 @@ $ grep -rn "window.onerror\|unhandledrejection" *.html *.js
 
 ---
 
-## D-11 — `#done.show` is set before the percentage is computed in three drills
+## D-11 — REFUTED. `#done.show` before the percentage is stored cannot lose the record
 
-**Severity: low. Cosmetic unless the write throws.**
-**Read.**
+**Status: refuted on re-read. The order is untidy, not wrong.**
 
-`addition-quest.html:852`, `division-diner.html:622`, `number-bonds.html:690` set `$('done').classList.add('show')` before the `pct` is written to `state.perLevel`/`perMode`. If `save()` throws — which it will, per D-3 — the summary is already visible and the record is not written. `session.js:290` then marks the subject done on a run whose percentage was never stored, so the hub's star rating and the session record disagree permanently.
+`addition-quest.html:852`, `division-diner.html:622`, `number-bonds.html:690` set `$('done').classList.add('show')` before the `pct` is written to `state.perLevel`/`perMode`. The original claim was that a throwing `save()` would leave the summary visible with the percentage unwritten, so `session.js:290` would credit a day whose star rating never stored.
 
-**Fix.** Compute, persist, then show. Three lines moved in three files.
+**Why that cannot happen.** Every one of the six drills wraps the write:
+
+```js
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({ ..., review: capReview(state.review), seen: state.seen }));
+  } catch (_) {}
+}
+```
+
+`addition-quest.html:637-641`, and the same shape in `division-diner.html:596-600`, `number-bonds.html:672-676`, `subtraction-safari.html`, `times-table-academy.html`, `infinite-arena.html`. Nothing escapes `save()`. Even if it did, `session.js`'s `MutationObserver` fires in a later microtask, after `finish()` has already unwound or thrown — so the reorder would not change what gets credited in that case either.
+
+**What is actually true.** If the quota is exhausted, `save()` swallows and the run is silently lost — but that is D-3, and it is now bounded by `capReview`. The DOM order is a cosmetic preference. The reorder was written, canaried and reverted rather than shipped, because a fix whose stated mechanism cannot occur is a change that claims a bug it does not fix.
 
 ---
 

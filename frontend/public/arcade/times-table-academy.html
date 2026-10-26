@@ -340,6 +340,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
      a deck (a single table is 20 facts) starts a new cycle rather than
      repeating inside one. */
   const freshFirst = MG.freshFirst, markSeen = MG.markSeen, newCycle = MG.newCycle;
+  const capReview = MG.capReview, noteReview = MG.noteReview;
   const shuffle = MG.shuffle;
 
   const tone = MG.tone, goodSound = MG.goodSound, badSound = MG.badSound;
@@ -772,16 +773,13 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: state.review, seen: state.seen }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen }));
     } catch (_) {}
   };
 
   const factKey = q => `${q.a}|${q.b}`;
   function noteFact(q, right) {
-    const k = factKey(q);
-    const r = state.review[k] || { n: 0, miss: 0, due: false };
-    r.n++; if (!right) { r.miss++; r.due = true; } else if (r.due) r.due = false;
-    state.review[k] = r;
+    noteReview(state.review, factKey(q), right);
   }
 
   function factsFor(mode, table) {
@@ -799,9 +797,16 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     const hi = state.table ? 20 : (state.mode === '1-10' ? 10 : 20);
     const out = Object.entries(state.review)
       .filter(([k, r]) => r.due)
+      // Level first, then rank, then take two. Slicing before the level filter
+      // let two due facts from another table take both slots, so the in-level
+      // fact was never served -- and the deck stayed 50 long, so it looked fine.
+      .filter(([k]) => {
+        const [a, b] = k.split('|').map(Number);
+        return a <= hi && b <= hi && (!state.table || a === state.table || b === state.table);
+      })
+      .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)
-      .map(([k]) => { const [a, b] = k.split('|').map(Number); return { a, b, prod: a * b }; })
-      .filter(f => f.a <= hi && f.b <= hi && (!state.table || f.a === state.table || f.b === state.table));
+      .map(([k]) => { const [a, b] = k.split('|').map(Number); return { a, b, prod: a * b }; });
     const key = bucketKey();
     let pool = freshFirst(factsFor(state.mode, state.table), state.seen, key);
     let i = 0, pass = 0;

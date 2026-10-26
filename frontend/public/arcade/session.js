@@ -82,6 +82,53 @@
   const BY_GAME = {};
   SUBJECTS.forEach(s => s.games.forEach(g => { BY_GAME[g] = s; }));
 
+  /* Every game page that ships. Nothing derives from this list -- it is the
+     reference the subject table is checked against -- so it is the one place a
+     new page has to be written down twice. That is the cost; the alternative is
+     what used to happen, which was nothing at all. `BY_GAME[FILE]` is
+     `undefined` for a game missing from `SUBJECTS`, `start()` returns early on
+     that, and the page silently never marks its day. A child plays it, the hub
+     says it is not done, and no error is anywhere.
+
+     The hub's own pages -- index and session -- are not here: they load this
+     file to render the plan, and neither is a game. */
+  const GAME_PAGES = [
+    'number-bonds', 'addition-quest', 'subtraction-safari', 'times-table-academy',
+    'division-diner', 'infinite-arena', 'spelling-bee', 'french', 'physics',
+    'chinese', 'chemistry', 'swahili', 'typing-tutor', 'calligraphy', 'piano',
+    'how-things-work'
+  ];
+
+  /* Both directions, because the two failures are different. A page with no
+     subject never tracks; a subject naming a page that does not exist renders a
+     card that leads nowhere.
+
+     Neither direction sees a duplicate. Two subjects claiming one game still
+     leaves every key in `BY_GAME` and every key a page, so both scans pass
+     while one game silently answers to the wrong subject -- a canary proved
+     that by adding `physics` to the piano subject and watching nothing throw.
+     So the claim count is its own check, made directly rather than inferred
+     from the number of keys: a key count would have caught it, but only by
+     accident, and an accidental catch is one refactor away from gone. */
+  (function checkManifest() {
+    GAME_PAGES.forEach(g => {
+      if (!BY_GAME[g]) throw new Error('session: ' + g + '.html ships but no subject lists it');
+    });
+    Object.keys(BY_GAME).forEach(g => {
+      if (GAME_PAGES.indexOf(g) < 0) {
+        throw new Error('session: a subject lists ' + g + ', which is not a page');
+      }
+    });
+    const claims = {};
+    SUBJECTS.forEach(s => s.games.forEach(g => {
+      claims[g] = (claims[g] || 0) + 1;
+      if (claims[g] > 1) throw new Error('session: ' + g + ' is listed by more than one subject');
+    }));
+    if (MATHS.some(g => !BY_GAME[g] || BY_GAME[g].id !== 'maths')) {
+      throw new Error('session: MATHS names a game that is not under the maths subject');
+    }
+  })();
+
   /* Local date, not UTC: a child finishing at nine in the evening should get
      credit for that day, whatever the server's clock says. */
   function dayKey(d) {

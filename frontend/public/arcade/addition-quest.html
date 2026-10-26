@@ -388,6 +388,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
      week's second deck is a second deck. Bounded per level; a level whose fact
      space is smaller than a deck starts a new cycle instead of repeating. */
   const freshFirst = MG.freshFirst, markSeen = MG.markSeen, newCycle = MG.newCycle;
+  const capReview = MG.capReview, noteReview = MG.noteReview;
   const shuffle = MG.shuffle;
 
   /* ---------------- audio ---------------- */
@@ -635,19 +636,14 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   }
   function save() {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: state.review, seen: state.seen }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: capReview(state.review), seen: state.seen }));
     } catch (_) {}
   }
 
   /* review queue: a fact missed comes back in the next set */
   const factKey = q => `${q.level}|${q.a}|${q.b}`;
   function noteFact(q, right) {
-    const k = factKey(q);
-    const r = state.review[k] || { n: 0, miss: 0 };
-    r.n++; if (!right) r.miss++;
-    if (!right) r.due = true;
-    else if (r.due) r.due = false;
-    state.review[k] = r;
+    noteReview(state.review, factKey(q), right);
   }
   function reviewFacts(level) {
     return Object.entries(state.review)

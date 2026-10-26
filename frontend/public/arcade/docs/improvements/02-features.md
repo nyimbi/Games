@@ -19,7 +19,7 @@ The arcade writes a percentage per level and never reads it back. `README.md:783
 
 **Deepens:** `review` (`number-bonds.html:551-556` and four siblings).
 **Why:** `due` is a boolean and a fact is retired after one correct answer (`01-defects.md` D-8). Spaced repetition needs an interval that grows with successful retrievals. The data is already collected — `r.n` counts attempts and `r.miss` counts misses at every site — so the change is a scheduling rule, not new instrumentation.
-**Evidence:** `spelling-bee.html:914` already implements the two-success rule and is the only copy that does. Porting it is the cheapest real improvement in this document.
+**Evidence:** all six copies retire a missed fact after one correct answer, including `spelling-bee.html:914`, whose `r.n >= 2` guard counts *attempts* rather than successes and so only suppresses retirement for a fact missed on its first attempt (`01-defects.md` D-8 traces it). Porting that condition would change nothing.
 **Cost:** `O(1)` per answer. The schedule is three fields (`n`, `miss`, `nextAt`) and a pure function `nextInterval(n, miss)`. Replaces `due` in five files without changing any call site.
 **Depends on:** nothing. **Enables:** F-2, F-3, F-5.
 

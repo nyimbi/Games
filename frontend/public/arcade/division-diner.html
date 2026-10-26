@@ -287,6 +287,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
      Unseen facts first, then the least recently served. A level smaller than a
      deck (÷1–5 is 80 facts) starts a new cycle rather than repeating. */
   const freshFirst = MG.freshFirst, markSeen = MG.markSeen, newCycle = MG.newCycle;
+  const capReview = MG.capReview, noteReview = MG.noteReview;
   const shuffle = MG.shuffle;
 
   const tone = MG.tone, goodSound = MG.goodSound, badSound = MG.badSound;
@@ -482,16 +483,13 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: state.review, seen: state.seen }));
+      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perLevel: state.perLevel, review: capReview(state.review), seen: state.seen }));
     } catch (_) {}
   };
 
   const factKey = q => `${q.divisor}|${q.dividend}`;
   function noteFact(q, right) {
-    const k = factKey(q);
-    const r = state.review[k] || { n: 0, miss: 0, due: false };
-    r.n++; if (!right) { r.miss++; r.due = true; } else if (r.due) r.due = false;
-    state.review[k] = r;
+    noteReview(state.review, factKey(q), right);
   }
 
   function divisorsFor(level) {
@@ -514,11 +512,15 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
 
   function buildQueue() {
     const ds = divisorsFor(state.level);
+    // Level first, then rank, then take two. Slicing before the level filter
+    // let two due facts from another divisor take both slots, so the in-level
+    // fact was never served -- and the deck stayed 50 long, so it looked fine.
     const out = Object.entries(state.review)
       .filter(([k, r]) => r.due)
+      .filter(([k]) => ds.includes(+k.split('|')[0]))
+      .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)
-      .map(([k]) => { const [d, n] = k.split('|').map(Number); return { dividend: n, divisor: d, quotient: n / d, review: true }; })
-      .filter(f => ds.includes(f.divisor));
+      .map(([k]) => { const [d, n] = k.split('|').map(Number); return { dividend: n, divisor: d, quotient: n / d, review: true }; });
     const keyOf = f => `${f.divisor}|${f.dividend}`;
     let pool = freshFirst(shuffle(poolFor(state.level)), state.seen, state.level, keyOf);
     let i = 0, pass = 0;
