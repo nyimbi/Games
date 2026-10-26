@@ -154,7 +154,7 @@
           best: state.best, perTier: state.perTier,
           review: state.review, seen: state.seen, tier: state.tier
         }));
-      } catch (_) { }
+      } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
     };
 
     const tierKey = t => 't' + t;

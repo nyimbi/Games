@@ -155,7 +155,7 @@
     // eventually throws on write.
     const keys = Object.keys(s.days).sort();
     while (keys.length > KEEP_DAYS) delete s.days[keys.shift()];
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (_) { }
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
 
   function todayRecord(create) {

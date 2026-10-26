@@ -37,6 +37,8 @@ Seven nodes. F-13 is the feature `README.md:783-788` asks for by name. Everythin
 | F-50 page manifest assertion | feature | `session.js` |
 | F-41 local error ring | feature | new `errors.js` |
 
+**Phase 0 is complete.** F-41 landed as `errors.js` — memory-first ring, surfaced on `session.html`, with twelve storage catches reporting and the parse and audio catches deliberately still silent. D-11 was refuted rather than fixed.
+
 **Why D-1 first.** It is the only defect that corrupts the record. Every other item in this document assumes the record means something; while a timed-out run credits a subject, it does not.
 
 **Why F-50 here.** `session.js:203` reads `BY_GAME[FILE]` and `:296` returns early when it is falsy. A game missing from `SUBJECTS` silently never marks its day. `checkOrder()` (`session.js:70-81`) already proves the load-time-assertion pattern; this is the same pattern applied to the other half of the same list.

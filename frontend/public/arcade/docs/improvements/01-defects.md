@@ -261,9 +261,9 @@ Three games have two identity functions for the same fact. `freshFirst` orders b
 
 ---
 
-## D-10 — No global error handler; every persistence failure is swallowed
+## D-10 — FIXED. No global error handler; every persistence failure was swallowed
 
-**Severity: medium. Observability is zero, and the swallow hides D-3.**
+**Status: fixed by `errors.js` and `probes/errors.py`.**
 **Read.**
 
 ```
@@ -275,7 +275,11 @@ $ grep -rn "window.onerror\|unhandledrejection" *.html *.js
 
 **Consequence.** A child's session can break in a way nobody can diagnose. There is no console breadcrumb, no counter, no visible signal. Combined with D-3, quota exhaustion presents as "my progress keeps disappearing" with no way to confirm the cause.
 
-**Fix.** The constraint is no network, so telemetry cannot leave the device. It can still be recorded locally: a bounded `arcade.errors.v1` ring of `{page, message, at}` written by `window.onerror`, shown on the session page behind a "Something went wrong?" disclosure. That is observability inside the offline guarantee, and it turns every `catch (_) {}` into a place that can report without changing behaviour.
+**Fix as landed.** `errors.js` loads first in every page's `<head>` and records uncaught errors, unhandled rejections, failed resource loads and explicit storage failures into `arcade.errors.v1`, capped at 50, newest first, shown on `session.html` behind a "Something went wrong?" disclosure. Twelve of the storage catches now report; the parse catches and the audio catches still swallow, because a corrupt record recovering to defaults and a browser refusing WebAudio are both working as intended.
+
+**The design point worth keeping.** The ring is memory-first, localStorage best-effort. The failure most worth recording is quota exhaustion, and that is exactly the failure that makes the ring unwritable — a recorder that needs storage to report a storage problem reports nothing. The probe asserts the in-memory ring holds the entry while `localStorage` returns `[]`, and the canary that swaps the getter to read from storage fails it.
+
+**A bug the probe found in the fix itself.** The repeat-collapse compared `e.at` against `page + ':' + where` while storing the bare `where`, so the match never fired: 120 identical notes filled the ring with 50 copies of one message. Only the canary that mutates the collapse was ever going to catch it, and it did.
 
 ---
 

@@ -145,6 +145,7 @@ h1 span{color:var(--sky-d)}
   .target{padding:16px;font-size:1.2rem}
 }
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -354,7 +355,7 @@ h1 span{color:var(--sky-d)}
     } catch (_) {}
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ progress: state.progress })); } catch (_) {}
+    try { localStorage.setItem(KEY, JSON.stringify({ progress: state.progress })); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
   function unlocked(i) { return i === 0 || (state.progress[LESSONS[i - 1].id] || 0) >= 80; }
 

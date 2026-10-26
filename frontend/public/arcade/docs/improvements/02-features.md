@@ -367,6 +367,8 @@ There is no error handler, no CSP, and no way to tell a corrupt record from a ne
 **Cost:** `O(1)` per event, ring capped at 50.
 **Depends on:** nothing. **Enables:** every other observability feature.
 
+**Landed.** `errors.js`, loaded first in every `<head>` so it catches errors the engines raise while parsing banks. The ring is memory-first with localStorage as a best-effort copy, because quota exhaustion — the failure most worth recording — is the one that makes the ring unwritable. Repeats collapse to one entry with a count. Surfaced on `session.html` as a disclosure; `probes/errors.py` covers an uncaught error, a real storage catch driven with `setItem` stubbed to throw, the memory-vs-storage split, the collapse and the cap.
+
 ### F-42 — A record integrity check that distinguishes empty from corrupt
 
 **Deepens:** F-10.

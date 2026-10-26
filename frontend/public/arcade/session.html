@@ -144,6 +144,7 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
   .step .n{flex-basis:32px;width:32px;height:32px;font-size:.92rem}
 }
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -180,6 +181,15 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
       <span><i style="background:#fff"></i>Nothing</span>
     </div>
     <button class="reset" type="button" id="resetBtn">Clear the record</button>
+  </section>
+
+  <section class="hist">
+    <h2>Something went wrong?</h2>
+    <p class="sub">The arcade keeps a list of the last fifty errors on this device, and
+      nothing leaves it. Open this if progress is not being kept.</p>
+    <div class="days" id="errs" hidden></div>
+    <button class="reset" type="button" id="errBtn" aria-expanded="false"
+      aria-controls="errs">Show errors</button>
   </section>
 
   <footer>
@@ -292,6 +302,44 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
       box.append(el);
     });
   }
+
+  /* The error disclosure. It reads `ArcadeErrors.all`, which is the live
+     in-memory ring, not localStorage: the failures most worth seeing here are
+     the ones where a write to localStorage failed, and a reader that depended
+     on a successful write would be empty exactly then. */
+  function renderErrors() {
+    const box = $('errs');
+    const list = (window.ArcadeErrors && window.ArcadeErrors.all) || [];
+    box.innerHTML = '';
+    if (!list.length) {
+      const p = document.createElement('p');
+      p.className = 'sub';
+      p.textContent = 'Nothing recorded since this page loaded.';
+      box.append(p);
+      return;
+    }
+    list.forEach(e => {
+      const row = document.createElement('p');
+      row.className = 'sub';
+      const when = new Date(e.t || Date.now()).toLocaleString(undefined,
+        { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      // Text nodes, not innerHTML: a message is arbitrary browser output and
+      // must never be parsed as markup.
+      row.append(document.createTextNode(
+        `${when} · ${e.page}${e.at ? ' ' + e.at : ''} · ${e.kind}: ${e.msg}` +
+        (e.n > 1 ? ` (×${e.n})` : '')));
+      box.append(row);
+    });
+  }
+
+  $('errBtn').addEventListener('click', () => {
+    const b = $('errBtn'), box = $('errs');
+    const open = box.hidden;
+    box.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+    b.textContent = open ? 'Hide errors' : 'Show errors';
+    if (open) renderErrors();
+  });
 
   $('resetBtn').addEventListener('click', () => {
     // Two-step rather than a confirm(): a dialog is a second surface to style

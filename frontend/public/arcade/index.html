@@ -170,6 +170,7 @@ footer .dot{opacity:.45;margin:0 8px}
   .suggest{padding:16px}
 }
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -628,7 +629,7 @@ footer .dot{opacity:.45;margin:0 8px}
     if (!card) return;
     const played = lastPlayed();
     played[card.getAttribute('href')] = Date.now();
-    try { localStorage.setItem(LAST, JSON.stringify(played)); } catch (_) {}
+    try { localStorage.setItem(LAST, JSON.stringify(played)); } catch (e) { ArcadeErrors.note('storage', e && e.message, LAST); }
   });
 
   /* The session card is read from the tracker rather than duplicated here, so

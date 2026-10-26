@@ -212,6 +212,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   border-radius:999px;padding:9px 16px;box-shadow:0 3px 0 var(--ink);color:var(--ink)}
 .speak:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
 </style>
+  <script src="./errors.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -774,7 +775,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   const save = () => {
     try {
       localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen }));
-    } catch (_) {}
+    } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   };
 
   const factKey = q => `${q.a}|${q.b}`;
