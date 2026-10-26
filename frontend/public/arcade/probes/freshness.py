@@ -42,7 +42,16 @@ DRILLS = {
         # are a and b with a + b = whole; the identity of the fact is the whole
         # plus whichever part is displayed, so the split form gives a and the
         # sum form gives the whole and its two parts.
-        'match': 'q => { let m = /(\\d+) split into (\\d+) and what/.exec(q); if (m) return {whole: +m[1], a: +m[2]}; m = /(\\d+) and (\\d+)\\. What is the whole/.exec(q); if (!m) return null; return {whole: +m[1] + +m[2], a: +m[1]}; }',
+        # THREE forms, not two. The blank can be the whole, the first part or
+        # the second part, and each names the fact differently:
+        #   "10 split into 9 and what?"   -> a shown,  key 10|9
+        #   "10 split into what and 5?"   -> b shown,  key 10|5  (a = whole - b)
+        #   "7 and 3. What is the whole?" -> both shown, key 10|7
+        # The second was missing, so whenever the drill opened on it the
+        # matcher returned null and the probe reported "first question is
+        # None". That read as flake for as long as it existed -- the drill
+        # blanks at random, so it failed roughly one run in three.
+        'match': 'q => { let m = /(\\d+) split into (\\d+) and what/.exec(q); if (m) return {whole: +m[1], a: +m[2]}; m = /(\\d+) split into what and (\\d+)/.exec(q); if (m) return {whole: +m[1], a: +m[1] - +m[2]}; m = /(\\d+) and (\\d+)\\. What is the whole/.exec(q); if (!m) return null; return {whole: +m[1] + +m[2], a: +m[1]}; }',
         'asked': 'm => m ? `${m.whole}|${m.a}` : null',
     },
     'addition-quest': {

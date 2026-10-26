@@ -215,6 +215,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   <script src="./errors.js"></script>
   <script src="./escape.js"></script>
   <script src="./deck.js"></script>
+  <script src="./record.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -335,6 +336,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   'use strict';
   const TOTAL = 50;
   const KEY = 'arcade.times.v2';
+  const R = window.ArcadeRecord;
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
   const MG = window.MathsGame;
@@ -768,15 +770,23 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     score: 0, streak: 0, best: 0, answered: false, right: 0, perMode: {}, review: {}, seen: {}, showPicture: false
   };
 
+  /* The record reports what it found rather than defaulting silently: a
+     corrupt or newer-schema record is refused, stashed by record.js and
+     reported through ArcadeErrors, instead of being overwritten by the next
+     save. See record.js for the four states and why they are distinguished. */
+  const SHAPE = { best: R.is.num, perMode: R.is.obj, review: R.is.obj, seen: R.is.obj };
+  const RECORD_V = 1;
+  let loadStatus = 'fresh';
+
   function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; }
-    } catch (_) {}
+    const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
+    loadStatus = res.status;
+    const s = res.data;
+    if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; }
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen }));
+      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen }));
     } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   };
 
@@ -1057,7 +1067,26 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
   }
 
+  /* A corrupt record is not silently replaced. The child is told, and the
+     banner stays for the session: the next save would otherwise write defaults
+     over whatever was there, and the stash in record.js would be the only copy
+     left. Reporting is the whole point of distinguishing the states. */
+  function recordNotice() {
+    if (loadStatus !== 'corrupt') return;
+    const el = document.createElement('div');
+    el.id = 'recordNotice';
+    el.setAttribute('role', 'alert');
+    el.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:9998;max-width:min(420px,calc(100vw - 32px));' +
+      'background:#fff3e0;color:#191c3a;border:2.5px solid #191c3a;border-radius:16px;padding:12px 15px;' +
+      'box-shadow:5px 5px 0 #191c3a;font:600 .9rem/1.45 ui-rounded,system-ui,sans-serif';
+    el.append(document.createTextNode(
+      'This game could not read its saved progress, so it is starting fresh. ' +
+      'The old record has been kept and can be seen on the session page.'));
+    document.body.append(el);
+  }
+
   load(); buildPad(); buildFactorBar(); buildGrid(); buildTablePicker();
+  recordNotice();
   renderExplore(); renderPatterns(); renderMemory();
   MG.init(window.MATHS_LESSONS['times-table-academy']);
 })();
