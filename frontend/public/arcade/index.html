@@ -546,8 +546,15 @@ footer .dot{opacity:.45;margin:0 8px}
   const DAY = 86400000;
   const LAST = 'arcade.lastplay';
 
+  /* The hub reads every game's record without knowing any game's schema, so it
+     asks record.js not to enforce a version and not to stash: a read-only
+     observer must not write seventeen stash entries per load, and refusing a
+     record it does not understand would show "never played" for a child who
+     has. It still refuses to parse garbage, which is what keeps one corrupt
+     game from throwing the whole shelf. */
   function read(key) {
-    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) { return null; }
+    const res = window.ArcadeRecord.load(key, { version: 0, stash: false });
+    return res.data;
   }
 
   /* A card's stars come from the best percentage it has stored. Every game

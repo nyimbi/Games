@@ -403,26 +403,31 @@ h1 span{color:var(--grape-d)}
   }
 
   const DAY = 86400000;
+  const R = window.ArcadeRecord;
+  const SHAPE = { best: R.is.num, skill: R.is.obj, seen: R.is.obj, savedAt: R.is.num };
+  const RECORD_V = 1;
+  let loadStatus = 'fresh';
+
   function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) {
-        state.best = s.best || 0;
-        if (s.skill) for (const k of SKILL_ORDER) if (s.skill[k]) state.skill[k] = { ...state.skill[k], ...s.skill[k] };
-        if (s.seen) Object.assign(seen, s.seen);
-        // memory decays: relax mastery toward 0.5 for every day since the last visit
-        const days = s.savedAt ? Math.min(7, (Date.now() - s.savedAt) / DAY) : 0;
-        if (days > 0) for (const k of SKILL_ORDER) {
-          const v = state.skill[k];
-          v.ema = clamp(v.ema + (0.5 - v.ema) * (days * 0.12), .02, .99);
-        }
+    const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
+    loadStatus = res.status;
+    const s = res.data;
+    if (s) {
+      state.best = s.best || 0;
+      if (s.skill) for (const k of SKILL_ORDER) if (s.skill[k]) state.skill[k] = { ...state.skill[k], ...s.skill[k] };
+      if (s.seen) Object.assign(seen, s.seen);
+      // memory decays: relax mastery toward 0.5 for every day since the last visit
+      const days = s.savedAt ? Math.min(7, (Date.now() - s.savedAt) / DAY) : 0;
+      if (days > 0) for (const k of SKILL_ORDER) {
+        const v = state.skill[k];
+        v.ema = clamp(v.ema + (0.5 - v.ema) * (days * 0.12), .02, .99);
       }
-    } catch (_) {}
+    }
     $('best').textContent = state.best;
   }
   function save() {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ best: state.best, skill: state.skill, seen, savedAt: Date.now() }));
+      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, skill: state.skill, seen, savedAt: Date.now() }));
     } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
 
@@ -757,7 +762,9 @@ h1 span{color:var(--grape-d)}
     toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
   }
 
-  load(); buildPad(); buildSkillToggles(); renderSkillMap();
+  load();
+  R.notice(loadStatus);
+  buildPad(); buildSkillToggles(); renderSkillMap();
 })();
 </script>
 </body>

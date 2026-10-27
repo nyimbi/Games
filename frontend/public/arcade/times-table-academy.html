@@ -1069,21 +1069,11 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
 
   /* A corrupt record is not silently replaced. The child is told, and the
      banner stays for the session: the next save would otherwise write defaults
-     over whatever was there, and the stash in record.js would be the only copy
-     left. Reporting is the whole point of distinguishing the states. */
-  function recordNotice() {
-    if (loadStatus !== 'corrupt') return;
-    const el = document.createElement('div');
-    el.id = 'recordNotice';
-    el.setAttribute('role', 'alert');
-    el.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:9998;max-width:min(420px,calc(100vw - 32px));' +
-      'background:#fff3e0;color:#191c3a;border:2.5px solid #191c3a;border-radius:16px;padding:12px 15px;' +
-      'box-shadow:5px 5px 0 #191c3a;font:600 .9rem/1.45 ui-rounded,system-ui,sans-serif';
-    el.append(document.createTextNode(
-      'This game could not read its saved progress, so it is starting fresh. ' +
-      'The old record has been kept and can be seen on the session page.'));
-    document.body.append(el);
-  }
+     over whatever was there, and the stash would be the only copy left.
+     Reporting is the whole point of distinguishing the states. The banner
+     itself lives in record.js -- seventeen copies of it is how four states
+     drift back into one. */
+  const recordNotice = () => R.notice(loadStatus);
 
   load(); buildPad(); buildFactorBar(); buildGrid(); buildTablePicker();
   recordNotice();

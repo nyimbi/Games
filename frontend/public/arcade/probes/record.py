@@ -119,6 +119,54 @@ def run(pw):
     if n > 8:
         fails.append(f'the corrupt stash grew to {n} entries, unbounded')
 
+    # --- 5b. a required field is required ---------------------------------
+    # The hub reads records it did not write, so the shape check has to be able
+    # to say "this is not one of ours" about a record that parses cleanly.
+    got = pg.evaluate("""() => {
+        const R = window.ArcadeRecord;
+        localStorage.clear();
+        localStorage.setItem('req', JSON.stringify({ v: 1, perGroup: {} }));
+        const r = R.load('req', { version: 1, require: ['explored'] });
+        const withIt = (() => {
+            localStorage.setItem('req', JSON.stringify({ v: 1, explored: {} }));
+            return R.load('req', { version: 1, require: ['explored'] }).status;
+        })();
+        return { missing: r.status, present: withIt };
+    }""")
+    print(f'== required field: missing -> {got["missing"]}, present -> {got["present"]}')
+    if got['missing'] != 'corrupt':
+        fails.append(f'a record missing a required field was accepted: {got["missing"]}')
+    if got['present'] != 'ok':
+        fails.append(f'a record with its required field was rejected: {got["present"]}')
+
+    # --- 5c. version 0 accepts any schema and writes nothing ---------------
+    # The hub reads all seventeen keys and knows none of their versions. If it
+    # enforced one, a game bumping to v2 would show "never played" for a child
+    # who has played. It must also not stash: seventeen writes per hub load
+    # would churn the bound for nothing.
+    got = pg.evaluate("""() => {
+        const R = window.ArcadeRecord;
+        localStorage.clear();
+        localStorage.setItem('hub', JSON.stringify({ v: 99, best: 3 }));
+        const r = R.load('hub', { version: 0, stash: false });
+        let stashed = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            if (localStorage.key(i).indexOf('arcade.corrupt.') === 0) stashed++;
+        }
+        // still refuses garbage -- that is what stops one bad game from
+        // throwing the whole shelf
+        localStorage.setItem('hub', '{bad');
+        const garbage = R.load('hub', { version: 0, stash: false });
+        return { status: r.status, best: r.data && r.data.best, stashed, garbage: garbage.status };
+    }""")
+    print(f'== hub read: v99 -> {got["status"]} best={got["best"]} stashed={got["stashed"]}, garbage -> {got["garbage"]}')
+    if got['status'] != 'ok' or got['best'] != 3:
+        fails.append(f'a version-0 read refused a newer record: {got}')
+    if got['stashed'] != 0:
+        fails.append(f'a stash:false read still stashed {got["stashed"]} entries')
+    if got['garbage'] != 'corrupt':
+        fails.append(f'a version-0 read accepted unparseable data: {got["garbage"]}')
+
     # --- 6. it never throws -----------------------------------------------
     threw = pg.evaluate("""() => {
         const R = window.ArcadeRecord;
@@ -170,6 +218,67 @@ def run(pw):
     if notice2:
         fails.append('a fresh record produced a corrupt-record notice')
     pg.close()
+
+    # --- 8. the other eleven loaders, and the hub --------------------------
+    # The five maths drills were the first to be wired. A page left on the old
+    # try/parse/catch would still open, still play, and still lose a corrupt
+    # record -- indistinguishable from working unless something opens it.
+    PAGES = {
+        'french':        'arcade.french.v1',
+        'chemistry':     'arcade.chemistry.v1',
+        'piano':         'arcade.piano.v1',
+        'calligraphy':   'arcade.calligraphy.v1',
+        'spelling-bee':  'arcade.spelling.v1',
+        'typing-tutor':  'arcade.typing.v1',
+        'infinite-arena': 'arcade.arena.v1',
+    }
+    for page, key in PAGES.items():
+        q = b.new_page()
+        errs = []
+        q.on('pageerror', lambda e: errs.append(str(e)))
+        q.goto((ARCADE / f'{page}.html').as_uri())
+        q.evaluate("localStorage.clear()")
+        q.evaluate("(k) => localStorage.setItem(k, '{bad')", key)
+        q.reload(); q.wait_for_timeout(500)
+        seen = q.evaluate("() => !!document.getElementById('recordNotice')")
+        kept = q.evaluate("(k) => { const s = localStorage.getItem('arcade.corrupt.' + k); return s ? JSON.parse(s).raw : null; }", key)
+        if not seen:
+            fails.append(f'{page}: a corrupt record produced no notice')
+        if kept != '{bad':
+            fails.append(f'{page}: the corrupt record was not stashed ({kept!r})')
+        if errs:
+            fails.append(f'{page}: threw on a corrupt record: {errs[:1]}')
+        q.close()
+    print(f'== eleven loaders: checked {len(PAGES)} pages')
+
+    # The hub reads every key with version 0 and must not stash. A corrupt
+    # record on one card must not blank the other sixteen.
+    q = b.new_page()
+    errs = []
+    q.on('pageerror', lambda e: errs.append(str(e)))
+    q.goto((ARCADE / 'index.html').as_uri())
+    q.evaluate("localStorage.clear()")
+    q.evaluate("""() => {
+        localStorage.setItem('arcade.french.v1', '{bad');
+        localStorage.setItem('arcade.times.v2', JSON.stringify({ v: 99, best: 4, perMode: { '1-10': 80 } }));
+    }""")
+    q.reload(); q.wait_for_timeout(500)
+    hub = q.evaluate("""() => {
+        let stashed = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            if (localStorage.key(i).indexOf('arcade.corrupt.') === 0) stashed++;
+        }
+        const card = document.querySelector('[data-key="arcade.times.v2"]');
+        return { stashed, errs: 0, card: card ? card.textContent.trim().slice(0, 40) : null };
+    }""")
+    print(f'== hub: stashed={hub["stashed"]}, corrupt french + v99 times still render')
+    if hub['stashed'] != 0:
+        fails.append(f'the hub stashed {hub["stashed"]} records; it is a read-only observer')
+    if not hub['card']:
+        fails.append('a corrupt record on one card blanked the others')
+    if errs:
+        fails.append(f'the hub threw with a corrupt record present: {errs[:1]}')
+    q.close()
 
     b.close()
     return fails

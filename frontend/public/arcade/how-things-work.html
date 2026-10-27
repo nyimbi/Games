@@ -246,12 +246,15 @@ footer a{color:var(--ink-2)}
   const BY_SLUG = {};
   M.forEach(m => { BY_SLUG[m.s] = m; });
 
+  const R = window.ArcadeRecord;
+  const SHAPE = { explored: R.is.obj, perGroup: R.is.obj };
+  const RECORD_V = 1;
+  let loadStatus = 'fresh';
+
   function read() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s && typeof s === 'object' && s.explored && typeof s.explored === 'object') return s;
-    } catch (_) { }
-    return { v: 1, explored: {}, perGroup: {}, day: '' };
+    const res = R.load(KEY, { version: RECORD_V, shape: SHAPE, require: ['explored'] });
+    loadStatus = res.status;
+    return res.data || { v: RECORD_V, explored: {}, perGroup: {}, day: '' };
   }
 
   /* `perGroup` is a percentage of each group's machines that have been met.
@@ -263,6 +266,7 @@ footer a{color:var(--ink-2)}
       const met = all.filter(m => s.explored[m.s]).length;
       s.perGroup[g.id] = Math.round(met / all.length * 100);
     });
+    s.v = RECORD_V;
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
 

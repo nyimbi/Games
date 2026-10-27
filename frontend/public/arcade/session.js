@@ -141,12 +141,15 @@
     return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
   }
 
+  const R = window.ArcadeRecord;
+  const SHAPE = { days: R.is.obj };
+  const RECORD_V = 1;
+  let loadStatus = 'fresh';
+
   function read() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s && typeof s === 'object' && s.days && typeof s.days === 'object') return s;
-    } catch (_) { }
-    return { v: 1, days: {} };
+    const res = R.load(KEY, { version: RECORD_V, shape: SHAPE, require: ['days'] });
+    loadStatus = res.status;
+    return res.data || { v: RECORD_V, days: {} };
   }
 
   function write(s) {
@@ -155,6 +158,7 @@
     // eventually throws on write.
     const keys = Object.keys(s.days).sort();
     while (keys.length > KEEP_DAYS) delete s.days[keys.shift()];
+    s.v = RECORD_V;
     try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
 

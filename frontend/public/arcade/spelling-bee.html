@@ -437,21 +437,26 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     right: 0, misses: [], streak: 0, lives: 3, reveals: {}, hints: 0,
   };
 
+  const R = window.ArcadeRecord;
+  const SHAPE = { best: R.is.num, perTier: R.is.obj, review: R.is.obj, seen: R.is.obj };
+  const RECORD_V = 1;
+  let loadStatus = 'fresh';
+
   function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (!s) return;
-      state.best = s.best || 0;
-      state.perTier = s.perTier || {};
-      state.review = s.review || {};
-      state.seen = s.seen || {};
-      state.tier = s.tier || 1;
-    } catch (_) {}
+    const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
+    loadStatus = res.status;
+    const s = res.data;
+    if (!s) return;
+    state.best = s.best || 0;
+    state.perTier = s.perTier || {};
+    state.review = s.review || {};
+    state.seen = s.seen || {};
+    state.tier = s.tier || 1;
   }
   const save = () => {
     try {
       localStorage.setItem(KEY, JSON.stringify({
-        best: state.best, perTier: state.perTier, review: state.review,
+        v: RECORD_V, best: state.best, perTier: state.perTier, review: state.review,
         seen: state.seen, tier: state.tier,
       }));
     } catch (_) {}
@@ -1100,6 +1105,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
 
   /* ---------------- boot ---------------- */
   load();
+  R.notice(loadStatus);
   paintHome();
   if (!BANK.length) {
     document.querySelector('#home .lede').innerHTML =

@@ -58,9 +58,16 @@
   /* `shape` is a map of field -> predicate. Missing fields are allowed (an
      older record legitimately lacks a newer one); a present field of the wrong
      type is what makes a record corrupt, because that is the signature of a
-     half-written or foreign record rather than an old one. */
-  function checkShape(obj, shape) {
+     half-written or foreign record rather than an old one.
+
+     `require` names fields whose absence is itself the fault. A record that
+     has lost the one thing it is for -- a session with no `days`, a machine
+     shelf with no `explored` -- is not an older version of itself, and reading
+     it as empty would report "you have never played" about a record that is
+     right there. */
+  function checkShape(obj, shape, require) {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
+    if (require) for (const field of require) if (!(field in obj)) return false;
     if (!shape) return true;
     for (const field of Object.keys(shape)) {
       if (!(field in obj)) continue;
@@ -70,11 +77,23 @@
   }
 
   /* Returns { data, status, version }. Never throws: a loader that throws is a
-     page that does not open. */
+     page that does not open.
+
+     `version: 0` means the caller does not know the record's schema -- the hub
+     reads all seventeen keys and cannot track each game's version. Refusing a
+     newer record there would zero a child's stars the day any game bumps its
+     version, and the failure would look like "never played". So 0 accepts
+     whatever is written; it still refuses to parse garbage.
+
+     `stash: false` is for read-only callers. The hub looking at a record is
+     not the same as the game opening it, and seventeen stash writes per hub
+     load would churn the bound for nothing. */
   function load(key, opts) {
     opts = opts || {};
-    const version = opts.version || 1;
+    const version = opts.version == null ? 1 : opts.version;
     const shape = opts.shape || null;
+    const doStash = opts.stash !== false;
+    const put = raw => { if (doStash) stash(key, raw); };
     let raw = null;
     try { raw = localStorage.getItem(key); } catch (_) { return { data: null, status: 'corrupt', version: 0 }; }
 
@@ -82,18 +101,19 @@
 
     let obj;
     try { obj = JSON.parse(raw); } catch (e) {
-      stash(key, raw);
+      put(raw);
       if (window.ArcadeErrors) window.ArcadeErrors.note('record', 'unparseable: ' + (e && e.message), key);
       return { data: null, status: 'corrupt', version: 0 };
     }
 
-    if (!checkShape(obj, shape)) {
-      stash(key, raw);
+    if (!checkShape(obj, shape, opts.require)) {
+      put(raw);
       if (window.ArcadeErrors) window.ArcadeErrors.note('record', 'wrong shape', key);
       return { data: null, status: 'corrupt', version: 0 };
     }
 
     const v = typeof obj.v === 'number' ? obj.v : 0;
+    if (version === 0) return { data: obj, status: v === 0 ? 'migrated' : 'ok', version: v };
     if (v === 0 || v < version) {
       // Readable, just older. The caller uses it; the next save stamps the
       // current version. Not an error -- a record from last month is the
@@ -105,7 +125,7 @@
       // Written by a newer build than this page. Using it would mean guessing
       // at fields we do not know; refusing is the honest move, and the stash
       // keeps it recoverable.
-      stash(key, raw);
+      put(raw);
       if (window.ArcadeErrors) window.ArcadeErrors.note('record', 'newer schema v' + v, key);
       return { data: null, status: 'corrupt', version: v };
     }
@@ -120,5 +140,28 @@
     arr: x => Array.isArray(x),
   };
 
-  window.ArcadeRecord = { load, is, CORRUPT_PREFIX };
+  /* Say it out loud, once. A caller that distinguishes the states and then
+     starts fresh without a word has told the child nothing, and the next save
+     writes defaults over the record anyway -- the stash would be the only copy
+     left and nobody would know to look at it.
+
+     Fixed position and role="alert" so it is announced rather than merely
+     present; it stays for the session because it is a fact about the record,
+     not a transient notification. */
+  function notice(status) {
+    if (status !== 'corrupt') return null;
+    const el = document.createElement('div');
+    el.id = 'recordNotice';
+    el.setAttribute('role', 'alert');
+    el.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:9998;max-width:min(420px,calc(100vw - 32px));' +
+      'background:#fff3e0;color:#191c3a;border:2.5px solid #191c3a;border-radius:16px;padding:12px 15px;' +
+      'box-shadow:5px 5px 0 #191c3a;font:600 .9rem/1.45 ui-rounded,system-ui,sans-serif';
+    el.append(document.createTextNode(
+      'This game could not read its saved progress, so it is starting fresh. ' +
+      'The old record has been kept and can be seen on the session page.'));
+    (document.body || document.documentElement).append(el);
+    return el;
+  }
+
+  window.ArcadeRecord = { load, notice, is, CORRUPT_PREFIX };
 })();

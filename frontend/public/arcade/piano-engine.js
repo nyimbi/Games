@@ -411,21 +411,26 @@
       piece: null, pieceIndex: 0, pieceRight: 0, pieceMiss: 0, playing: false
     };
 
+    const R = window.ArcadeRecord;
+    const SHAPE = { best: R.is.num, seen: R.is.obj, review: R.is.obj, perTier: R.is.obj, taught: R.is.obj, piecesDone: R.is.obj };
+    const RECORD_V = 1;
+    let loadStatus = 'fresh';
+
     function load() {
-      try {
-        const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-        if (s) {
-          state.best = s.best || 0; state.seen = s.seen || {}; state.review = s.review || {};
-          state.perTier = s.perTier || {}; state.taught = s.taught || {};
-          state.piecesDone = s.piecesDone || {};
-          if (s.tier) state.tier = s.tier;
-        }
-      } catch (_) { }
+      const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
+      loadStatus = res.status;
+      const s = res.data;
+      if (s) {
+        state.best = s.best || 0; state.seen = s.seen || {}; state.review = s.review || {};
+        state.perTier = s.perTier || {}; state.taught = s.taught || {};
+        state.piecesDone = s.piecesDone || {};
+        if (s.tier) state.tier = s.tier;
+      }
     }
     const save = () => {
       try {
         localStorage.setItem(KEY, JSON.stringify({
-          best: state.best, seen: state.seen, review: state.review, perTier: state.perTier,
+          v: RECORD_V, best: state.best, seen: state.seen, review: state.review, perTier: state.perTier,
           tier: state.tier, taught: state.taught, piecesDone: state.piecesDone || {}
         }));
       } catch (_) { }
@@ -880,7 +885,9 @@
       }
     });
 
-    load(); paintHome(); show('home');
+    load();
+    R.notice(loadStatus);
+    paintHome(); show('home');
   }
 
   window.PianoGame = { init, staffSvg, rhythmSvg, esc };

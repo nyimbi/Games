@@ -130,22 +130,27 @@
       hintUsed: false, review: {}, seen: {}, perTier: {}
     };
 
+    const R = window.ArcadeRecord;
+    const SHAPE = { best: R.is.num, perTier: R.is.obj, review: R.is.obj, seen: R.is.obj };
+    const RECORD_V = 1;
+    let loadStatus = 'fresh';
+
     function load() {
-      try {
-        const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-        if (s) {
-          state.best = s.best || 0;
-          state.perTier = s.perTier || {};
-          state.review = s.review || {};
-          state.seen = s.seen || {};
-          if (s.tier) state.tier = s.tier;
-        }
-      } catch (_) { }
+      const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
+      loadStatus = res.status;
+      const s = res.data;
+      if (s) {
+        state.best = s.best || 0;
+        state.perTier = s.perTier || {};
+        state.review = s.review || {};
+        state.seen = s.seen || {};
+        if (s.tier) state.tier = s.tier;
+      }
     }
     const save = () => {
       try {
         localStorage.setItem(KEY, JSON.stringify({
-          best: state.best, perTier: state.perTier,
+          v: RECORD_V, best: state.best, perTier: state.perTier,
           review: state.review, seen: state.seen, tier: state.tier
         }));
       } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
@@ -459,6 +464,7 @@
     }
 
     load();
+    R.notice(loadStatus);
     paintHome();
     show('home');
   }
