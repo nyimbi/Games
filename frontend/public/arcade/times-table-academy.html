@@ -783,7 +783,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
     loadStatus = res.status;
     const s = res.data;
-    if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
+    if (s) { state.savedAt = s.savedAt || 0; state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
   }
   const save = () => {
     try {
@@ -1043,11 +1043,28 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
       $(tabId).setAttribute('aria-selected', String(on));
       $(id).hidden = !on;
     });
-    if (which === 'practice' && !state.queue.length) start();
+    if (which === 'practice' && !state.queue.length) {
+      state.mode = startAt();
+      // The pressed state has to follow the choice, or the page opens on
+      // level 2 with `Mixed 1–10` still highlighted -- the record would be
+      // obeyed and the page would say the opposite.
+      document.querySelectorAll('#practice .lv[data-mode]').forEach(x =>
+        x.setAttribute('aria-pressed', String(x.dataset.mode === state.mode)));
+      start();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   Object.entries(TABS).forEach(([id, tabId]) =>
     $(tabId).addEventListener('click', () => selectTab(id)));
+
+  /* Where the practice tab opens. The record's `perMode` decides and every
+     mode button still works -- `startLevel` returns the mode, and the
+     pressed state is synced to it below rather than left on the hard-coded
+     `1-10`. */
+  const MODES = ['1-10', '1-20', 'tournament'];
+  function startAt() {
+    return window.MathsGame.startLevel(MODES, state.perMode, state.savedAt) || '1-10';
+  }
 
   document.querySelectorAll('#practice .lv[data-mode]').forEach(b =>
     b.addEventListener('click', () => {

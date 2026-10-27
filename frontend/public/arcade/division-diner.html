@@ -493,7 +493,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
     loadStatus = res.status;
     const s = res.data;
-    if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
+    if (s) { state.savedAt = s.savedAt || 0; state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
   }
   const save = () => {
     try {
@@ -709,6 +709,17 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     return b;
   }
 
+  /* Where the practice tab opens. The record decides, and every level button
+     still works -- this is a starting point, not a gate. `state.savedAt` is
+     kept from the load so the decay is measured from when the record was
+     written; without it every stored score reads as today's. */
+  function startAt() {
+    // Four levels, `mixed` included: it is the hardest and it has its own
+    // record, so a child who has done 11–20 and not mixed opens on mixed.
+    const levels = ['1-5', '6-10', '11-20', 'mixed'];
+    return window.MathsGame.startLevel(levels, state.perLevel, state.savedAt) || '1-5';
+  }
+
   function selectTab(which) {
     const isLearn = which === 'learn';
     $('tabLearn').setAttribute('aria-selected', String(isLearn && S.model === 'share'));
@@ -716,7 +727,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     $('tabPractice').setAttribute('aria-selected', String(!isLearn));
     $('learn').hidden = !isLearn;
     $('practice').hidden = isLearn;
-    if (!isLearn && !state.queue.length) start('1-5');
+    if (!isLearn && !state.queue.length) start(startAt());
   }
   $('tabLearn').addEventListener('click', () => { setModel('share'); selectTab('learn'); });
   $('tabGroup').addEventListener('click', () => { setModel('group'); selectTab('learn'); });

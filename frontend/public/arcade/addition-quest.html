@@ -648,7 +648,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
     loadStatus = res.status;
     const s = res.data;
-    if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
+    if (s) { state.savedAt = s.savedAt || 0; state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
   }
   function save() {
     try {
@@ -956,6 +956,14 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     return b;
   }
 
+  /* Where the practice tab opens. The record decides, and every level button
+     still works -- this is a starting point, not a gate. `state.savedAt` is
+     kept from the load so the decay is measured from when the record was
+     written; without it every stored score reads as today's. */
+  function startAt() {
+    return window.MathsGame.startLevel(LEVELS, state.perLevel, state.savedAt) || 'bond';
+  }
+
   /* ---------------- tabs ---------------- */
   function selectTab(which) {
     const isLearn = which === 'learn';
@@ -963,7 +971,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     $('tabPractice').setAttribute('aria-selected', String(!isLearn));
     $('learn').hidden = !isLearn;
     $('practice').hidden = isLearn;
-    if (!isLearn && !state.queue.length) start('bond');
+    if (!isLearn && !state.queue.length) start(startAt());
   }
   $('tabLearn').addEventListener('click', () => selectTab('learn'));
   $('tabPractice').addEventListener('click', () => selectTab('practice'));

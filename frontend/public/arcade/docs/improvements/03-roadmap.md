@@ -149,6 +149,15 @@ Three things Phase 2 changed that the plan did not anticipate:
 | F-17 fact families | `deck.js:349-389` — `familyOf`, `familyKey`, `familySiblings`; `maths-engine.js:583-624` — `crossDue`, `crossKeys` | `family.py`, `cross.py` |
 | F-14 example from the mistake | `maths-engine.js` — `spaceOf`, `sameFact`, `distance`, `RENDER`, `exampleFor`; `offer` carries the record into the dialog | `example.py` |
 | F-11 skill graph | `skills.js` — `MATHS_SKILLS` (15), `SUBJECT_SKILLS` (11), validated acyclic at load; `order`, `ancestors`, `descendants`, `frontier`, `weakestNeed`, `edges`. The arena reads it for one advisory line (`#skillHint`) | `skills.py` |
+| F-6 starting level | `maths-engine.js` — `startLevel`, `SOLID`; five drills each carry a `startAt()` and keep `savedAt` from the load so the score is the decayed one | `startlevel.py` |
+
+**F-6's claim is the decay, not the ordering.** Reading `perLevel` for "the first level under 70" is a lookup, and a lookup would send a child back to level 3 after a month away because `perLevel` stores a best-ever and a best-ever never comes down. `startLevel` runs the stored value through `ArcadeDeck.mastery` against the record's `savedAt`, so a 95% written thirty days ago reads below solid and the drill opens where the child actually is. Canaried: replacing `D.mastery(...)` with the raw value leaves the ordering claims green and fails only on the stale fixture.
+
+Three things F-6 changed that the plan did not anticipate:
+
+- **`division-diner` has four levels, not three.** `mixed` carries its own `perLevel` entry and its own button, and the first probe table omitted it — the gate was written from the plan's prose rather than from the page. Transcribing the level lists from the markup is now what the probe does, and the comment says so.
+- **Reading the record is half the change.** Leaving the hard-coded `aria-pressed="true"` in the markup means `times-table-academy` opens on the tournament with `Mixed 1–10` still highlighted — the record obeyed and the page saying the opposite. The pressed state has to be synced to the level that started; canaried by deleting the sync, which fails the live claim alone.
+- **`savedAt` was not retained.** Every drill wrote `savedAt` on save and none kept it on load, so a decayed score would have been decayed from *now* — no decay at all. All five now assign it in `load()`.
 
 **F-11 nearly shipped as a gate.** The plan says the graph is "data, not logic", and the obvious use is to derive the arena's default skill set from the graph's frontier — replace the hand-written six with whatever has no unmet prerequisite. That is what I built first, and it produced two defaults where there had been six: `add-10` and `sub-10`, because every other skill needs one of them. A child opening the arena for the first time would have been offered two of fifteen skills. That is the punishment mechanic `README.md:778` forbids, reached by algorithm instead of by intent, and it would have read as a feature.
 

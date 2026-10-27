@@ -554,7 +554,7 @@ h1 span{color:var(--teal-d)}
     const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
     loadStatus = res.status;
     const s = res.data;
-    if (s) { state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
+    if (s) { state.savedAt = s.savedAt || 0; state.best = s.best || 0; state.perMode = s.perMode || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
   }
   const save = () => {
     try {
@@ -771,11 +771,18 @@ h1 span{color:var(--teal-d)}
     return b;
   }
 
+  /* Where the play panel opens. `MODES` is the drill's own order, and the
+     record's `perMode` decides; every mode button still works. */
+  const MODES = ['ten', 'teen', 'mixed'];
+  function startAt() {
+    return window.MathsGame.startLevel(MODES, state.perMode, state.savedAt) || 'ten';
+  }
+
   /* ================= ROUTING ================= */
   function showPlay() {
     $('explore').style.display = 'none';
     $('playpanel').classList.add('show');
-    start(state.mode || 'ten');
+    start(startAt());
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function showExplore() {

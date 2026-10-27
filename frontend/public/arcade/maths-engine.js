@@ -893,6 +893,63 @@
     return out.slice(0, limit);
   }
 
+  /* ---------- where to start ----------
+   *
+   * Every drill opened on a hard-coded level: `addition-quest` on `bond`,
+   * `division-diner` on `1-5`, `number-bonds` on `ten`. The record already
+   * knew better and nothing read it. A child who has finished level 3 four
+   * times still opens on the ten-bond each morning.
+   *
+   * The rule is the least level they have not yet shown they can do. Three
+   * conditions, and each one is a way this could go wrong:
+   *
+   *   - A level with no record is where to start, if every level before it is
+   *     solid. That is the frontier, in level space rather than skill space.
+   *   - A level they are *not* solid on is where to start, ahead of a blank
+   *     one. Coming back after a break, the thing that has slipped matters
+   *     more than the thing not yet tried.
+   *   - Nothing at all solid, and no record: the first level, which is what
+   *     the page did before. A child who has played nothing sees no change.
+   *
+   * "Solid" is `ArcadeDeck.mastery` against the bucket -- the decayed
+   * strongest score, so a 90% from March reads lower today than a 90% from
+   * yesterday. That is the whole reason to use it rather than the raw value:
+   * `perLevel` stores a best-ever and a best-ever never comes down.
+   *
+   * Advisory in the same sense F-12 is: it chooses where the page opens, and
+   * every level button still works. `README.md:778` forbids mechanics that
+   * punish absence; a starting level that follows the record is the opposite
+   * -- it stops punishing a child for what they already know.
+   */
+  const SOLID = 70;
+
+  /* `levels` is the drill's own list, in order. `bucket` is `perLevel` or
+     `perMode`. `savedAt` is the record's write time, which is what the decay
+     is measured from -- the bucket has no timestamp of its own, and inventing
+     one per level would be a second source of truth for the same fact. */
+  function startLevel(levels, bucket, savedAt, now) {
+    if (!Array.isArray(levels) || !levels.length) return null;
+    const b = bucket || {};
+    const D = window.ArcadeDeck;
+    const score = lvl => {
+      const v = b[lvl];
+      if (typeof v !== 'number' || !isFinite(v)) return null;
+      return D ? D.mastery({ _: v }, savedAt, now) : v;
+    };
+    // Not solid and has a record: the thing that slipped.
+    for (const lvl of levels) {
+      const s = score(lvl);
+      if (s !== null && s < SOLID) return lvl;
+    }
+    // Solid everywhere recorded, blank here: the frontier.
+    for (const lvl of levels) {
+      if (score(lvl) === null) return lvl;
+    }
+    // Everything solid. Open on the last, which is the hardest they can do --
+    // not the first, which would be going backwards.
+    return levels[levels.length - 1];
+  }
+
   /* The two numbers a drill's own review key carries, in the order that
      drill's `familyKey` call expects. Each entry mirrors the `parseFact`
      branch for the same game; a key that does not split into the right
@@ -922,6 +979,7 @@
     $, rnd, shuffle, esc,
     freshFirst, markSeen, newCycle, SEEN_CAP, capReview, REVIEW_CAP, noteReview, REVIEW_PASSES,
     STUCK_MISSES, stuckTopic, offer, crossDue, CROSS_LIMIT, exampleFor,
+    startLevel, SOLID,
     tone, goodSound, badSound, clickSound, burst, audio,
     init, open: () => open(null), close, lessonTopic: () => current
   };
