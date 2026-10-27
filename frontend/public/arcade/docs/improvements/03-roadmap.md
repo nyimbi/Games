@@ -150,6 +150,17 @@ Three things Phase 2 changed that the plan did not anticipate:
 | F-14 example from the mistake | `maths-engine.js` — `spaceOf`, `sameFact`, `distance`, `RENDER`, `exampleFor`; `offer` carries the record into the dialog | `example.py` |
 | F-11 skill graph | `skills.js` — `MATHS_SKILLS` (15), `SUBJECT_SKILLS` (11), validated acyclic at load; `order`, `ancestors`, `descendants`, `frontier`, `weakestNeed`, `edges`. The arena reads it for one advisory line (`#skillHint`) | `skills.py` |
 | F-6 starting level | `maths-engine.js` — `startLevel`, `SOLID`; five drills each carry a `startAt()` and keep `savedAt` from the load so the score is the decayed one | `startlevel.py` |
+| F-18 knows vs can do | `deck.js` — `knows`, `knowledge`, `referenceBase`, `FLUENT`; the session page renders a count per drill from a reference pooled across all five | `knows.py` |
+
+**F-18's original premise was wrong, and the probe is what found it.** The plan says "deepens F-4's latency" and `deck.js:164` said `spd` was recorded precisely so F-18 could use it. `spd` cannot carry this. It is the ratio of each answer to a **moving** baseline, so it measures change, not level: a child answering forty times at a constant 1000 ms settles at `spd = 1.000`, and a `spd <= 0.75` test calls them permanently `effortful`. It says "faster than usual", and once a child's usual is fast nothing is faster than usual. The first implementation used `spd`; every stable child would have been told they were still working everything out.
+
+The fix is to compare `base` — the fact's own exponential millisecond average — against the child's **other facts**, which is the comparison `deck.js`'s own comment always called meaningful. No absolute millisecond appears; the reference is the child's own median. `knows(entry, ref)` takes the reference explicitly.
+
+Three things F-18 changed that the plan did not anticipate:
+
+- **A bucket of one fact is its own median.** With a per-drill reference, a child with one answered fact in a drill has `base === ref`, and `base <= ref * 0.75` is false — every such fact reads `effortful`. The session page pools the median across all five maths drills, which is also the right question: how quick is this child at an arithmetic fact, not at this particular drill.
+- **`n < 2` was an unreachable guard.** I wrote it to stop a first answer reading fluent, then measured: the first sample sets `spd` to 1 by construction, so `n === 1 && spd < 0.75` never occurs in 2,000 trials. Removed rather than kept as protection. The guard that *is* needed is "no usable `base` ⇒ `effortful`", because a record written before the timing work has no baseline.
+- **The live fixture has to contain a fluent fact.** The first version seeded only slow facts, so a `ref = null` mutation — which makes everything `effortful` — passed. Canaried and fixed: the seed now has one fact below the cutoff and one above, so removing the pooled reference fails.
 
 **F-6's claim is the decay, not the ordering.** Reading `perLevel` for "the first level under 70" is a lookup, and a lookup would send a child back to level 3 after a month away because `perLevel` stores a best-ever and a best-ever never comes down. `startLevel` runs the stored value through `ArcadeDeck.mastery` against the record's `savedAt`, so a 95% written thirty days ago reads below solid and the drill opens where the child actually is. Canaried: replacing `D.mastery(...)` with the raw value leaves the ordering claims green and fails only on the stale fixture.
 

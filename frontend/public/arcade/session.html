@@ -202,6 +202,14 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
   </section>
 
   <section class="hist">
+    <h2>What is known, and what is still worked out</h2>
+    <p class="sub">A fact answered right in four seconds and one answered right in four
+      hundred milliseconds are different. This counts the first as fluent and the second as
+      effortful. Nothing here is timed on screen, and nothing here changes a drill.</p>
+    <div class="days" id="knows"></div>
+  </section>
+
+  <section class="hist">
     <h2>Something went wrong?</h2>
     <p class="sub">The arcade keeps a list of the last fifty errors on this device, and
       nothing leaves it. Open this if progress is not being kept.</p>
@@ -321,6 +329,75 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
     });
   }
 
+  /* Which facts are fluent and which are still worked out.
+   *
+   * `ArcadeDeck.knows` reads one review entry and returns a state; `spd` has
+   * been recorded since the latency work and this is the first reader. The
+   * five maths drills are the only stores that carry a `review` bucket with
+   * timing, so this reads those five by name rather than guessing at keys --
+   * a scan of `arcade.*` would pick up the session record and the corrupt
+   * stash, neither of which has facts in it.
+   *
+   * Reported, never used. No drill reads this back, and nothing on any page
+   * changes because of it: `README.md:778` forbids time pressure and a clock
+   * on screen is that, but a count in a panel a parent opens is not. */
+  const FACT_STORES = [
+    ['arcade.addition.v3', 'Addition'],
+    ['arcade.subtraction.v3', 'Subtraction'],
+    ['arcade.times.v2', 'Times tables'],
+    ['arcade.division.v1', 'Division'],
+    ['arcade.bonds.v4', 'Number bonds']
+  ];
+
+  function renderKnows() {
+    const box = $('knows');
+    box.innerHTML = '';
+    const D = window.ArcadeDeck;
+    if (!D || !D.knows) return;
+    // Read all five first: the reference is pooled across every fact the
+    // child has answered, not per drill. A bucket of one fact is its own
+    // median, so a per-bucket reference can never call a lone fact fluent --
+    // the session page would have read "still worked out" for every child
+    // with one answered fact in a drill.
+    const buckets = [];
+    for (const [key, name] of FACT_STORES) {
+      let rec = null;
+      try { rec = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) { rec = null; }
+      if (rec && rec.review) buckets.push({ name, review: rec.review });
+    }
+    const ref = D.referenceBase(Object.assign({}, ...buckets.map(x => x.review)));
+    let total = 0;
+    const rows = [];
+    for (const { name, review } of buckets) {
+      const k = D.knowledge(review, ref);
+      const n = k.fluent + k.effortful + k.shaky;
+      if (!n) continue;
+      total += n;
+      rows.push({ name, k, n });
+    }
+    if (!rows.length) {
+      const p = document.createElement('p');
+      p.className = 'sub';
+      p.textContent = 'No facts answered yet.';
+      box.append(p);
+      return;
+    }
+    rows.forEach(({ name, k, n }) => {
+      const p = document.createElement('p');
+      p.className = 'sub';
+      // Text nodes, like the error panel: these are counts and labels, but the
+      // habit is worth keeping in one file.
+      p.append(document.createTextNode(
+        `${name}: ${k.fluent} fluent, ${k.effortful} worked out, ${k.shaky} still shaky ` +
+        `of ${n}`));
+      box.append(p);
+    });
+    const p = document.createElement('p');
+    p.className = 'sub';
+    p.append(document.createTextNode(`${total} facts across the five maths drills.`));
+    box.append(p);
+  }
+
   /* The error disclosure. It reads `ArcadeErrors.all`, which is the live
      in-memory ring, not localStorage: the failures most worth seeing here are
      the ones where a write to localStorage failed, and a reader that depended
@@ -432,18 +509,18 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
     try { localStorage.removeItem('arcade.session.v1'); } catch (_) { }
     b.dataset.armed = '';
     b.textContent = 'Clear the record';
-    render(); renderHistory();
+    render(); renderHistory(); renderKnows();
   });
 
   // A tab left open overnight would otherwise still show yesterday's plan.
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { render(); renderHistory(); }
+    if (!document.hidden) { render(); renderHistory(); renderKnows(); }
   });
 
   $('todayPill').textContent = new Date().toLocaleDateString(undefined,
     { weekday: 'short', day: 'numeric', month: 'short' });
 
-  render();
+  render(); renderKnows();
   renderHistory();
 })();
 </script>

@@ -215,6 +215,91 @@
     return { due, rest: pool.filter(f => !seenKeys.has(keyOf(f))) };
   }
 
+  /* ---------- knows it, or can do it ----------
+   *
+   * `spd` has been recorded since the latency work and nothing has ever read
+   * it. A fact answered right in four seconds and one answered right in four
+   * hundred milliseconds are different states of knowledge, and a boolean
+   * cannot say so.
+   *
+   * Three states, because two would collapse the interesting case:
+   *
+   *   fluent    right, and quick against this child's other facts
+   *   effortful right, and slow against them
+   *   shaky     not right yet, or never answered
+   *
+   * **`spd` cannot be the test, and this is the finding that changed the
+   * design.** `spd` is the ratio of a sample to a *moving* baseline, so it
+   * measures change, not level. A child who is permanently fast converges to
+   * `spd = 1` -- measured, forty correct answers at a constant 1000 ms settle
+   * at exactly 1.000 -- and a threshold of 0.75 would call them permanently
+   * `effortful`. It says "faster than usual", and once a child's usual is
+   * fast, nothing is faster than usual. The first version of this function
+   * used `spd` and would have told every stable child they were still working
+   * everything out.
+   *
+   * `base` is the level: an exponential average of this fact's own
+   * milliseconds. Comparing one fact's `base` to the child's *other* facts'
+   * `base` is the comparison the comment above always called meaningful, and
+   * it is the one that can distinguish a fact known from a fact worked out.
+   * No absolute millisecond appears anywhere -- the reference is the child's
+   * own median -- so a nine-year-old on a laptop and a six-year-old on a
+   * tablet are each judged against themselves.
+   *
+   * `knows(entry, ref)` takes that reference explicitly rather than reading a
+   * module global, so the caller can pass the median of the same child's
+   * other facts and a probe can pass a fixed one.
+   *
+   * This reports. It changes no schedule, no pool and no level. `README.md:778`
+   * forbids time pressure, and a clock on screen is that; a number in the
+   * record that a parent can read is not.
+   */
+  const FLUENT = 0.75;
+
+  function knows(entry, ref) {
+    if (!entry || !entry.n) return 'shaky';
+    if (!entry.ok) return 'shaky';
+    if (typeof entry.base !== 'number' || !isFinite(entry.base) || entry.base <= 0) return 'effortful';
+    if (typeof ref !== 'number' || !isFinite(ref) || ref <= 0) return 'effortful';
+    return entry.base <= ref * FLUENT ? 'fluent' : 'effortful';
+  }
+
+  /* The reference for one bucket: the median `base` of its answered entries.
+   *
+   * The median, not the mean: one fact timed on a distracted afternoon should
+   * not move the line every other fact is judged against, and the median of a
+   * handful of facts is one outlier away from being robust.
+   *
+   * `O(k log k)` for k entries. Called once per bucket per render. */
+  function referenceBase(review) {
+    const bases = [];
+    for (const e of Object.values(review || {})) {
+      if (e && typeof e.base === 'number' && isFinite(e.base) && e.base > 0) bases.push(e.base);
+    }
+    if (!bases.length) return null;
+    bases.sort((a, b) => a - b);
+    const m = bases.length >> 1;
+    return bases.length % 2 ? bases[m] : (bases[m - 1] + bases[m]) / 2;
+  }
+
+  /* Count a review bucket by state, against a reference the caller supplies.
+   *
+   * `ref` is required rather than derived from `review` for a reason found by
+   * the probe: a bucket holding one fact is its own median, so that fact's
+   * `base` equals the reference and `base <= ref * FLUENT` is false for every
+   * such fact. A child with one answered fact per drill read as "still worked
+   * out" on all five. The session page pools the median across every fact the
+   * child has answered, which is the question the state is asking -- how quick
+   * this child usually is at an arithmetic fact -- rather than how quick they
+   * are at this particular drill.
+   *
+   * `O(k)` over the entries, plus the caller's own sort. */
+  function knowledge(review, ref) {
+    const out = { fluent: 0, effortful: 0, shaky: 0 };
+    for (const entry of Object.values(review || {})) out[knows(entry, ref)]++;
+    return out;
+  }
+
   /* ---------- mastery ----------
    *
    * `perLevel` is `{level -> best pct}`. It records the best run, not current
@@ -391,6 +476,7 @@
     freshFirst, markSeen, newCycle, shuffle, SEEN_CAP,
     LADDER, nextInterval, isDue, dueCount, noteAttempt, reviewFirst,
     DECAY_PER_DAY, DECAY_DAYS_CAP, decayed, mastery,
+    FLUENT, knows, knowledge, referenceBase,
     familyOf, familyKey, familySiblings
   };
 })();

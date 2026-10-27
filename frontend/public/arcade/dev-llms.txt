@@ -10,12 +10,12 @@ Line numbers are approximate — they drift with every edit. Names and constants
 
 ```
 17,608 lines across 41 source files (18 pages, 23 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus twenty-three Playwright probes in `probes/`.
+Verification is `node --check` per inline block plus twenty-four Playwright probes in `probes/`.
 
 index.html              675   hub: 16 cards, stars from each game's bucket, suggestion lane
 session.html            451   the day: plan list, meter, 21-day strip, backup buttons
 session.js              422   session state, alternation guard, completion observer, toast
-deck.js                 280   one deck identity: freshness, review schedule, mastery decay
+deck.js                 482   one deck identity: freshness, review schedule, mastery decay, fluent/effortful
 record.js               167   one storage contract: fresh/ok/migrated/corrupt, bounded stash
 skills.js               261   prerequisite graphs: 15 maths skills, 11 subjects; validated acyclic at load
 backup.js               152   the record as one JSON file: dump, parse, restore, download
@@ -54,7 +54,7 @@ maths-lessons.js        MATHS_LESSONS       20 (4 per drill), keyed by drill the
 piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
-probes/                 23 Playwright probes: lessons, grading, shell, freshness, ...
+probes/                 24 Playwright probes: lessons, grading, shell, freshness, ...
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
 docs/design.md          370   the design narrative
 ```
