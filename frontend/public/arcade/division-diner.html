@@ -478,7 +478,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   /* ================= PRACTISE ================= */
   const state = {
     level: '1-5', queue: [], index: 0, input: '', score: 0, streak: 0, best: 0,
-    answered: false, right: 0, perLevel: {}, review: {}, seen: {}, showPicture: false
+    answered: false, right: 0, perLevel: {}, review: {}, seen: {}, taught: {}, showPicture: false
   };
 
   /* The record reports what it found rather than defaulting silently: a
@@ -493,11 +493,11 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
     loadStatus = res.status;
     const s = res.data;
-    if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; }
+    if (s) { state.best = s.best || 0; state.perLevel = s.perLevel || {}; state.review = s.review || {}; state.seen = s.seen || {}; state.taught = s.taught || {}; }
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, perLevel: state.perLevel, review: capReview(state.review), seen: state.seen, savedAt: Date.now() }));
+      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, perLevel: state.perLevel, review: capReview(state.review), seen: state.seen, taught: state.taught, savedAt: Date.now() }));
     } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   };
 
@@ -629,6 +629,9 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     }
     noteFact(q, right);
     paintStats(); save();
+    // The record now includes the miss, so the offer reads the state the
+    // child is actually in. It changes the Learn button and nothing else.
+    MG.offer(state.review, Object.keys(state.taught));
     if (right) setTimeout(advance, 650);
     else { $('nextBtn').hidden = false; $('nextBtn').focus(); }
   }

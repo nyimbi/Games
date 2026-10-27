@@ -114,6 +114,143 @@
     return window.ArcadeDeck.noteAttempt(review, key, right, null, ms);
   }
 
+  /* ---------- which lesson answers this mistake ----------
+   *
+   * README.md:783 asks the question directly: "whether a drill could notice
+   * what a child keeps getting wrong and offer the one lesson that covers it".
+   * Both halves already exist -- `review[k].miss` is the signal and
+   * `MATHS_LESSONS[drill].topics` is the target -- and nothing joined them. A
+   * child who has missed nine carrying sums gets the Learn button, which opens
+   * on a lesson they have not read.
+   *
+   * The classifier is a function of the fact, not of the lesson text. That is
+   * the only way it can be right for a pool generated at runtime: `a` and `b`
+   * are all the record holds, and every topic below is decidable from them.
+   *
+   * Each drill gets its own function because "carrying" means something
+   * different in each. They live here, beside the engine, rather than in the
+   * five pages, because five copies of a classifier is how five copies of a
+   * deck algorithm happened.
+   *
+   * What this deliberately does NOT do:
+   *
+   *   - It does not fire on one miss. Three is the threshold, and it is three
+   *     misses across the topic, not three on one fact: a deck forbids repeats
+   *     in its first pass, so the same fact three times is a signal the deck
+   *     actively prevents. Two misses is a bad afternoon; a lesson offered
+   *     after two interrupts a child who is about to get it.
+   *   - It does not fire twice for one topic in a session. `sessionTopics`
+   *     lives in the page, not the record, so tomorrow offers it again if the
+   *     misses are still there.
+   *   - It does not fire for a topic the child has already read. `taught` is
+   *     not a gate on the drill; it only stops the same lesson being offered.
+   */
+  const STUCK_MISSES = 3;
+
+  /* Addition and subtraction: which column, and whether it needed a carry or
+     a borrow. A two-digit column that carries is the case the lessons are
+     about, so the digits decide the topic rather than the level.
+   *
+   * `ten` is NOT here. It is a number-bonds topic, and a classifier that
+   * returned it for an addition page would name a lesson that page does not
+   * have -- the dialog would render blank and every other test would pass.
+   * `stuckTopic` filters unknown ids, and the probe's claim 6 is what caught
+   * the first version doing exactly this. */
+  function placeTopic(a, b, op) {
+    if (op === 'sub') {
+      // The ones column borrows when the top digit is smaller than the bottom.
+      if (a % 10 < b % 10) return 'borrowing';
+      if (a < 20 && b < 20) return 'takeaway';
+      return 'counting';
+    }
+    // A single-digit pair that makes ten is the *place value* case on an
+    // addition page: the ones column overflows into a ten, which is what
+    // `place` means there. `ten` is a bonds topic, not an addition one.
+    if (a < 10 && b < 10 && a + b === 10) return 'place';
+    if (a % 10 + b % 10 >= 10) return 'carrying';
+    if (a >= 10 || b >= 10) return 'place';
+    return 'place';
+  }
+
+  const TOPIC_OF = {
+    /* Bonds: the blank is what the question asks, so it decides the topic
+       before the numbers do. A blanked whole is a different question from a
+       blanked part even when the numbers are the same. */
+    'number-bonds': q => {
+      if (q.blank === 'whole') return 'parts';
+      if (q.whole === 10) return 'ten';
+      if (q.whole > 10) return 'teen';
+      return 'missing';
+    },
+    'addition-quest': q => placeTopic(+q.a, +q.b, 'add'),
+    'subtraction-safari': q => placeTopic(+q.a, +q.b, 'sub'),
+    /* Times: a fact in the 10x10 grid that is one of the squares, or that
+       sits above 10, is a different lesson from the small ones. `commutative`
+       is the topic for the pair whose reverse is also in the deck, which is
+       every pair off the diagonal. */
+    'times-table-academy': q => {
+      const a = +q.a, b = +q.b;
+      if (a > 10 || b > 10) return 'patterns';
+      if (a === b) return 'meaning';
+      if (a === 1 || b === 1) return 'meaning';
+      return 'commutative';
+    },
+    /* Division: a remainder is the lesson, and it is decidable exactly. */
+    'division-diner': q => {
+      const d = +q.divisor, n = +q.dividend;
+      if (d === 0) return 'sharing';
+      if (n % d !== 0) return 'remainder';
+      if (n / d === 1) return 'sharing';
+      return 'inverse';
+    }
+  };
+
+  /* A fact key is `a|b` or `level|a|b` or `whole|a|blank` or `divisor|dividend`.
+     The drills each parse their own; this is the one place that knows all five,
+     and it returns the two numbers plus whatever third field the key carries. */
+  function parseFact(game, key) {
+    const parts = String(key).split('|');
+    if (game === 'number-bonds') return { whole: +parts[0], a: +parts[1], blank: parts[2] };
+    if (game === 'division-diner') return { divisor: +parts[0], dividend: +parts[1] };
+    if (game === 'times-table-academy') return { a: +parts[0], b: +parts[1] };
+    return { level: parts[0], a: +parts[1], b: +parts[2] };
+  }
+
+  /* The topic the child is stuck on, or null.
+   *
+   * `review` is the drill's record, `game` is the page name, `skip` is the set
+   * of topics already offered this session. Ties break on total misses across
+   * the topic, then on the topic's position in the drill's own list, so the
+   * answer is stable between two renders of the same record. */
+  function stuckTopic(game, review, topics, skip) {
+    const classify = TOPIC_OF[game];
+    if (!classify || !Array.isArray(topics) || !topics.length) return null;
+    const known = new Set(topics.map(t => t.id));
+    const tally = {};
+    for (const [key, r] of Object.entries(review || {})) {
+      const misses = (r && r.miss) || 0;
+      if (misses < 1) continue;
+      let topic;
+      try { topic = classify(parseFact(game, key)); } catch (_) { continue; }
+      if (!topic || !known.has(topic)) continue;
+      const t = tally[topic] || (tally[topic] = { misses: 0, facts: 0 });
+      t.misses += misses;
+      t.facts += 1;
+    }
+    // The threshold is on the topic, not on the fact. A deck forbids repeats
+    // in its first pass, so "the same fact missed three times" is a state the
+    // deck works against; "three facts of this kind missed" is the state a
+    // child actually reaches, and it is the one a topic lesson is for.
+    for (const k of Object.keys(tally)) {
+      if (tally[k].misses < STUCK_MISSES) delete tally[k];
+    }
+    const order = topics.map(t => t.id);
+    const ranked = Object.entries(tally)
+      .filter(([id]) => !(skip && skip.has(id)))
+      .sort((x, y) => (y[1].misses - x[1].misses) || (order.indexOf(x[0]) - order.indexOf(y[0])));
+    return ranked.length ? ranked[0][0] : null;
+  }
+
   /* Every fact, ordered by how long ago it was served. A deck shorter than the
      fact space needs the whole space in that order, not a slice of it. */
   const newCycle = (pool, seen, bucket, keyOf) =>
@@ -368,7 +505,12 @@
 
   /* Mount the button. `cfg` is {lessons, topics, game}. A game that passes no
      lessons gets no button, so a page without written content does not show
-     an empty dialog. */
+     an empty dialog.
+   *
+   * The button is also the surface for a stuck offer: when a topic has three
+   * misses behind it, the button says which lesson and opens on that topic
+   * instead of on the picker. It is a change of label and a default, never a
+   * modal -- a lesson that interrupts a drill is a lesson the child closes. */
   function init(cfg) {
     if (!cfg || !cfg.lessons || !cfg.topics || !cfg.topics.length) return null;
     lessonCfg = cfg;
@@ -379,14 +521,42 @@
     b.id = 'mathsLessonBtn';
     b.innerHTML = '<span class="ic" aria-hidden="true">📖</span><span>Learn</span>';
     b.setAttribute('aria-label', 'Open the maths lessons');
-    b.addEventListener('click', () => open(null));
+    b.addEventListener('click', () => open(offered || null));
     document.body.append(b);
     return null;
+  }
+
+  /* The topic the button is currently offering, or null. Set by `offer`. */
+  let offered = null;
+  const offeredTopics = new Set();
+
+  /* Look at the record and decide whether to offer a lesson.
+   *
+   * Called by the page after a save. `taught` is the page's own set of topics
+   * already read; a topic the child has read is not offered again, but the
+   * drill is not gated on it either. Returns the topic it is now offering, or
+   * null. */
+  function offer(review, taught) {
+    if (!lessonCfg) return null;
+    const skip = new Set(offeredTopics);
+    for (const id of (taught || [])) skip.add(id);
+    const topic = stuckTopic(lessonCfg.game, review, lessonCfg.topics, skip);
+    if (!topic) return offered;
+    offeredTopics.add(topic);
+    offered = topic;
+    const name = (lessonCfg.topics.find(t => t.id === topic) || {}).name || topic;
+    const b = $('mathsLessonBtn');
+    if (b) {
+      b.innerHTML = `<span class="ic" aria-hidden="true">📖</span><span>Learn: ${esc(name)}</span>`;
+      b.setAttribute('aria-label', `Open the lesson on ${name}`);
+    }
+    return topic;
   }
 
   window.MathsGame = {
     $, rnd, shuffle, esc,
     freshFirst, markSeen, newCycle, SEEN_CAP, capReview, REVIEW_CAP, noteReview, REVIEW_PASSES,
+    STUCK_MISSES, stuckTopic, offer,
     tone, goodSound, badSound, clickSound, burst, audio,
     init, open: () => open(null), close, lessonTopic: () => current
   };

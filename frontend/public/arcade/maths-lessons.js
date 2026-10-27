@@ -715,6 +715,7 @@
 
   window.MATHS_LESSONS = {
     'number-bonds': {
+      game: 'number-bonds',
       topics: [
         { id: 'parts', name: 'Whole and parts' },
         { id: 'ten', name: 'Bonds to 10' },
@@ -724,6 +725,7 @@
       lessons: BONDS
     },
     'addition-quest': {
+      game: 'addition-quest',
       topics: [
         { id: 'place', name: 'Place value' },
         { id: 'carrying', name: 'Carrying' },
@@ -733,6 +735,7 @@
       lessons: ADDITION
     },
     'subtraction-safari': {
+      game: 'subtraction-safari',
       topics: [
         { id: 'takeaway', name: 'Take away' },
         { id: 'borrowing', name: 'Borrowing' },
@@ -742,6 +745,7 @@
       lessons: SUBTRACTION
     },
     'times-table-academy': {
+      game: 'times-table-academy',
       topics: [
         { id: 'meaning', name: 'What × means' },
         { id: 'commutative', name: 'Order' },
@@ -751,6 +755,7 @@
       lessons: TIMES
     },
     'division-diner': {
+      game: 'division-diner',
       topics: [
         { id: 'sharing', name: 'Sharing' },
         { id: 'inverse', name: 'Undoing' },
