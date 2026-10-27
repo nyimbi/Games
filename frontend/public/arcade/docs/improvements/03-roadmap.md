@@ -182,6 +182,14 @@ Three things F-11 changed that the plan did not anticipate:
 - **A graph that omits a node is not a wrong graph, it is a graph about a different arcade.** Savanna Run was added to `SUBJECTS` and not to `SUBJECT_SKILLS`, and every check stayed green: `order('subjects')` returned eleven valid nodes, the acyclic walk passed, the frontier agreed with brute force, and the arena hint rendered. The load-time guard that already existed skipped edges naming subjects outside the plan, so it could not see the omission either — it guarded the direction that throws and not the direction that silently loses a subject. `checkPrerequisites()` now asserts coverage first, and `skills.py`'s claim 8 asserts it independently of the guard (canaried by disarming the guard and removing the node: the probe still fails).
 - **A gate can fail on a correct chain.** The first `topoOrder` test asserted the deepest node came last; `a` and `z` are both leaves and either may end the order. That assertion was a fact about the tie-break, not about the sort, and it failed on a correct implementation. Removed rather than loosened.
 
+**F-23 is a schedule with a renderer, not an animation.** The obvious build is a `setTimeout` chain in the page, and its probe can only watch it finish. The bank gives every stroke as a polyline in a 0–100 box, so the whole character is a pure function of the stroke list: durations from stroke length, clamped at both ends, separated by a fixed gap. `stroke-anim.js` is that function and nothing else. The page's job is to draw whatever the schedule says, and `stroke.py` asserts the schedule over all 440 characters and 3,086 strokes rather than watching one run end.
+
+Three things F-23 changed that the plan did not anticipate:
+
+- **A gap belongs to the stroke it follows.** `at(plan, ms)` returns `-1` during the pause, not the next stroke's index. Naming the next stroke while it is not yet on screen shows the child a hint for something they cannot see. Canaried: `ms >= s.start` instead of `ms >= s.start && ms < s.end` fails on four of the seven probe points.
+- **The reduced-motion branch is not "the same thing slower".** It steps one whole stroke every 700 ms with no interpolation, so the information is identical and the movement is gone. The first probe asserted "more strokes at 3 s than at 0.6 s", which is true of *both* branches — it passed against a page that ignored the preference. The claim is now the mechanism: no path in the stepped branch carries a non-zero `stroke-dashoffset`, and every path in the animated branch does.
+- **A canary hit the copy of a guard that was not the one under test.** `renderStroke(..., 'guide')` appears twice — once in the stepped branch, once in the frame loop — and patching the first left the probe green. Patched by line number instead, and the frame-loop copy then failed as it should. This is the same duplication trap as the earlier approval-input/post-posting pair; the probe now reads the RAF branch's markup, which only that branch produces.
+
 **F-12 is a guard because the feature it specifies is a no-op.** The plan says to order the session by the skill graph. All five subject edges were checked against the shipped plan before a line was written — `maths->savanna`, `maths->physics`, `maths->chemistry`, `chinese->calligraphy`, `physics->howthingswork` — and every one already holds, because the plan was written to alternate languages and that put maths first by luck of the counting. Deriving the order from the graph therefore renders exactly what the hand-written list renders. A change indistinguishable from no change is not a feature, and its probe would pass against the reverted file.
 
 What the graph can honestly do is veto. `checkPrerequisites()` throws at load if a future edit moves a subject ahead of something it needs — a subject moved for an alternation reason, which is the only reason anything in that list moves. The order keeps its own justification; the graph gets a say it did not have.
@@ -251,6 +259,13 @@ Three things F-17 changed that the plan did not anticipate:
 1. F-44's content gate passes for every generated item type: no generated question has an answer present in the corresponding lesson.
 2. Every new page passes `shell.py`'s no-duplicate-id and no-`pageerror` checks.
 3. Offline sweep: all pages load from `file://` with no network request.
+
+**Landed so far.**
+
+| Item | Landed | Probe |
+|---|---|---|
+| F-23 stroke-order animation | `stroke-anim.js` — `timeline`, `at`, `lengthOf`, `pathD`; `calligraphy.html`'s `playOrder`/`stopOrder` draw the whole character in bank order | `stroke.py` |
+
 
 ---
 

@@ -45,6 +45,7 @@ swahili-bank.js        300 entries: noun classes
 chinese-bank.js        300 entries: characters with pinyin and glosses
 calligraphy-bank.js    the 440 characters and their stroke orders
 calligraphy-sketch.js  hand-drawn pictograms and composition sketches
+stroke-anim.js        the stroke order as a schedule, so the page can write it out
 physics-bank.js        240 questions across 10 topics
 chemistry-bank.js      240 questions across 10 topics
 physics-lessons.js     ten physics lessons, one per bank topic, each with two figures
@@ -64,7 +65,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               twenty-six Playwright probes run against the pages from file://
+probes/               twenty-seven Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -74,7 +75,7 @@ Which page loads what:
 | `french.html`, `swahili.html`, `chinese.html` | own bank, `lang-engine.js`, `session.js` |
 | `physics.html`, `chemistry.html` | own bank, `science-engine.js`, own lessons, `session.js` |
 | `piano.html` | `piano-bank.js`, `piano-lessons.js`, `piano-engine.js`, `session.js` |
-| `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `session.js` |
+| `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |
 | the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` — the drill's own model inline |

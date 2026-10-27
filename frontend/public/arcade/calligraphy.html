@@ -105,6 +105,7 @@ h1 span{color:var(--seal)}
   pointer-events:none;
 }
 .mizige .char.show{color:rgba(20,22,31,.92)}
+.animlabel{margin:2px 0 0;font-size:.85rem;font-weight:700;color:var(--muted,#6b6f8a);min-height:1.1em}
 .legend{display:grid;gap:10px;align-content:start}
 .strokeinfo{background:#fbf5e6;border:2px solid var(--ink);border-radius:14px;padding:14px}
 .charhead{display:flex;gap:14px;align-items:flex-start}
@@ -185,6 +186,7 @@ h1 span{color:var(--seal)}
             <line x1="0" y1="0" x2="100" y2="100" stroke="#d8cbaa" stroke-width=".5" stroke-dasharray="2 4"/>
             <line x1="100" y1="0" x2="0" y2="100" stroke="#d8cbaa" stroke-width=".5" stroke-dasharray="2 4"/>
             <g id="ink"></g>
+            <g id="animInk"></g>
           </svg>
           <div class="char" id="charGhost"></div>
         </div>
@@ -204,11 +206,13 @@ h1 span{color:var(--seal)}
           </div>
           <div class="strokeinfo">
             <h4>Stroke <span id="pStrokeNo">1</span> of <span id="pStrokeTot">1</span></h4>
+            <p class="animlabel" id="pOrderNo"></p>
             <p id="pStrokeName">Draw it.</p>
             <div class="sname" id="pDone"></div>
           </div>
           <div class="actions">
             <button class="btn soft small" type="button" id="pHint">Show me</button>
+            <button class="btn soft small" type="button" id="pOrder">Write it</button>
             <button class="btn soft small" type="button" id="pUndo">Undo</button>
             <button class="btn soft small" type="button" id="pClear">Clear</button>
           </div>
@@ -239,6 +243,7 @@ h1 span{color:var(--seal)}
 
 <script src="./calligraphy-bank.js"></script>
 <script src="./calligraphy-sketch.js"></script>
+<script src="./stroke-anim.js"></script>
 <script src="./session.js"></script>
 <script>
 (() => {
@@ -530,6 +535,10 @@ h1 span{color:var(--seal)}
 
   function render() {
     if (state.index >= state.queue.length) return finish();
+    // A demonstration of the previous character must not keep drawing over
+    // the next one. `stopOrder` is hoisted, so calling it here is safe even
+    // though it is declared below.
+    stopOrder();
     const e = state.queue[state.index];
     state.step = 0; state.drawn = []; state.answered = false;
     state.shownAt = performance.now();
@@ -614,9 +623,11 @@ h1 span{color:var(--seal)}
   $('pExit').addEventListener('click', () => { paintHome(); show('home'); });
   $('pUndo').addEventListener('click', () => {
     if (!state.step) return;
+    stopOrder();
     state.step--; state.drawn.pop(); paintInk(); paintStrokes();
   });
   $('pClear').addEventListener('click', () => {
+    stopOrder();
     state.step = 0; state.drawn = []; paintInk(); paintStrokes();
   });
   /* ---------------- speech ----------------
@@ -641,6 +652,95 @@ h1 span{color:var(--seal)}
   $('pChar').addEventListener('click', sayChar);
   $('pSpeak').addEventListener('click', sayChar);
   if (window.speechSynthesis) speechSynthesis.getVoices();
+
+  /* ---------------- writing it out ----------------
+     F-23. The page has always graded one stroke at a time, which teaches the
+     order by refusing to proceed out of it. This shows the order instead:
+     every stroke of the character, drawn in sequence on the same grid, with
+     the stroke's name under the board as it goes.
+
+     The schedule comes from `stroke-anim.js` and the drawing is the same
+     `renderStroke` the grading uses, so what the child is shown and what the
+     child is graded against cannot drift.
+
+     Two things it must not do. It must not write over strokes already drawn --
+     the animation goes in its own group and is cleared when it ends. And it
+     must not run when the child has asked for less motion; `prefers-reduced-
+     motion` gets the same stroke schedule drawn instantly, one stroke per
+     step, which is the information without the movement. */
+  let animRaf = null, animTimers = [];
+
+  function stopOrder() {
+    if (animRaf) { cancelAnimationFrame(animRaf); animRaf = null; }
+    animTimers.forEach(t => clearTimeout(t));
+    animTimers = [];
+    const g = $('animInk');
+    if (g) g.innerHTML = '';
+  }
+
+  function playOrder() {
+    const e = state.queue[state.index];
+    if (!e || !window.ArcadeStrokeAnim) return;
+    stopOrder();
+    const A = window.ArcadeStrokeAnim;
+    const plan = A.timeline(e.strokes);
+    const g = $('animInk');
+    if (!g || !plan.strokes.length) return;
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const names = e.strokes.map(s => s.name);
+    const label = $('pOrderNo');
+
+    // The guide colour, not the ink colour: this is a demonstration, and a
+    // child should never mistake what the machine drew for what they drew.
+    const guide = s => renderStroke({ pts: e.strokes[s.i].pts, w: 5 }, 'guide');
+
+    if (reduced) {
+      // One stroke per step, no interpolation. Same schedule, same order.
+      plan.strokes.forEach((s, k) => {
+        animTimers.push(setTimeout(() => {
+          g.insertAdjacentHTML('beforeend', guide(s));
+          if (label) label.textContent = names[s.i];
+        }, k * 700));
+      });
+      animTimers.push(setTimeout(() => {
+        if (label) label.textContent = '';
+        animTimers.push(setTimeout(stopOrder, 1800));
+      }, plan.strokes.length * 700));
+      return;
+    }
+
+    const started = performance.now();
+    let last = -1;
+    const tick = () => {
+      const ms = performance.now() - started;
+      // Each stroke is drawn by animating its own path length, which needs no
+      // per-point work: `stroke-dasharray` at the path's length and an offset
+      // running to zero draws it from its start to its end.
+      if (ms >= plan.total) { stopOrder(); return; }
+      for (const s of plan.strokes) {
+        if (s.i === last) continue;
+        if (ms < s.start) continue;
+        last = Math.max(last, s.i);
+      }
+      const cur = A.at(plan, ms);
+      if (cur >= 0 && label) label.textContent = names[cur];
+      // Repaint the group at its current state rather than appending: a
+      // stroke whose progress is redrawn each frame needs one path per frame,
+      // and appending would leave every intermediate behind.
+      g.innerHTML = plan.strokes.filter(s => ms >= s.start).map(s => {
+        const p = ms >= s.end ? 1 : (ms - s.start) / s.dur;
+        const len = Math.max(s.len, 1);
+        return renderStroke({ pts: e.strokes[s.i].pts, w: 5 }, 'guide')
+          .replace('stroke-dasharray="4 3"',
+            `stroke-dasharray="${len} ${len}" stroke-dashoffset="${len * (1 - p)}"`);
+      }).join('');
+      animRaf = requestAnimationFrame(tick);
+    };
+    animRaf = requestAnimationFrame(tick);
+  }
+
+  $('pOrder').addEventListener('click', playOrder);
 
   $('pHint').addEventListener('click', () => {
     const e = state.queue[state.index];
