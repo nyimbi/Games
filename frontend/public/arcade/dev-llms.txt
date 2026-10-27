@@ -10,7 +10,7 @@ Line numbers are approximate — they drift with every edit. Names and constants
 
 ```
 20,142 lines across 45 source files (19 pages, 26 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus twenty-five Playwright probes in `probes/`.
+Verification is `node --check` per inline block plus twenty-six Playwright probes in `probes/`.
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
@@ -567,7 +567,7 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     forgot what it had served. Both division and number bonds now pass their own `keyOf`.
     `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all twenty-five: no page makes a request outside its own origin (the favicon
+Two properties survive all twenty-six: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 19 pages still initialise from `file://`.
 
 ## Adding a game

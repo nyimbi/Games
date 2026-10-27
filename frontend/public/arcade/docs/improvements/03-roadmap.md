@@ -148,9 +148,10 @@ Three things Phase 2 changed that the plan did not anticipate:
 | F-13 stuck detector | `maths-engine.js:530-575` — `STUCK_MISSES`, `TOPIC_OF`, `stuckTopic`; `offer` sets the label and the default topic | `stuck.py` |
 | F-17 fact families | `deck.js:349-389` — `familyOf`, `familyKey`, `familySiblings`; `maths-engine.js:583-624` — `crossDue`, `crossKeys` | `family.py`, `cross.py` |
 | F-14 example from the mistake | `maths-engine.js` — `spaceOf`, `sameFact`, `distance`, `RENDER`, `exampleFor`; `offer` carries the record into the dialog | `example.py` |
-| F-11 skill graph | `skills.js` — `MATHS_SKILLS` (15), `SUBJECT_SKILLS` (12), validated acyclic at load; `order`, `ancestors`, `descendants`, `frontier`, `weakestNeed`, `edges`. `session.js`'s `checkPrerequisites()` (109) asserts the plan and the graph name the same subjects and that every edge respects the plan's order. The arena reads the graph for one advisory line (`#skillHint`) | `skills.py` |
+| F-11 skill graph | `skills.js` — `MATHS_SKILLS` (15), `SUBJECT_SKILLS` (12), validated acyclic at load; `order`, `ancestors`, `descendants`, `frontier`, `weakestNeed`, `edges`. The arena reads the graph for one advisory line (`#skillHint`); `DEFAULT_ON` stays hand-written. `session.js:109` `checkPrerequisites()` asserts coverage (`:128-134`) and edge order (`:136-145`) | `skills.py` |
 | F-6 starting level | `maths-engine.js` — `startLevel`, `SOLID`; five drills each carry a `startAt()` and keep `savedAt` from the load so the score is the decayed one | `startlevel.py` |
 | F-18 knows vs can do | `deck.js` — `knows`, `knowledge`, `referenceBase`, `FLUENT`; the session page renders a count per drill from a reference pooled across all five | `knows.py` |
+| F-12 plan follows the graph | `session.js` — `checkPrerequisites()` throws at load if a subject precedes something it needs; skips cleanly when `skills.js` is absent | `prereq.py` |
 
 **F-18's original premise was wrong, and the probe is what found it.** The plan says "deepens F-4's latency" and `deck.js:164` said `spd` was recorded precisely so F-18 could use it. `spd` cannot carry this. It is the ratio of each answer to a **moving** baseline, so it measures change, not level: a child answering forty times at a constant 1000 ms settles at `spd = 1.000`, and a `spd <= 0.75` test calls them permanently `effortful`. It says "faster than usual", and once a child's usual is fast nothing is faster than usual. The first implementation used `spd`; every stable child would have been told they were still working everything out.
 
@@ -181,6 +182,16 @@ Three things F-11 changed that the plan did not anticipate:
 - **A graph that omits a node is not a wrong graph, it is a graph about a different arcade.** Savanna Run was added to `SUBJECTS` and not to `SUBJECT_SKILLS`, and every check stayed green: `order('subjects')` returned eleven valid nodes, the acyclic walk passed, the frontier agreed with brute force, and the arena hint rendered. The load-time guard that already existed skipped edges naming subjects outside the plan, so it could not see the omission either — it guarded the direction that throws and not the direction that silently loses a subject. `checkPrerequisites()` now asserts coverage first, and `skills.py`'s claim 8 asserts it independently of the guard (canaried by disarming the guard and removing the node: the probe still fails).
 - **A gate can fail on a correct chain.** The first `topoOrder` test asserted the deepest node came last; `a` and `z` are both leaves and either may end the order. That assertion was a fact about the tie-break, not about the sort, and it failed on a correct implementation. Removed rather than loosened.
 
+**F-12 is a guard because the feature it specifies is a no-op.** The plan says to order the session by the skill graph. All five subject edges were checked against the shipped plan before a line was written — `maths->savanna`, `maths->physics`, `maths->chemistry`, `chinese->calligraphy`, `physics->howthingswork` — and every one already holds, because the plan was written to alternate languages and that put maths first by luck of the counting. Deriving the order from the graph therefore renders exactly what the hand-written list renders. A change indistinguishable from no change is not a feature, and its probe would pass against the reverted file.
+
+What the graph can honestly do is veto. `checkPrerequisites()` throws at load if a future edit moves a subject ahead of something it needs — a subject moved for an alternation reason, which is the only reason anything in that list moves. The order keeps its own justification; the graph gets a say it did not have.
+
+Three things F-12 changed that the plan did not anticipate:
+
+- **The branch that reorders `next()` is dead code and never shipped.** The first implementation had `next()` return a later prerequisite when the first undone subject needed one. `checkPrerequisites()` throws at load on exactly that condition, so the branch cannot fire in a page that loaded — it is a guard wearing a feature's clothes. Deleted before commit; the hub reads `p.plan.find(x => !x.done)` as it always did, and `session.js` exports no `next`.
+- **The veto is live on one page of nineteen.** Only `infinite-arena.html` loads `skills.js`, so the guard only runs where the arena is. On the other eighteen the check returns at `if (!K || !K.edges)`. That is the intended trade — a drill page must open without the graph — but it means the guard's coverage is a fact about script tags, not about the plan. `prereq.py` asserts both: the throw on the arena, and the clean load on `spelling-bee.html`.
+- **A fixture that reorders the plan fails for its own reasons before the guard speaks.** Three times over. `session.js` reads `ArcadeRecord.is` at load, so a blank page without `record.js` throws `Cannot read properties of undefined` before either guard runs. The last entry in `SUBJECTS` carries no trailing comma, so swapping whole lines leaves a comma dangling before `];` and the fixture is a parse error — which a probe counting page errors reads as "the guard threw". And reading `lines[at[a]]` after writing it yields the other entry's text, silently deleting a subject and failing `checkManifest()` instead. The probe now loads `record.js`, rewrites the comma, and captures both bodies before either assignment; the pairs are same-kind so `checkOrder` stays satisfied and only the graph check can speak. Canaried by disabling the guard: both order claims fail and the control stays green.
+
 **Gate 3 item 2 is withdrawn as written, and the reason matters.** It required "F-14's generated example contains no number the drill asks", citing `llms.txt:99`. That citation is wrong twice over.
 
 *The rule it cites is a science rule, and it holds there.* `llms.txt:99` sits under "Lessons + figures" beside `physics-lessons.js` and `chemistry-lessons.js`; it says nothing about maths. For a bank of authored questions it is a decidable, satisfiable predicate — and **two shipped science lessons violate it**: physics `motion` works "A train slows from 30 m/s to 10 m/s in 5 s" against a bank question that asks for its deceleration on the same numbers, and chemistry `moles` works calcium carbonate with `Ar: Ca = 40, C = 12, O = 16` — the prompt string the bank uses for five separate questions. Chemistry `periodic` (Group 2, Period 3) collides too. Those are F-44's to catch, and F-44 is Phase 5.
@@ -207,7 +218,14 @@ Three things F-17 changed that the plan did not anticipate:
 
 1. F-13 fires at most once per topic per session, and only after ≥3 misses of facts mapped to that topic.
 2. ~~F-14's generated example contains no number the drill asks.~~ **Withdrawn** — see the note above. Unsatisfiable for the maths pools (full enumeration) and misattributed to maths (the cited rule is science-only). Replaced by the three claims `example.py` asserts. F-44 still owns the science form of the rule, where it is satisfiable and currently violated by three lessons.
-3. `checkOrder()` still passes; no phase-3 change touches `SUBJECTS`' order.
+3. ~~`checkOrder()` still passes; no phase-3 change touches `SUBJECTS`' order.~~ **Restated.**
+   A phase-3 change did touch it: Savanna Run was added as a twelfth subject, slotted beside
+   maths so the two `other`-`other` pairs are maths/savanna at the top and piano/howthingswork at
+   the end. Both load-time guards pass — `checkOrder()` (opens on a language, no two `lang`
+   adjacent) and `checkPrerequisites()` (every plan subject has a graph node, every edge respects
+   the plan's order) — and `skills.py` claim 8 asserts the same three properties independently.
+   The claim was never "the order is frozen"; it was "the order's two invariants hold", and
+   stating it as a freeze was the mistake.
 
 ---
 
