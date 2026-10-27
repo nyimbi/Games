@@ -1,6 +1,6 @@
 # The Arcade
 
-Sixteen games and a daily session page, each one a self-contained HTML file, with no build step,
+Seventeen games and a daily session page, each one a self-contained HTML file, with no build step,
 no accounts, and no network. A child opens `index.html` — from a web server or straight from the
 file system (`file://` works; nothing is fetched) — picks a game or follows today's session, and
 every bit of progress lives in that browser's `localStorage` — and the session page can save all
@@ -11,9 +11,9 @@ serves it. The folder also has its own git repository — see "This repository" 
 that does and does not change.
 
 **No third-party library is loaded, so there is nothing to vendor.** No framework, no bundler, no
-icon font, no analytics, not even a polyfill. The runtime is the eighteen pages and the `.js`
-files beside them. All eighteen were loaded from `file://` with the browser context forced
-offline and every one initialised and stayed interactive; the same eighteen, served over HTTP,
+icon font, no analytics, not even a polyfill. The runtime is the nineteen pages and the `.js`
+files beside them. All nineteen were loaded from `file://` with the browser context forced
+offline and every one initialised and stayed interactive; the same nineteen, served over HTTP,
 make zero requests outside their own origin. If a future change needs a library, the answer is
 still no network — copy the file into this folder and load it with a relative `<script src>`.
 
@@ -29,7 +29,7 @@ time. See "How Things Work" below.
 
 ```
 index.html             the hub: every game, grouped by subject
-session.html           the daily pass: eleven subjects in one sitting
+session.html           the daily pass: twelve subjects in one sitting
 session.js             session state — plan, streak, completion, the alternation guard
 
 ── shared engines (hold the interaction; banks hold the content) ──
@@ -58,12 +58,13 @@ typing-tutor.html    spelling-bee.html               — skills
 french.html  swahili.html  chinese.html  calligraphy.html          — languages
 physics.html  chemistry.html                                  — science
 how-things-work.html  the machine shelf: one figure at a time, twenty-six on it
+savanna-run.html      the run: algebra gates over six places in African history
 figures/              26 self-contained Colorfigures pages, one per machine, plus the MIT licence
 docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               twenty-four Playwright probes run against the pages from file://
+probes/               twenty-five Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -78,6 +79,7 @@ Which page loads what:
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |
 | the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` — the drill's own model inline |
 | `infinite-arena.html` | `skills.js`, `session.js` — the engine is inline; the skill graph is data |
+| `savanna-run.html` | `algebra-bank.js`, `african-history.js`, `session.js` — the engine is inline; the equations and the history are data |
 | `typing-tutor.html` | `session.js` only — carries its own engine inline |
 | `index.html` | `session.js` — the hub reads every game's bucket, but never writes one |
 | `session.html` | `session.js`, `backup.js` — the only page that saves or loads the record |
@@ -136,7 +138,7 @@ shading and controls — and lets the child switch machines from a shelf below. 
 marker is one machine met, which is the same unit as one deck: a sitting, not a score. See "How
 Things Work" below.
 
-Fifteen of the sixteen game pages toggle a single `#done` element when a deck ends;
+Fifteen of the seventeen game pages toggle a single `#done` element when a deck ends;
 `infinite-arena` shows a `#summaryPanel`. The session tracker reads whichever the page declares —
 see "The three ways a page says 'finished'" below, which exists because that variety is a trap
 for anyone extending the session.
@@ -173,22 +175,24 @@ accuracy of it.
 
 ## The daily session
 
-`session.html` is not a game. It reads a fixed plan of eleven subjects, each mapped to its games,
+`session.html` is not a game. It reads a fixed plan of twelve subjects, each mapped to its games,
 and walks the child through one deck per subject per day: which subject, which game, done or not,
 in order, with a streak and a 21-day history strip. The maths subject has six games and plays
 the one that `dayNumber % 6` selects, derived from the date — nothing stored, nothing to drift.
 
-**The order is not alphabetical and not arbitrary.** Five of the eleven subjects are languages —
+**The order is not alphabetical and not arbitrary.** Five of the twelve subjects are languages —
 spelling, French, Mandarin, Kiswahili, and calligraphy, which is Chinese character writing. Five
 languages back-to-back is one skill practised five ways, so `lang` and `other` alternate for as
 long as the counts allow:
 
-  spelling · maths · French · physics · Mandarin · chemistry · Kiswahili · typing · calligraphy · piano · how things work
+  spelling · maths · savanna run · French · physics · Mandarin · chemistry · Kiswahili · typing · calligraphy · piano · how things work
 
-There are six `other` subjects and five languages, so perfect alternation is impossible while
+There are seven `other` subjects and five languages, so perfect alternation is impossible while
 spelling stays first — which it does deliberately, because it is the drill a child is most likely
-to skip. The surplus `other` therefore sits beside another one, at the end, where piano and the
-machine shelf are the two least alike things in the list.
+to skip. The two surplus `other` subjects therefore sit beside another one each: savanna run
+beside maths, because it is algebra gates run through and reads as the same subject continued;
+and the machine shelf beside piano, at the end, where those two are the least alike things in
+the list.
 
 Each subject carries a `kind` (`'lang' | 'other'`), and `session.js` throws at load if any two
 `kind: 'lang'` subjects end up adjacent, or if the plan does not open on a language. A sixth
@@ -697,6 +701,7 @@ rehearsal of the next question.
 | `arcade.physics.v1` / `arcade.chemistry.v1` | science pages | `{ best, seen, review, perTier, tier, taught }`, where `taught` is `{topic: true}` |
 | `arcade.piano.v1`          | piano             | `{ best, seen, review, perTier, tier, taught, piecesDone }` — `piecesDone` is `{pieceId: bestAccuracy}` |
 | `arcade.howthingswork.v1`  | how things work   | `{ v, explored: {slug: ts}, perGroup: {group: pct}, day }` — no `best` and no `review`; the shelf has no score |
+| `arcade.savanna.v1`        | savanna run       | `{ best, perLevel, review, seen, savedAt }` — `perLevel` is `{levelId: score}`; `review` keys on the fact a gate asked |
 | `arcade.lastplay`          | `index.html` only | `{ './page.html': timestamp }` — what the suggestion lane sorts on |
 
 Every `review` is `ArcadeDeck.noteAttempt`'s entry per fact key: `{n, miss, ok, lastAt, nextAt,
@@ -771,7 +776,7 @@ only has to declare the two attributes.
 
 ## Plans and methods
 
-The arcade is finished in the sense that all eighteen pages work, and unfinished in the sense
+The arcade is finished in the sense that all nineteen pages work, and unfinished in the sense
 that it is a teaching artefact with a design thesis that can always be tested harder. What
 follows is how changes get decided, so a new contributor does not have to guess.
 

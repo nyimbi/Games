@@ -28,18 +28,23 @@
   const MATHS = ['number-bonds', 'addition-quest', 'subtraction-safari',
     'times-table-academy', 'division-diner', 'infinite-arena'];
 
-  /* Order matters as much as content. Five of the eleven subjects are languages
+  /* Order matters as much as content. Five of the twelve subjects are languages
      -- spelling, French, Kiswahili, Mandarin and calligraphy, which is Chinese
      character writing -- and a run of five language drills back to back is one
      skill practised five ways, not five subjects. The order alternates lang and
-     other for as long as the counts allow; with five languages and six others,
-     one pair of others has to sit together, and it sits at the end where the
-     two subjects ask the most of a learner and are least alike. `kind` is what
-     the order is built from; adding a subject means adding it to the right
-     half. */
+     other for as long as the counts allow.
+
+     With five languages and seven others, two pairs of others have to sit
+     together, and where they sit is the only choice left. One pair is at the
+     end, between piano and the machine shelf, which ask the most of a learner
+     and are least alike. The other is Savanna Run beside maths: it is algebra
+     gates run through, so a child who meets it right after the number drills
+     meets the same subject wearing a different body. `kind` is what the order
+     is built from; adding a subject means adding it to the right half. */
   const SUBJECTS = [
     { id: 'spelling', kind: 'lang', name: 'Spelling', note: 'A thousand words', games: ['spelling-bee'] },
     { id: 'maths', kind: 'other', name: 'Maths', note: 'Number facts', games: MATHS },
+    { id: 'savanna', kind: 'other', name: 'Savanna Run', note: 'Algebra and history', games: ['savanna-run'] },
     { id: 'french', kind: 'lang', name: 'French', note: 'Words and sentences', games: ['french'] },
     { id: 'physics', kind: 'other', name: 'Physics', note: 'Forces to waves', games: ['physics'] },
     { id: 'chinese', kind: 'lang', name: 'Mandarin', note: 'Tones and characters', games: ['chinese'] },
@@ -60,11 +65,13 @@
      because spelling is deliberately first -- it is the drill a child is most
      likely to skip, so it does not get to hide behind a game.
 
-     Those two together force one pair of adjacent non-language subjects.
-     Perfect alternation with five languages and six others has to start and
-     end on an other; starting on a language instead means the surplus other
-     has to sit beside another one somewhere. It sits at the end, between piano
-     and the machine shelf, which are the two least alike things in the list.
+     Those two together force a pair of adjacent non-language subjects. Perfect
+     alternation with five languages and seven others has to start and end on an
+     other; starting on a language instead means the surplus others have to sit
+     beside another one somewhere, and there are two of them. One sits beside
+     maths, at the top, where Savanna Run reads as the same subject continued.
+     The other sits at the end, between piano and the machine shelf, which are
+     the two least alike things in the list.
      A sixth language would make that impossible, which is why the first check
      is the one that matters. */
   (function checkOrder() {
@@ -94,7 +101,7 @@
      file to render the plan, and neither is a game. */
   const GAME_PAGES = [
     'number-bonds', 'addition-quest', 'subtraction-safari', 'times-table-academy',
-    'division-diner', 'infinite-arena', 'spelling-bee', 'french', 'physics',
+    'division-diner', 'infinite-arena', 'savanna-run', 'spelling-bee', 'french', 'physics',
     'chinese', 'chemistry', 'swahili', 'typing-tutor', 'calligraphy', 'piano',
     'how-things-work'
   ];
@@ -328,7 +335,7 @@
 
   /* Inline styles, because the games do not share a stylesheet and several do
      not define the accent variables. The banner must look the same on all
-     fifteen pages without any of them having to know it exists. */
+     seventeen pages without any of them having to know it exists. */
   function toast(title, body, href, label) {
     // The games already carry their own `<div role="status">` for answer
     // feedback, so this needs an id of its own: querying by role would find

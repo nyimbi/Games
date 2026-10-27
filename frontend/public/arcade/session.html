@@ -5,7 +5,7 @@
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Today's Session — Local Arcade</title>
-<meta name="description" content="One pass over eleven subjects, alternating language with science, number, music and the machine shelf. Spelling, maths, French, physics, Mandarin, chemistry, Kiswahili, typing, calligraphy, piano, how things work.">
+<meta name="description" content="One pass over twelve subjects, alternating language with science, number, music and the machine shelf. Spelling, maths, savanna run, French, physics, Mandarin, chemistry, Kiswahili, typing, calligraphy, piano, how things work.">
 <style>
 :root{
   --ink:#191c3a;--ink-2:#343a63;--muted:#6d7194;
@@ -160,7 +160,7 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
   </div>
 
   <header>
-    <p class="eyebrow">Eleven subjects · one pass</p>
+    <p class="eyebrow"><span id="subjCount">Twelve</span> subjects · one pass</p>
     <h1 id="headline">Today's session</h1>
     <p class="lede" id="lede">Every subject once, alternating language with science, number and the machine shelf. Finish a deck and the next one opens. Nothing is timed and nothing leaves this browser.</p>
   </header>
@@ -179,10 +179,10 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
 
   <section class="hist">
     <h2>Last three weeks</h2>
-    <p class="sub">A full day is all eleven. Anything less shows as part of a square.</p>
+    <p class="sub">A full day is all of them. Anything less shows as part of a square.</p>
     <div class="days" id="days"></div>
     <div class="legend">
-      <span><i style="background:var(--lime)"></i>All eleven</span>
+      <span><i style="background:var(--lime)"></i>All of them</span>
       <span><i style="background:color-mix(in srgb,var(--lime) 45%,#fff)"></i>Some</span>
       <span><i style="background:#fff"></i>Nothing</span>
     </div>
@@ -293,6 +293,10 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
 
     $('doneCount').textContent = String(p.done);
     $('totalCount').textContent = String(p.total);
+    // The eyebrow's count is derived, not written. It said "Eleven" for a
+    // while after the plan grew to twelve, and a literal beside a number the
+    // page already knows is a claim that drifts silently.
+    $('subjCount').textContent = String(p.total);
     $('barFill').style.width = (p.done / p.total * 100) + '%';
     $('meter').classList.toggle('done', p.done >= p.total);
 

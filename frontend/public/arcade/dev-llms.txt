@@ -9,12 +9,12 @@ Line numbers are approximate — they drift with every edit. Names and constants
 ## The inventory
 
 ```
-17,608 lines across 41 source files (18 pages, 23 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus twenty-four Playwright probes in `probes/`.
+20,142 lines across 45 source files (19 pages, 26 scripts). No build, no bundler, no test runner.
+Verification is `node --check` per inline block plus twenty-five Playwright probes in `probes/`.
 
-index.html              675   hub: 16 cards, stars from each game's bucket, suggestion lane
-session.html            451   the day: plan list, meter, 21-day strip, backup buttons
-session.js              422   session state, alternation guard, completion observer, toast
+index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
+session.html            528   the day: plan list, meter, 21-day strip, backup buttons
+session.js              429   session state, alternation guard, completion observer, toast
 deck.js                 482   one deck identity: freshness, review schedule, mastery decay, fluent/effortful
 record.js               167   one storage contract: fresh/ok/migrated/corrupt, bounded stash
 skills.js               261   prerequisite graphs: 15 maths skills, 11 subjects; validated acyclic at load
@@ -35,6 +35,7 @@ subtraction-safari.html 974
 times-table-academy.html 1057
 division-diner.html     720
 infinite-arena.html     760   weighted generator, not a deck
+savanna-run.html        837   canvas runner: algebra gates, history levels
 typing-tutor.html       616
 spelling-bee.html      1115   own engine + 4 modes
 how-things-work.html    380   iframe wrapper over figures/
@@ -71,6 +72,7 @@ Which page loads what:
 | `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
 | the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` |
 | `infinite-arena.html`, `typing-tutor.html` | `session.js` only |
+| `savanna-run.html` | `algebra-bank.js`, `african-history.js`, `session.js` |
 | `index.html`, `session.html` | `session.js` |
 
 ## The five shared deck mechanisms
@@ -134,28 +136,30 @@ older build's record restores byte for byte.
 
 `KEY = 'arcade.session.v1'`, `KEEP_DAYS = 120`, `MATHS` = the six maths page names.
 
-`SUBJECTS` (40) is the single source of order: eleven entries of `{id, kind, name, note, games}`.
+`SUBJECTS` (44) is the single source of order: twelve entries of `{id, kind, name, note, games}`.
 `checkOrder()` throws at load if two `kind: 'lang'` are adjacent or if `SUBJECTS[0]` is not
-a language — an IIFE, so it runs before anything else. With six others and five languages, exactly
-one `other`-`other` pair is expected, at the end; the guard does not forbid it because perfect
-alternation is impossible while spelling stays first. `BY_GAME` maps page name → subject.
+a language — an IIFE, so it runs before anything else. With seven others and five languages, two
+`other`-`other` pairs are expected — savanna run beside maths at the top, the machine shelf beside
+piano at the end; the guard does not forbid them because perfect alternation is impossible while
+spelling stays first. `BY_GAME` maps page name → subject. `GAME_PAGES` (102) is the manifest the
+table is checked against in both directions plus a claim count; `checkManifest()` (120) throws.
 
 | Function | Line | Does |
 |---|---|---|
-| `dayKey(d)` | 134 | local `YYYY-MM-DD`, not UTC |
-| `dayNumber(d)` | 139 | days since epoch, drives maths rotation |
-| `read/write` | 149/155 | `write` trims to `KEEP_DAYS` then `setItem` in try/catch |
-| `todayRecord` | 165 | the day's record, created on demand |
-| `gameFor(subject, d)` | 174 | `games[dayNumber(d) % games.length]` |
-| `plan(d)` | 181 | every subject in order with game, href, done — never writes |
-| `progress()` | 191 | `{done, total}` for the meter |
-| `mark(id, result)` | 211 | returns `{changed, done, total}`; keeps the day's best percentage |
-| `streak(d)` | 235 | run of complete days ending today; today counts only once complete |
-| `history(n)` | 254 | last n days oldest-first, gaps present with done 0 and `acc: null` |
-| `resultPct()` | 296 | reads the score off a finished drill; `%` wins over `N of M` |
+| `dayKey(d)` | 141 | local `YYYY-MM-DD`, not UTC |
+| `dayNumber(d)` | 146 | days since epoch, drives maths rotation |
+| `read/write` | 156/162 | `write` trims to `KEEP_DAYS` then `setItem` in try/catch |
+| `todayRecord` | 172 | the day's record, created on demand |
+| `gameFor(subject, d)` | 181 | `games[dayNumber(d) % games.length]` |
+| `plan(d)` | 188 | every subject in order with game, href, done — never writes |
+| `progress()` | 198 | `{done, total}` for the meter |
+| `mark(id, result)` | 218 | returns `{changed, done, total}`; keeps the day's best percentage |
+| `streak(d)` | 242 | run of complete days ending today; today counts only once complete |
+| `history(n)` | 261 | last n days oldest-first, gaps present with done 0 and `acc: null` |
+| `resultPct()` | 303 | reads the score off a finished drill; `%` wins over `N of M` |
 | `toast/announce` | 332/379 | inline-styled banner, `id="sessionToast"` |
 | `check/start` | 396/404 | observer callback and install |
-| `isFinished()` | 415 | reads the marker the page *declares* |
+| `isFinished()` | 321 | reads the marker the page *declares* |
 
 `mark` keeps the day's **best** percentage per subject, not the last: a replay that goes worse must
 not lower the day. A result outside 0..100, or not a number, is refused rather than stored — it
@@ -428,6 +432,29 @@ The endpoint term is the direction check: a reversed stroke covers the same pixe
 the last resampled point. Each accepted stroke `score += 6`; a wrong stroke resets the streak and
 records `char + ' stroke ' + n` in `review`.
 
+### savanna-run.html (837) + algebra-bank.js (170) + african-history.js (150)
+
+`arcade.savanna.v1` = `{ best, perLevel, review, seen, savedAt }`. Canvas 960×420, four parallax
+layers derived from scroll offset (never from spawned objects, so nothing accumulates). `S` is the
+one state object; `window.SavannaRun` exposes `{S, BAND_H, BAND_T, bandOf, RISE_V, GRAVITY,
+GATES_PER_LEVEL, start, press, release, step, state}` for probing.
+
+Physics: **no gravity while held** — `S.vy = -RISE_V` at takeoff and the hold is capped at
+`BAND_T[2]`, so apex is linear in hold time and `BAND_H = [71.2, 123.2, 201.2]` px at
+0/100/250 ms. `COYOTE_MS` 90, `BUFFER_MS` 120, `RUN_SPEED` 210, `FIG_X` 200, `GATE_GAP` 620,
+`GATES_PER_LEVEL` 5. The gate draws at a fixed screen x, so the equation is readable while the
+world scrolls under it. `bandOf(apex)` is **nearest band**, not highest passed — an apex just
+under a band must read as that band, and the probe tests exactly those cases.
+
+`AlgebraBank.gate(tier)` (140) → `{q, options, answer}`, three distinct positive integers
+including the solution, shuffled. `TIERS` (112) is five pools from `add/sub` to `bracket/both-sides`.
+**Forms emit candidates, the builder filters** — a form that filters its own mistakes has to know
+which survive, and `add`, `sub` and `div` each fell through to the fallback on every draw before
+this split. The fallback (`x + 2 = 5`) is reachable only if every form breaks at once.
+
+`AfricanHistory.LEVELS` — six levels, four facts each, every fact carrying `source`. Aksum, Mali,
+Great Zimbabwe, Kilwa, Kenya, Adwa.
+
 ### how-things-work.html (388)
 
 `arcade.howthingswork.v1` = `{ v, explored:{slug:ts}, perGroup:{group:pct}, day }`. A 26-entry
@@ -437,7 +464,7 @@ first un-explored entry. `#hadAGo` writes `explored[slug]` and `day = today()`, 
 820 px (740 px under the phone media query) — not measured at runtime, because `file://` blocks
 cross-frame reads in Chromium and WebKit.
 
-### index.html (675)
+### index.html (711)
 
 Each card carries `data-key` and `data-bucket`. `bestPct(card)` (519) walks the bucket, taking the
 max numeric value or `v.ema * 100` for a skill record. `paintProgress` (531) writes the stars and
@@ -534,8 +561,8 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     forgot what it had served. Both division and number bonds now pass their own `keyOf`.
     `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all twenty-one: no page makes a request outside its own origin (the favicon
-is a sibling file), and all 18 pages still initialise from `file://`.
+Two properties survive all twenty-five: no page makes a request outside its own origin (the favicon
+is a sibling file), and all 19 pages still initialise from `file://`.
 
 ## Adding a game
 

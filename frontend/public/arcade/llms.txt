@@ -1,4 +1,4 @@
-# The Arcade > 18 self-contained pages that teach eleven subjects to a child: a hub, 16 games, and a daily-session page. No build step, no accounts, no network — everything inline or beside the page, progress in localStorage. No third-party library is loaded or vendored: the entire runtime is the 18 pages plus their sibling `.js` files. The one imported code is 26 MIT-licensed Colorfigures demo figures in `figures/`, copied whole and unmodified, each already a single self-contained file. This folder has its own git repository (branch `main`, no remote), but the parent `games` repo still tracks these files too — see README "This repository" before committing arcade work from the parent.
+# The Arcade > 19 self-contained pages that teach twelve subjects to a child: a hub, 17 games, and a daily-session page. No build step, no accounts, no network — everything inline or beside the page, progress in localStorage. No third-party library is loaded or vendored: the entire runtime is the 19 pages plus their sibling `.js` files. The one imported code is 26 MIT-licensed Colorfigures demo figures in `figures/`, copied whole and unmodified, each already a single self-contained file. This folder has its own git repository (branch `main`, no remote), but the parent `games` repo still tracks these files too — see README "This repository" before committing arcade work from the parent.
 
 ## Where to start
 
@@ -40,9 +40,9 @@
   language, science and piano engines, 600 in the arena), oldest-dropped. A deck smaller than its
   pool cycles with a pass counter so the fill loop cannot spin.
 - [Three completion markers](session.js): stage games toggle `#done` class `on` (`class="stage"`:
-  languages, calligraphy, spelling bee, physics, chemistry, how things work); maths/typing toggle
-  `#done` class `show` (`class="done"`); `infinite-arena.html` alone shows `#summaryPanel` class
-  `show`.
+  languages, calligraphy, spelling bee, physics, chemistry, how things work); maths, typing and
+  savanna run toggle `#done` class `show` (`class="done"`); `infinite-arena.html` alone shows
+  `#summaryPanel` class `show`.
   `session.js` reads the marker the page *declares* via the element's own class — accepting
   either marker on any page lets a class a game never uses count as finished
   (`.stage.on` is true on a stage game's home screen). A new game must declare one of these shapes.
@@ -123,6 +123,28 @@
   One machine met is the day's sitting. `perGroup` exists only so the hub's star rating can read
   this record like any other game's bucket.
 
+## Savanna Run
+
+- [savanna-run.html](savanna-run.html) · [algebra-bank.js](algebra-bank.js) · [african-history.js](african-history.js):
+  a canvas runner where the jump *is* the answer. Each gate carries an equation and three numbers,
+  one per height; a tap reaches the low band, a held jump the high one, and the band the apex is
+  nearest is submitted. No confirm button.
+- **No gravity while held**, so apex height is linear in hold time: 0/100/250 ms reach 71/123/201 px.
+  A quadratic curve would put two bands inside one frame of travel at the top. `COYOTE_MS` 90,
+  jump buffer 120 ms, `RUN_SPEED` 210, `GATE_GAP` 620, five gates per level.
+- `AlgebraBank.gate(tier)` returns `{q, options, answer}` — exactly three distinct positive integers
+  including the solution, shuffled. Forms emit *candidate* mistakes and one builder filter keeps
+  two; a form that filters its own mistakes cannot know which survive, and three earlier versions
+  fell through to the fallback on every draw. Distractors are the mistakes (`3x + 7 = 22` → 15, 9, 5),
+  not random numbers.
+- `AfricanHistory.LEVELS` — six levels (Aksum, Mali, Great Zimbabwe, Kilwa, Kenya, Adwa), four facts
+  each, **every fact carrying a `source`**. These are the only claims in the arcade not checkable by
+  doing the sum, so an unsourced fact does not go in; `probes/savanna.py` asserts it.
+- Art is vector, not photo-real: the arcade is offline, `file://`-runnable, no build step, and
+  WebGL meshes and textures would break all three. Parallax is derived from scroll offset, not from
+  spawned objects, so nothing accumulates between runs.
+- Record: `arcade.savanna.v1` = `{ best, perLevel, review, seen, savedAt }`.
+
 ## The pages and their shape
 
 - [session.html](session.html) · [index.html](index.html) ·
@@ -132,7 +154,8 @@
   [typing-tutor.html](typing-tutor.html) · [spelling-bee.html](spelling-bee.html) ·
   [french.html](french.html) · [swahili.html](swahili.html) · [chinese.html](chinese.html) ·
   [calligraphy.html](calligraphy.html) · [physics.html](physics.html) · [chemistry.html](chemistry.html) ·
-  [piano.html](piano.html) · [how-things-work.html](how-things-work.html)
+  [piano.html](piano.html) · [how-things-work.html](how-things-work.html) ·
+  [savanna-run.html](savanna-run.html)
 
 ## Session state shape
 
