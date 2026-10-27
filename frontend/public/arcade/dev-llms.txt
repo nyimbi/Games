@@ -14,10 +14,10 @@ Verification is `node --check` per inline block plus twenty-five Playwright prob
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
-session.js              429   session state, alternation guard, completion observer, toast
+session.js              488   session state, alternation guard, completion observer, toast
 deck.js                 482   one deck identity: freshness, review schedule, mastery decay, fluent/effortful
 record.js               167   one storage contract: fresh/ok/migrated/corrupt, bounded stash
-skills.js               261   prerequisite graphs: 15 maths skills, 11 subjects; validated acyclic at load
+skills.js               262   prerequisite graphs: 15 maths skills, 12 subjects; validated acyclic at load
 backup.js               152   the record as one JSON file: dump, parse, restore, download
 errors.js               116   the ring of the last fifty errors, and the toast that shows them
 escape.js                39   `esc()` for the one place text reaches innerHTML
@@ -143,6 +143,12 @@ a language — an IIFE, so it runs before anything else. With seven others and f
 piano at the end; the guard does not forbid them because perfect alternation is impossible while
 spelling stays first. `BY_GAME` maps page name → subject. `GAME_PAGES` (102) is the manifest the
 table is checked against in both directions plus a claim count; `checkManifest()` (120) throws.
+
+`checkPrerequisites()` (109) throws if any subject in the plan has no node in `skills.js`, and if
+any graph edge puts a prerequisite after its dependant. The first half is the direction the edge
+loop cannot see: it skips edges naming subjects outside the plan, so a graph with eleven nodes and
+a plan with twelve threw nothing. Savanna Run shipped into exactly that hole and was caught only
+when the probe was written for it. A graph node the plan does not run is still allowed.
 
 | Function | Line | Does |
 |---|---|---|

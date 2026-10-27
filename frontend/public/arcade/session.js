@@ -86,6 +86,65 @@
     }
   })();
 
+  /* The subject order must also satisfy the skill graph.
+   *
+   * `skills.js` says physics needs maths, chemistry needs maths, calligraphy
+   * needs Mandarin and the machine shelf needs physics. The order above
+   * satisfies all four *today*, and nothing enforces that -- so a subject
+   * moved for a reason about alternation could silently put the machine shelf
+   * before the physics that explains it, and the plan would read fine.
+   *
+   * This is a guard, not a reordering. Reordering the plan by the graph would
+   * be a no-op on the current list -- checked before writing this: all four
+   * edges already hold -- and a no-op that renders identically is
+   * indistinguishable from a feature that works. So the honest thing is to
+   * assert the property the order has and let a future edit break it loudly.
+   *
+   * `skills.js` is optional: an old cached page, or a drill page that loads
+   * session.js without the graph, must still open. The check runs only when
+   * the graph is there.
+   *
+   * Advisory in the same sense as everything else here: it throws at load on
+   * a bad order, which is a build error, not a child's mistake. */
+  (function checkPrerequisites() {
+    const K = window.ArcadeSkills;
+    if (!K || !K.edges) return;
+    const pos = {};
+    SUBJECTS.forEach((s, i) => { pos[s.id] = i; });
+
+    /* Every subject the plan runs must be a node in the graph.
+     *
+     * This is the direction the edge loop below cannot see, and it is the one
+     * that actually happened. Savanna Run was added to `SUBJECTS` and not to
+     * `SUBJECT_SKILLS`, and every check stayed green: the edge loop skips any
+     * edge naming a subject outside the plan, so a graph with eleven nodes and
+     * a plan with twelve threw nothing, ordered nothing and read as working.
+     *
+     * The asymmetry is deliberate. A graph node the plan does not run is
+     * legitimate -- `skills.js` may describe a subject before the plan adopts
+     * it -- and is skipped. A plan subject with no node is not: it is a subject
+     * about which the graph has no opinion, which is indistinguishable from a
+     * subject with no prerequisites. */
+    const known = {};
+    Object.keys(K.graph('subjects')).forEach(id => { known[id] = true; });
+    for (const s of SUBJECTS) {
+      if (!known[s.id]) {
+        throw new Error('session: ' + s.name + ' is in the plan but not in the skill graph');
+      }
+    }
+
+    for (const [p, c] of K.edges('subjects')) {
+      // An edge naming a subject that is not in the plan is the graph's
+      // business, not this check's: `skills.js` may describe subjects the
+      // plan does not run yet.
+      if (!(p in pos) || !(c in pos)) continue;
+      if (!(pos[p] < pos[c])) {
+        throw new Error('session: ' + c + ' comes before ' + p +
+          ', but the skill graph says ' + p + ' comes first');
+      }
+    }
+  })();
+
   const BY_GAME = {};
   SUBJECTS.forEach(s => s.games.forEach(g => { BY_GAME[g] = s; }));
 

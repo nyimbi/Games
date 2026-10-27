@@ -23,14 +23,16 @@
   bounded by `prefers-reduced-motion`. The figures in `figures/` are the sanctioned exception:
   third-party pages with their own palette, framed rather than restyled. Full rationale with the
   reason for every token in [docs/design.md](docs/design.md) — read it before restyling anything.
-- [Session alternation](session.js): the 11 subjects are 5 languages (`kind:'lang'`: spelling,
-  french, chinese, swahili, calligraphy) + 6 others (`kind:'other'`: maths, physics, chemistry,
-  typing, piano, howthingswork). The order alternates for as long as the counts allow, and there
-  is a load-time `checkOrder()` that throws if two `lang` subjects end up adjacent or if the plan
-  does not open on a language. Six others against five languages makes strict alternation
-  impossible while spelling stays first, so exactly one `other`-`other` pair is expected, at the
-  end (piano, howthingswork). Adding a subject means adding a `kind` and re-slotting; the guard
-  will catch a wrong slot but not a missing one.
+- [Session alternation](session.js): the 12 subjects are 5 languages (`kind:'lang'`: spelling,
+  french, chinese, swahili, calligraphy) + 7 others (`kind:'other'`: maths, savanna, physics,
+  chemistry, typing, piano, howthingswork). The order alternates for as long as the counts allow,
+  and there is a load-time `checkOrder()` that throws if two `lang` subjects end up adjacent or if
+  the plan does not open on a language. Seven others against five languages makes strict
+  alternation impossible while spelling stays first, so two `other`-`other` pairs are expected:
+  maths/savanna at the top and piano/howthingswork at the end. Adding a subject means adding a
+  `kind`, a graph node and a re-slot — `checkOrder()` catches a wrong slot, and
+  `checkPrerequisites()` catches a subject with no node in `skills.js`, which is what it did not
+  do when Savanna Run was first added.
 - [Decks are 50, and the size is per family](number-bonds.html): maths drills and the spelling bee
   declare `const TOTAL = 50`; languages (`lang-engine.js`, `cfg.total`) are 30; sciences
   (`science-engine.js`, `cfg.total`) are 20; calligraphy 20. The deck is the unit of completion.

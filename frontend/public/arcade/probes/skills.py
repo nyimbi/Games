@@ -1,6 +1,6 @@
 """The skill graph is data, it is acyclic, and the arena reads it.
 
-The arcade teaches eleven subjects and encoded no prerequisite between any two
+The arcade teaches twelve subjects and encoded no prerequisite between any two
 of them. Every partial order it had was a flat field -- `tier` in four banks,
 `rank` in calligraphy -- and nothing read one as an order. The arena's fifteen
 `SKILLS` were a map with no edges, and its default set was six ids typed by
@@ -26,6 +26,11 @@ hand.
      skill. F-12 is advisory: no skill is disabled, and the count is unchanged.
   7. The arena renders an advisory line, and it names a prerequisite when the
      weakest enabled skill has one weaker than itself.
+  8. The subject graph names exactly the subjects the plan teaches, and every
+     prerequisite sits earlier in the plan than its dependant. The two files
+     are edited separately and nothing else compares them: Savanna Run was
+     added to the plan and not to the graph, and every other claim here passed
+     against an eleven-node graph about an arcade with twelve subjects.
 
 Run:  python3 -I probes/skills.py
 """
@@ -199,8 +204,56 @@ def run(pw):
     if canary['real'] != 'ok':
         fails.append(f'a real graph failed validation: {canary["real"]}')
 
-    # --- 6 + 7. the arena reads it ---------------------------------------
-    pg.evaluate("() => localStorage.clear()")
+    # --- 8. the graph and the plan name the same subjects -----------------
+    # The subject graph is keyed by the same ids `session.js` uses, and the two
+    # files are edited separately. Savanna Run was added to the plan and not to
+    # the graph, and nothing noticed: `order('subjects')` still returned eleven
+    # valid nodes and every other claim here passed. A graph missing a subject
+    # is not a wrong graph, it is a graph about a different arcade.
+    #
+    # Both directions, and the order too. `SUBJECTS` is hand-ordered for the
+    # language alternation; the graph is a separate claim about prerequisites.
+    # They can disagree -- a prerequisite declared after its dependant -- and
+    # nothing would throw, because `checkOrder()` knows nothing about the graph.
+    pg.goto((ARCADE / 'infinite-arena.html').as_uri())
+    pg.wait_for_timeout(250)
+    # A graph that disagrees with the plan now throws inside `session.js` at
+    # load, so `ArcadeSession` is undefined and a bare `evaluate` dies with a
+    # Playwright traceback instead of a finding. That traceback is a
+    # construction error, and a canary that fails that way has tested nothing
+    # -- so the throw is caught and reported as the failure it is.
+    if not pg.evaluate("() => !!(window.ArcadeSkills && window.ArcadeSession)"):
+        graph_errs = [e for e in exc if 'skill graph' in e or 'session:' in e]
+        fails.append('the page did not load with both modules: '
+                     + (graph_errs[0] if graph_errs else f'page errors {exc[:2]}'))
+        pg.close(); b.close(); return fails
+    cover = pg.evaluate("""() => {
+        const S = window.ArcadeSkills, SUBJ = window.ArcadeSession.SUBJECTS;
+        const g = S.graph('subjects');
+        const ids = Object.keys(g);
+        const planIds = SUBJ.map(s => s.id);
+        const pos = {}; planIds.forEach((k, i) => pos[k] = i);
+        return {
+            missing: planIds.filter(x => ids.indexOf(x) < 0),
+            extra: ids.filter(x => planIds.indexOf(x) < 0),
+            // Every prerequisite must sit earlier in the plan than its dependant.
+            outOfOrder: S.edges('subjects')
+                .filter(([p, c]) => !(pos[p] < pos[c]))
+                .map(([p, c]) => p + ' -> ' + c),
+            nodes: ids.length, subjects: planIds.length
+        };
+    }""")
+    print(f'== subjects: graph {cover["nodes"]} nodes, plan {cover["subjects"]} subjects, '
+          f'missing {cover["missing"]}, extra {cover["extra"]}, '
+          f'out of order {cover["outOfOrder"]}')
+    if cover['missing']:
+        fails.append(f'the subject graph omits {cover["missing"]}, which the plan teaches')
+    if cover['extra']:
+        fails.append(f'the subject graph names {cover["extra"]}, which the plan does not teach')
+    if cover['outOfOrder']:
+        fails.append(f'the plan puts a dependant before its prerequisite: {cover["outOfOrder"]}')
+
+    # --- 6 + 7. the arena reads it ---------------------------------------    pg.evaluate("() => localStorage.clear()")
     pg.goto((ARCADE / 'infinite-arena.html').as_uri())
     pg.wait_for_timeout(250)
 

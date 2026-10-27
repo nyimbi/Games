@@ -1,6 +1,6 @@
-/* One skill graph across the eleven subjects.
+/* One skill graph across the twelve subjects.
  *
- * The arcade teaches eleven subjects and encoded no prerequisite between any
+ * The arcade teaches twelve subjects and encoded no prerequisite between any
  * two of them. Every partial order it did have was stored as a flat field --
  * `calligraphy-bank.js` has `tier` and `rank`, the spelling bank has `tier`,
  * French has `tier` and `family` -- and nothing read any of them as an order.
@@ -13,7 +13,7 @@
  * *read*: given what a child can already do, which skill is next, and which
  * skills does this one need first.
  *
- * Two graphs, one shape. The arena's fifteen maths skills are one; the eleven
+ * Two graphs, one shape. The arena's fifteen maths skills are one; the twelve
  * subjects are the other. They are different sizes and the same code reads
  * both, because the question -- "what does this need before it makes sense" --
  * is the same question.
@@ -68,6 +68,7 @@
   const SUBJECT_SKILLS = {
     spelling:      { label: 'Spelling',       needs: [] },
     maths:         { label: 'Maths',          needs: [] },
+    savanna:       { label: 'Savanna Run',    needs: ['maths'] },
     french:        { label: 'French',         needs: [] },
     physics:       { label: 'Physics',        needs: ['maths'] },
     chinese:       { label: 'Mandarin',       needs: [] },
