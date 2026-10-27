@@ -738,9 +738,34 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
      the next drill's omission an error instead of a silent wrong deck. */
   const keyOf = f => `${f.a}|${f.b}`;
 
+  /* A fact missed in addition is the same fact here, and vice versa. See
+     addition-quest.html for the argument; the two are a pair. */
+  const CROSS = [{ key: 'arcade.addition.v3', game: 'addition-quest', op: 'add' }];
+  const cross = level => MG.crossDue({
+    op: 'sub', stores: CROSS, review: state.review, now: null,
+    fits: (a, b) => {
+      // `a` is the sum and `b` the known part; the difference must be >= 0 and
+      // inside the level's range, which is what this drill's own pool holds.
+      const d = a - b;
+      if (d < 0) return false;
+      if (level === 'bond') return a <= 12;
+      if (level === '1') return a <= 9;
+      if (level === '2') return a >= 11 && a <= 99;
+      return a >= 100;
+    },
+    ownFamily: fam => Object.keys(state.review)
+      .some(k => { const [, a, b] = k.split('|'); return window.ArcadeDeck.familyKey('sub', +a, +b) === fam; })
+  });
+
   function buildQueue(level) {
     const out = reviewFacts(level).slice(0, 2)
       .map(f => ({ a: f.a, b: f.b, diff: f.a - f.b, level, review: true }));
+    // The sibling is `sum − known`; `crossDue` gives it as (sum, known).
+    for (const c of cross(level)) {
+      if (out.some(o => o.a === c.x && o.b === c.y)) continue;
+      if (out.length >= 2 + MG.CROSS_LIMIT) break;
+      out.push({ a: c.x, b: c.y, diff: c.x - c.y, level, review: true, cross: c.from });
+    }
     let pool = freshFirst(shuffle(poolFor(level)), state.seen, level, keyOf);
     let i = 0, pass = 0;
     while (out.length < TOTAL) {

@@ -553,10 +553,105 @@
     return topic;
   }
 
+  /* ---------- the family index ----------
+   *
+   * A miss in addition must reach subtraction's queue. `familyKey` says which
+   * facts are the same fact; this reads the other stores and hands back the
+   * ones that are due here.
+   *
+   * Three constraints shape it:
+   *
+   *   - It reads the other drills' records with `{ version: 0, stash: false }`.
+   *     A drill that cannot know another drill's schema version must not
+   *     enforce one, and an observer must not churn the corrupt stash it is
+   *     only looking at. That is the same reasoning the hub uses.
+   *   - It never writes the other store. The miss stays where it happened;
+   *     this is a reader, and a cross-drill write would make two pages the
+   *     owners of one record.
+   *   - A sibling is filtered by `fits`, the drill's own level membership.
+   *     `15 − 8` is a level-2 fact here and a level-1 fact nowhere; serving a
+   *     cross-drill fact from a level the child is not in is the bug D-2
+   *     already found once, in the same queue.
+   *
+   * `limit` caps what is merged into the head of a deck. Two is what the
+   * drills already reserve for review, and it is deliberately small: a deck is
+   * fifty questions and a child who missed one fact in another drill should
+   * meet it, not be handed a remedial set.
+   */
+  const CROSS_LIMIT = 2;
+
+  function crossDue(cfg) {
+    if (!cfg || !cfg.stores || !cfg.stores.length || !cfg.op) return [];
+    const limit = typeof cfg.limit === 'number' ? cfg.limit : CROSS_LIMIT;
+    const out = [];
+    const seenFamilies = new Set();
+
+    for (const store of cfg.stores) {
+      if (!store || !store.key || !store.game || !store.op) continue;
+      const res = window.ArcadeRecord.load(store.key, { version: 0, stash: false });
+      const rec = (res && res.data) || {};
+      const review = rec.review || {};
+      for (const [k, r] of Object.entries(review)) {
+        if (!window.ArcadeDeck.isDue(r, cfg.now)) continue;
+        // The other drill's key parsed into the two numbers its own classifier
+        // uses. `crossKeys` is per game because each key has a different
+        // shape; an unparseable key is skipped rather than guessed at.
+        const pair = crossKeys(store.game, k);
+        if (!pair) continue;
+        const fam = window.ArcadeDeck.familyKey(store.op, pair.x, pair.y);
+        if (!fam || seenFamilies.has(fam)) continue;
+        // What this drill already has its own entry for is not a discovery.
+        // The drill supplies this, because only it knows its own key shape --
+        // a review key is `level|a|b` or `a|b`, never a family key, so
+        // comparing the two here would be a check that never fires.
+        if (cfg.ownFamily && cfg.ownFamily(fam)) continue;
+        const sibs = window.ArcadeDeck.familySiblings(store.op, pair.x, pair.y)
+          .filter(s => s.op === cfg.op);
+        let took = false;
+        for (const s of sibs) {
+          if (cfg.fits && !cfg.fits(s.x, s.y)) continue;
+          out.push({ x: s.x, y: s.y, q: s.q, a: s.a, miss: r.miss || 0,
+                     from: store.game, family: fam });
+          took = true;
+          break;
+        }
+        if (took) seenFamilies.add(fam);
+      }
+    }
+
+    out.sort((p, q) => q.miss - p.miss);
+    return out.slice(0, limit);
+  }
+
+  /* The two numbers a drill's own review key carries, in the order that
+     drill's `familyKey` call expects. Each entry mirrors the `parseFact`
+     branch for the same game; a key that does not split into the right
+     arity is null, not a guess. */
+  function crossKeys(game, key) {
+    const parts = String(key).split('|');
+    if (game === 'addition-quest') {
+      if (parts.length < 3) return null;
+      return { x: +parts[1], y: +parts[2] };
+    }
+    if (game === 'subtraction-safari') {
+      if (parts.length < 3) return null;
+      return { x: +parts[1], y: +parts[2] };
+    }
+    if (game === 'times-table-academy') {
+      if (parts.length < 2) return null;
+      return { x: +parts[0], y: +parts[1] };
+    }
+    if (game === 'division-diner') {
+      if (parts.length < 2) return null;
+      return { x: +parts[1], y: +parts[0] };   // dividend, divisor
+    }
+    return null;
+  }
+
   window.MathsGame = {
     $, rnd, shuffle, esc,
     freshFirst, markSeen, newCycle, SEEN_CAP, capReview, REVIEW_CAP, noteReview, REVIEW_PASSES,
-    STUCK_MISSES, stuckTopic, offer,
+    STUCK_MISSES, stuckTopic, offer, crossDue, CROSS_LIMIT,
     tone, goodSound, badSound, clickSound, burst, audio,
     init, open: () => open(null), close, lessonTopic: () => current
   };

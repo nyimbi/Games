@@ -810,6 +810,19 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   /* The bucket a set's freshness is tracked in: one table, or a whole mode. */
   const bucketKey = () => state.table ? 'table-' + state.table : state.mode;
 
+  /* A fact missed in division is the same fact here: 56 ÷ 7 asks 8 × 7. */
+  const CROSS = [{ key: 'arcade.division.v1', game: 'division-diner', op: 'div' }];
+  const cross = () => MG.crossDue({
+    op: 'mul', stores: CROSS, review: state.review, now: null,
+    fits: (a, b) => {
+      const hi = state.table ? 20 : (state.mode === '1-10' ? 10 : 20);
+      if (a > hi || b > hi) return false;
+      return !state.table || a === state.table || b === state.table;
+    },
+    ownFamily: fam => Object.keys(state.review)
+      .some(k => { const [a, b] = k.split('|').map(Number); return window.ArcadeDeck.familyKey('mul', a, b) === fam; })
+  });
+
   function buildQueue() {
     const hi = state.table ? 20 : (state.mode === '1-10' ? 10 : 20);
     const out = Object.entries(state.review)
@@ -824,6 +837,13 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
       .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)
       .map(([k]) => { const [a, b] = k.split('|').map(Number); return { a, b, prod: a * b }; });
+    // A cross-drill fact joins the head of the deck as an ordinary question.
+    // The miss stays in the division record; this drill only serves it.
+    for (const c of cross()) {
+      if (out.some(o => o.a === c.x && o.b === c.y)) continue;
+      if (out.length >= 2 + MG.CROSS_LIMIT) break;
+      out.push({ a: c.x, b: c.y, prod: c.x * c.y, cross: c.from });
+    }
     const key = bucketKey();
     const keyOf = f => `${f.a}|${f.b}`;
     let pool = freshFirst(factsFor(state.mode, state.table), state.seen, key, keyOf);

@@ -693,9 +693,35 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
      the next drill's omission an error instead of a silent wrong deck. */
   const keyOf = f => `${f.a}|${f.b}`;
 
+  /* A fact missed in subtraction is the same fact here. `crossDue` reads the
+     other drill's record without writing it and hands back the ones whose
+     addition form this level asks. Two, the same cap the drill already
+     reserves for its own review. */
+  const CROSS = [{ key: 'arcade.subtraction.v3', game: 'subtraction-safari', op: 'sub' }];
+  const cross = level => MG.crossDue({
+    op: 'add', stores: CROSS, review: state.review, now: null,
+    fits: (a, b) => {
+      if (level === 'bond') return a + b <= 12;
+      if (level === '1') return a <= 9 && b <= 9;
+      if (level === '2') return a >= 10 && b >= 10 && a <= 99 && b <= 99;
+      return true;
+    },
+    ownFamily: fam => Object.keys(state.review)
+      .some(k => { const [, a, b] = k.split('|'); return window.ArcadeDeck.familyKey('add', +a, +b) === fam; })
+  });
+
   function buildQueue(level) {
     const out = reviewFacts(level).slice(0, 2)
       .map(f => ({ a: f.a, b: f.b, sum: f.a + f.b, level, review: true }));
+    // A cross-drill fact joins the head of the deck as an ordinary question at
+    // this level: the child answers it here, and the miss stays where it was
+    // recorded. It is added after the drill's own review so the drill's own
+    // facts are never displaced by another page's.
+    for (const c of cross(level)) {
+      if (out.some(o => o.a === c.x && o.b === c.y)) continue;
+      if (out.length >= 2 + MG.CROSS_LIMIT) break;
+      out.push({ a: c.x, b: c.y, sum: c.x + c.y, level, review: true, cross: c.from });
+    }
     let pool = shuffle(poolFor(level));
     pool = freshFirst(pool, state.seen, level, keyOf);
     let i = 0, pass = 0;

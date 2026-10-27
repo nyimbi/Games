@@ -527,6 +527,21 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     return facts;
   }
 
+  /* A fact missed in times is the same fact here: 8 × 7 asks 56 ÷ 7. */
+  const CROSS = [{ key: 'arcade.times.v2', game: 'times-table-academy', op: 'mul' }];
+  const cross = () => MG.crossDue({
+    op: 'div', stores: CROSS, review: state.review, now: null,
+    fits: (a, b) => {
+      // `a` is the product, `b` the divisor; the quotient must be 1..20, which
+      // is what this drill's pool enumerates, and the divisor in this level.
+      const q = b === 0 ? 0 : a / b;
+      if (!Number.isInteger(q) || q < 1 || q > 20) return false;
+      return divisorsFor(state.level).includes(b);
+    },
+    ownFamily: fam => Object.keys(state.review)
+      .some(k => { const [d, n] = k.split('|').map(Number); return window.ArcadeDeck.familyKey('div', n, d) === fam; })
+  });
+
   function buildQueue() {
     const ds = divisorsFor(state.level);
     // Level first, then rank, then take two. Slicing before the level filter
@@ -538,6 +553,12 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
       .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)
       .map(([k]) => { const [d, n] = k.split('|').map(Number); return { dividend: n, divisor: d, quotient: n / d, review: true }; });
+    // The sibling is `product ÷ divisor`; `crossDue` gives it as (product, divisor).
+    for (const c of cross()) {
+      if (out.some(o => o.dividend === c.x && o.divisor === c.y)) continue;
+      if (out.length >= 2 + MG.CROSS_LIMIT) break;
+      out.push({ dividend: c.x, divisor: c.y, quotient: c.x / c.y, review: true, cross: c.from });
+    }
     const keyOf = f => `${f.divisor}|${f.dividend}`;
     let pool = freshFirst(shuffle(poolFor(state.level)), state.seen, state.level, keyOf);
     let i = 0, pass = 0;

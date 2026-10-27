@@ -109,7 +109,7 @@ Seven nodes. F-13 is the feature `README.md:783-788` asks for by name. Everythin
 2. A record written by the previous schema loads without throwing and is reported as migrated, not silently defaulted.
 3. The hub's stars change when a child's accuracy drops — i.e. the estimate decays. **Canary:** seed a high `perLevel`, set `savedAt` 14 days back, assert the reported mastery is lower.
 
-**Status: complete.** Gate 2 closed 2026-10-27; all seventeen probes pass.
+**Status: complete.** Gate 2 closed 2026-10-27; all twenty probes pass.
 
 | Item | Landed | Probe |
 |---|---|---|
@@ -140,6 +140,19 @@ Three things Phase 2 changed that the plan did not anticipate:
 | F-13 stuck detector → lesson | F-1, F-2 |
 | F-14 example from the child's mistake | F-13 |
 | F-18 knows-it vs can-do-it | F-4 |
+
+**Landed so far.**
+
+| Item | Landed | Probe |
+|---|---|---|
+| F-13 stuck detector | `maths-engine.js:530-575` — `STUCK_MISSES`, `TOPIC_OF`, `stuckTopic`; `offer` sets the label and the default topic | `stuck.py` |
+| F-17 fact families | `deck.js:349-389` — `familyOf`, `familyKey`, `familySiblings`; `maths-engine.js:583-624` — `crossDue`, `crossKeys` | `family.py`, `cross.py` |
+
+Three things F-17 changed that the plan did not anticipate:
+
+- **`familyKey` must recover the family, not name the operands.** The first version returned `add:8,15` for `familyKey('sub', 15, 8)` — the minuend and subtrahend. No addition drill ever writes that pair, so the merge would have silently never fired and read exactly like working. The subtraction family is `(a − b, b)`; division is `(a ÷ b, b)`.
+- **The merge reads, never writes.** `crossDue` takes `{ version: 0, stash: false }` on the other store, like the hub. A cross-drill write would make two pages the owners of one record, and the first one cleared would overwrite the other's miss. `cross.py` hooks `Storage.prototype.setItem` to assert zero writes: byte equality cannot see a write that re-serialises to the same text.
+- **`ownFamily` is supplied by the page, because the review key is not a family key.** A review key is `level|a|b` or `a|b`; a family key is `add:7,8`. An `own[key]` lookup inside `crossDue` was a check that could never fire — dead code wearing a guard's clothes. It was removed rather than left to read as protection.
 
 **F-20 is deliberately deferred.** A plan that is a subset of eleven subjects touches `checkOrder()`'s invariant (`session.js:70-81`), which is the one place the codebase throws rather than degrades. Changing the membership while preserving "opens on a language, no two languages adjacent" is possible but needs its own argument. It is not in this phase.
 
