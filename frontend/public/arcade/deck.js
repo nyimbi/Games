@@ -272,9 +272,125 @@
     return decayed(best, savedAt, now);
   }
 
+  /* ---------- fact families ----------
+   *
+   * `7 + 8`, `8 + 7`, `15 − 8` and `15 − 7` are one fact. `8 × 7`, `7 × 8`,
+   * `56 ÷ 7` and `56 ÷ 8` are another. The arcade keeps four unrelated
+   * stores -- `arcade.addition.v3`, `subtraction.v3`, `times.v2`,
+   * `division.v1` -- and a miss in one teaches the others nothing, which is
+   * the opposite of what "number facts" means as a skill.
+   *
+   * The family is the unordered pair of operands, under an operation that
+   * says which two facts are the pair. Addition and subtraction share a
+   * family (`+` and `−` are inverses over the same three numbers); so do
+   * times and division. Addition and times do NOT: `2 + 3` and `2 × 3` are
+   * different facts about the same numbers, and merging them would make a
+   * child who can add 2 and 3 look like one who can multiply them.
+   *
+   *   familyKey('add', 7, 8)  -> 'add:7,8'
+   *   familyKey('add', 8, 7)  -> 'add:7,8'      (commutative)
+   *   familyKey('sub', 15, 8) -> 'add:7,8'      (15 − 8 asks 7 + 8)
+   *   familyKey('mul', 7, 8)  -> 'mul:7,8'
+   *   familyKey('div', 56, 7) -> 'mul:7,8'      (56 ÷ 7 asks 7 × 8)
+   *
+   * Ordering the pair is what makes the key canonical. Without it a fact
+   * answered as `8 + 7` and missed as `7 + 8` is two families, which is the
+   * bug D-9 found in the freshness buckets, in a new place.
+   */
+  const FAMILY_OF_OP = { add: 'add', sub: 'add', mul: 'mul', div: 'mul' };
+
+  function familyOf(op) {
+    return FAMILY_OF_OP[op] || null;
+  }
+
+  /* The family a fact belongs to, from its operation and its two operands.
+   *
+   * The operands are the two numbers the question shows, in the order it
+   * shows them: `15 − 8` passes `(15, 8)` and `56 ÷ 7` passes `(56, 7)`.
+   * Neither pair is the family. `15 − 8` tests the fact "8 and 7 make 15",
+   * so its family is `{7, 8}` -- the *difference* and the subtrahend. `56 ÷ 7`
+   * tests "7 eights make 56", so its family is `{8, 7}` -- the *quotient* and
+   * the divisor. Both are recovered here rather than demanded of the caller,
+   * because a caller that had to know this would be a second place the
+   * convention lives, and the first version of this function got it wrong by
+   * returning `add:8,15` for `15 − 8` -- a family no addition drill ever
+   * writes, so the merge would silently never happen.
+   *
+   * A subtraction or division that does not come out whole has no family:
+   * the pools only ask whole ones, so a fractional call is a caller error and
+   * `null` says so rather than keying a family no drill can match. */
+  function familyKey(op, x, y) {
+    const fam = familyOf(op);
+    if (!fam) return null;
+    const a = Number(x), b = Number(y);
+    if (!isFinite(a) || !isFinite(b)) return null;
+    let p, q;
+    if (op === 'add') { p = a; q = b; }
+    else if (op === 'sub') { p = a - b; q = b; }
+    else if (op === 'mul') { p = a; q = b; }
+    else { if (b === 0 || a % b !== 0) return null; p = a / b; q = b; }
+    if (p < 0) return null;
+    const lo = Math.min(p, q), hi = Math.max(p, q);
+    return fam + ':' + lo + ',' + hi;
+  }
+
+  /* The other representations of a family, given the operation in hand.
+   *
+   * `familySiblings('add', 7, 8)` -> the four facts that test `{7, 8}`:
+   * `7 + 8`, `8 + 7`, `15 − 8`, `15 − 7`. A caller uses this to ask "what
+   * does the record say about this fact, in any drill". The arithmetic is
+   * exact and integer, so nothing here rounds.
+   *
+   * A subtraction or division that does not come out whole is not a fact
+   * this arcade asks: the pools are generated from whole answers, so a
+   * fractional sibling is a caller error rather than a family member. It is
+   * omitted rather than clamped, and the caller sees a shorter list.
+   */
+  function familySiblings(op, x, y) {
+    const fam = familyOf(op);
+    const a = Number(x), b = Number(y);
+    if (!fam || !isFinite(a) || !isFinite(b)) return [];
+    // The same recovery `familyKey` does: the pair is not the operands for a
+    // subtraction or a division. Keeping the two functions in step is the
+    // whole reason they are adjacent.
+    let p, q;
+    if (op === 'add') { p = a; q = b; }
+    else if (op === 'sub') { p = a - b; q = b; }
+    else if (op === 'mul') { p = a; q = b; }
+    else { if (b === 0 || a % b !== 0) return []; p = a / b; q = b; }
+    if (p < 0) return [];
+    const lo = Math.min(p, q), hi = Math.max(p, q);
+    if (fam === 'add') {
+      const sum = lo + hi;
+      return [
+        { op: 'add', x: lo, y: hi, q: lo + ' + ' + hi, a: sum },
+        { op: 'add', x: hi, y: lo, q: hi + ' + ' + lo, a: sum },
+        { op: 'sub', x: sum, y: hi, q: sum + ' − ' + hi, a: lo },
+        { op: 'sub', x: sum, y: lo, q: sum + ' − ' + lo, a: hi },
+      ];
+    }
+    const prod = lo * hi;
+    // A square is one fact, not four: 6 × 6 and its reverse are the same
+    // question, and so are the two divisions. Emitting both would serve the
+    // same card twice in one deck, which the fill loop forbids within a pass
+    // and the caller would then have to dedupe itself.
+    const square = lo === hi;
+    const out = [{ op: 'mul', x: lo, y: hi, q: lo + ' × ' + hi, a: prod }];
+    if (!square) out.push({ op: 'mul', x: hi, y: lo, q: hi + ' × ' + lo, a: prod });
+    // A zero pair divides by nothing: 0 ÷ 0 has no answer and 0 ÷ 5 is a
+    // fact the pools never ask. Both are omitted rather than emitted as
+    // `NaN`, which would sort into a queue and be served.
+    if (lo > 0) {
+      out.push({ op: 'div', x: prod, y: lo, q: prod + ' ÷ ' + lo, a: hi });
+      if (!square) out.push({ op: 'div', x: prod, y: hi, q: prod + ' ÷ ' + hi, a: lo });
+    }
+    return out;
+  }
+
   window.ArcadeDeck = {
     freshFirst, markSeen, newCycle, shuffle, SEEN_CAP,
     LADDER, nextInterval, isDue, dueCount, noteAttempt, reviewFirst,
-    DECAY_PER_DAY, DECAY_DAYS_CAP, decayed, mastery
+    DECAY_PER_DAY, DECAY_DAYS_CAP, decayed, mastery,
+    familyOf, familyKey, familySiblings
   };
 })();
