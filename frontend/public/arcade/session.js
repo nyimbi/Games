@@ -196,11 +196,34 @@
   /* Mark a subject done for today. Returns what changed, so the caller can
      decide whether to say anything: a second deck in the same subject is not
      news. */
-  function mark(subjectId) {
+  /* Mark a subject done for today, with how it went.
+   *
+   * `result` is a percentage, or null when the page does not report one. The
+   * day record used to hold `done: {subjectId: timestamp}` and nothing else --
+   * it could answer "did I do maths today" and not "how did maths go today".
+   * A percentage is one number per subject per day, which the record already
+   * bounds at 120 days, and it is the difference between a strip that shows
+   * completeness and one that shows change.
+   *
+   * `best` is kept alongside so the day keeps the better of two attempts: a
+   * child who plays the same subject twice should not be recorded as their
+   * worse run, and the strip is a report, not a penalty. */
+  function mark(subjectId, result) {
     const s = read();
     const k = dayKey();
     const day = s.days[k] || (s.days[k] = { done: {} });
-    if (day.done[subjectId]) return { changed: false, done: Object.keys(day.done).length, total: SUBJECTS.length };
+    const pct = typeof result === 'number' && isFinite(result) && result >= 0 && result <= 100
+      ? Math.round(result) : null;
+    const prev = day.best && day.best[subjectId];
+    if (pct != null && (prev == null || pct > prev)) {
+      (day.best || (day.best = {}))[subjectId] = pct;
+    }
+    if (day.done[subjectId]) {
+      // Already counted today, but a better score is still news to the record
+      // (not to the child -- `changed` stays false so nothing is announced).
+      if (pct != null) write(s);
+      return { changed: false, done: Object.keys(day.done).length, total: SUBJECTS.length };
+    }
     day.done[subjectId] = Date.now();
     write(s);
     return { changed: true, done: Object.keys(day.done).length, total: SUBJECTS.length };
@@ -238,17 +261,52 @@
       d.setDate(d.getDate() - i);
       const key = dayKey(d);
       const day = s.days[key];
+      const scored = day && day.best ? SUBJECTS.filter(x => typeof day.best[x.id] === 'number') : [];
       out.push({
         key,
         done: day ? SUBJECTS.filter(x => day.done[x.id]).length : 0,
         total: SUBJECTS.length,
-        complete: isComplete(s, key)
+        complete: isComplete(s, key),
+        // The day's mean of what was actually scored, or null when nothing
+        // reported a percentage. Not zero: a day of unscored games is not a
+        // day of zeroes, and the strip must be able to tell them apart.
+        acc: scored.length
+          ? Math.round(scored.reduce((n, x) => n + day.best[x.id], 0) / scored.length)
+          : null
       });
     }
     return out;
   }
 
   /* ---------- completion detection ---------- */
+
+  /* How the deck went, as a percentage, or null.
+   *
+   * Every game shows a score on its summary screen, and they agree on the
+   * words even though they disagree on the markup: "7 of 10", "90%", "7 / 10".
+   * Reading the text rather than adding an id to twelve pages means a page
+   * that changes its summary cannot silently stop reporting -- it reports
+   * null, which is visibly absent rather than quietly zero.
+   *
+   * The element is found by a list of the ids the games actually use, not by
+   * scanning the whole body: a percentage anywhere on the page (a level
+   * indicator, a progress bar) would otherwise be read as the result. */
+  const RESULT_IDS = ['rPct', 'doneText', 'qPct', 'pPct', 'dPct', 'tPct'];
+
+  function resultPct() {
+    for (const id of RESULT_IDS) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const txt = el.textContent || '';
+      // "90%" wins over "9 of 10" when both appear, because it is the number
+      // the game already computed rather than one we would recompute.
+      const pct = /(\d{1,3})\s*%/.exec(txt);
+      if (pct) return Math.min(100, +pct[1]);
+      const frac = /(\d+)\s*(?:of|\/)\s*(\d+)/.exec(txt);
+      if (frac && +frac[2] > 0) return Math.min(100, Math.round(+frac[1] / +frac[2] * 100));
+    }
+    return null;
+  }
 
   const FILE = (location.pathname.split('/').pop() || '').replace(/\.html$/, '');
   const HERE = BY_GAME[FILE];
@@ -339,7 +397,7 @@
     if (fired || !armed || !HERE) return;
     if (!isFinished()) return;
     fired = true;
-    const res = mark(HERE.id);
+    const res = mark(HERE.id, resultPct());
     if (res.changed) announce(res);
   }
 
@@ -355,7 +413,7 @@
   }
 
   window.ArcadeSession = {
-    SUBJECTS, plan, progress, mark, streak, history, dayKey, isFinished,
+    SUBJECTS, plan, progress, mark, streak, history, dayKey, isFinished, resultPct,
     get here() { return HERE || null; }
   };
 
