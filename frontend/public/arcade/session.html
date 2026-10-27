@@ -136,6 +136,8 @@ button.reset{
   font:inherit;font-size:.8rem;font-weight:800;color:var(--muted);cursor:pointer
 }
 button.reset:hover{border-color:var(--ink);color:var(--ink)}
+.row2{display:flex;gap:9px;flex-wrap:wrap}
+.row2 button.reset{margin-top:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (max-width:520px){
   .shell{padding:18px 14px 54px}
@@ -148,6 +150,7 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
   <script src="./escape.js"></script>
   <script src="./deck.js"></script>
   <script src="./record.js"></script>
+  <script src="./backup.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -184,6 +187,18 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
       <span><i style="background:#fff"></i>Nothing</span>
     </div>
     <button class="reset" type="button" id="resetBtn">Clear the record</button>
+  </section>
+
+  <section class="hist">
+    <h2>Keep a copy</h2>
+    <p class="sub">Saves every game's progress as one file you can keep. Load it back on
+      this machine, or on another one, if the record is ever lost.</p>
+    <div class="row2">
+      <button class="reset" type="button" id="exportBtn">Save a copy</button>
+      <button class="reset" type="button" id="importBtn">Load a copy</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+    <p class="note" id="backupNote" hidden></p>
   </section>
 
   <section class="hist">
@@ -342,6 +357,66 @@ button.reset:hover{border-color:var(--ink);color:var(--ink)}
     b.setAttribute('aria-expanded', String(open));
     b.textContent = open ? 'Hide errors' : 'Show errors';
     if (open) renderErrors();
+  });
+
+  /* ---------- keep a copy ----------
+   *
+   * Nothing here talks to a network. The file comes from a Blob and goes back
+   * through a file input, which is the only backup an offline page can offer.
+   *
+   * The import merges by default. Replacing is a second tap, because the
+   * child who taps the wrong file should not lose this afternoon's work to a
+   * backup from March, and a two-step button is the whole confirmation
+   * mechanism on this page already. */
+  function say(text, bad) {
+    const n = $('backupNote');
+    n.textContent = text;
+    n.hidden = false;
+    n.style.color = bad ? '#a3271f' : 'var(--muted)';
+  }
+
+  $('exportBtn').addEventListener('click', () => {
+    const B = window.ArcadeBackup;
+    if (!B) { say('The backup module did not load.', true); return; }
+    const r = B.download(null, Date.now());
+    if (r.error) { say('Could not save a copy: ' + r.error, true); return; }
+    const n = Object.keys(B.dump().data).length;
+    say(`Saved ${n} game record${n === 1 ? '' : 's'} to ${r.name}.`);
+  });
+
+  $('importBtn').addEventListener('click', () => $('importFile').click());
+
+  $('importFile').addEventListener('change', async (ev) => {
+    const B = window.ArcadeBackup;
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = '';       // so the same file can be chosen twice
+    if (!file || !B) return;
+
+    let text;
+    try { text = await file.text(); }
+    catch (e) { say('Could not read that file: ' + (e && e.message), true); return; }
+
+    const parsed = B.parse(text);
+    if (!parsed.ok) { say('That is not an arcade backup — ' + parsed.reason + '.', true); return; }
+
+    const b = $('importBtn');
+    const replace = b.dataset.armed === '1';
+    if (!replace) {
+      b.dataset.armed = '1';
+      b.textContent = `Tap again to replace`;
+      say(`This file holds ${Object.keys(parsed.data).length} record` +
+          `${Object.keys(parsed.data).length === 1 ? '' : 's'}. ` +
+          `Tap again to replace what is here, or open a game to merge.`);
+      setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Load a copy'; }, 6000);
+      return;
+    }
+
+    const r = B.restore(parsed, { replace: true });
+    b.dataset.armed = '';
+    b.textContent = 'Load a copy';
+    if (r.error) { say('Could not load the copy: ' + r.error, true); return; }
+    say(`Loaded ${r.written} record${r.written === 1 ? '' : 's'}. Reloading…`);
+    setTimeout(() => location.reload(), 900);
   });
 
   $('resetBtn').addEventListener('click', () => {
