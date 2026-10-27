@@ -110,6 +110,7 @@ h1 span{color:var(--grape-d)}
 .track{height:16px;border:2.5px solid var(--ink);border-radius:999px;background:#f3ecda;overflow:hidden}
 .track>i{display:block;height:100%;width:0;border-radius:999px;transition:width .4s cubic-bezier(.22,1,.36,1)}
 .skill .pct{text-align:right;font-family:ui-monospace,Menlo,monospace;color:var(--muted);font-variant-numeric:tabular-nums}
+.skillhint{margin:10px 0 0;font-size:.85rem;font-weight:700;color:var(--muted);min-height:1.2em}
 .skill.hot .name{color:var(--ink);font-weight:900}
 .tier{display:inline-block;font-size:.72rem;font-weight:800;padding:3px 8px;
   border-radius:7px;margin-left:6px;vertical-align:1px;background:#efe8d6;color:var(--muted)}
@@ -159,6 +160,7 @@ h1 span{color:var(--grape-d)}
   <script src="./escape.js"></script>
   <script src="./deck.js"></script>
   <script src="./record.js"></script>
+  <script src="./skills.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -239,6 +241,7 @@ h1 span{color:var(--grape-d)}
       <span class="note" id="mapNote">Live from this run</span>
     </div>
     <div class="skillmap" id="skillmap"></div>
+    <p class="skillhint" id="skillHint"></p>
   </section>
 
   <!-- SUMMARY -->
@@ -359,7 +362,23 @@ h1 span{color:var(--grape-d)}
       const b = 2 + rnd(11), q = 2 + rnd(11); return { a: b * q, b, op, answer: q, hint: `${b} × ${q} = ${b * q}` };
     } }
   };
-  const SKILL_ORDER = Object.keys(SKILLS);
+  /* Toggles are listed in prerequisite order, so a skill never appears above
+     something it needs. The hand order in `SKILLS` happens to be nearly right
+     and nothing enforces that -- `mixed` sits last, but `div-mid` needs
+     `div-low` only because it was written that way. `topoOrder` derives it.
+     `O(V+E)` once. */
+  const SKILL_ORDER = (function () {
+    if (!window.ArcadeSkills) return Object.keys(SKILLS);
+    return window.ArcadeSkills.order('maths').filter(k => SKILLS[k]);
+  })();
+
+  /* Six skills to start with. This is a *default*, not a gate: every skill is
+     one checkbox away, and nothing here turns a drill off. The list is a
+     judgement about where a beginner starts, not a derivation, and the graph
+     is deliberately not asked to produce it -- the frontier at zero mastery is
+     two skills, and offering a child two of fifteen on their first visit would
+     be the punishment mechanic `README.md:778` forbids, arrived at by
+     algorithm. */
   const DEFAULT_ON = ['add-10', 'sub-10', 'add-1d', 'sub-1d', 'mul-low', 'div-low'];
 
   /* ================= STATE ================= */
@@ -691,6 +710,25 @@ h1 span{color:var(--grape-d)}
     $('mapNote').textContent = state.running
       ? `${state.count} answered · buffer ${state.recent.length}/200`
       : `${state.recent.length} facts remembered`;
+    /* An advisory line, not a lock. The weakest enabled skill is named, and if
+       the graph says something has to come before it and that thing is also
+       weak, the suggestion names the prerequisite instead. Every skill stays
+       switchable -- this is a sentence, and the only thing it can do is change
+       which one a child tries first. */
+    const hint = (function () {
+      if (state.running || !window.ArcadeSkills || !list.length) return '';
+      const score = k => state.skill[k].ema;
+      const weakest = list[0];
+      const need = window.ArcadeSkills.weakestNeed('maths', weakest, score);
+      const target = need && score(need) < score(weakest) ? need : weakest;
+      if (!target) return '';
+      const n = state.skill[target].n;
+      if (n === 0) return `Start with ${SKILLS[target].label} — it comes first.`;
+      if (score(target) >= .8) return 'Everything on is solid. Turn another one on.';
+      return `Try ${SKILLS[target].label} next — ${Math.round(score(target) * 100)}%.`;
+    })();
+    const note = $('skillHint');
+    if (note) note.textContent = hint;
     // refresh the setup toggles' percentages
     document.querySelectorAll('#skillToggles .toggle').forEach(lab => {
       const cb = lab.querySelector('input');

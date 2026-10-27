@@ -148,6 +148,17 @@ Three things Phase 2 changed that the plan did not anticipate:
 | F-13 stuck detector | `maths-engine.js:530-575` — `STUCK_MISSES`, `TOPIC_OF`, `stuckTopic`; `offer` sets the label and the default topic | `stuck.py` |
 | F-17 fact families | `deck.js:349-389` — `familyOf`, `familyKey`, `familySiblings`; `maths-engine.js:583-624` — `crossDue`, `crossKeys` | `family.py`, `cross.py` |
 | F-14 example from the mistake | `maths-engine.js` — `spaceOf`, `sameFact`, `distance`, `RENDER`, `exampleFor`; `offer` carries the record into the dialog | `example.py` |
+| F-11 skill graph | `skills.js` — `MATHS_SKILLS` (15), `SUBJECT_SKILLS` (11), validated acyclic at load; `order`, `ancestors`, `descendants`, `frontier`, `weakestNeed`, `edges`. The arena reads it for one advisory line (`#skillHint`) | `skills.py` |
+
+**F-11 nearly shipped as a gate.** The plan says the graph is "data, not logic", and the obvious use is to derive the arena's default skill set from the graph's frontier — replace the hand-written six with whatever has no unmet prerequisite. That is what I built first, and it produced two defaults where there had been six: `add-10` and `sub-10`, because every other skill needs one of them. A child opening the arena for the first time would have been offered two of fifteen skills. That is the punishment mechanic `README.md:778` forbids, reached by algorithm instead of by intent, and it would have read as a feature.
+
+The distinction that saves it: **a default is a judgement about where a beginner starts; a frontier is a computation about what is *permitted*.** Those are different questions and the second is not the first's answer. So `DEFAULT_ON` stays hand-written and the graph is read for a sentence — "Try Times · 1–5 next — 30%" — which can change what a child tries first and cannot remove anything. `skills.py` asserts zero disabled toggles.
+
+Three things F-11 changed that the plan did not anticipate:
+
+- **The sort has to be tested on an unsorted graph.** `MATHS_SKILLS` is written in prerequisite order, so `order('maths')` agrees with `Object.keys` and a probe comparing the two passes against a function that returns the keys unchanged. Canaried: replacing `topoOrder`'s body with `return Object.keys(g)` left the arena probe green. `topoOrder` now takes a graph object so the probe can hand it a reversed one, and that canary fails as it should.
+- **`frontier`'s `done` filter is the fail-open edge.** `needs.every(isDone)` is vacuously true for a root, so dropping `!isDone(id)` returns every root forever. Only the `done: () => true` predicate catches it — with `() => false` the two forms agree, and a probe testing one predicate would have shipped the bug.
+- **A gate can fail on a correct chain.** The first `topoOrder` test asserted the deepest node came last; `a` and `z` are both leaves and either may end the order. That assertion was a fact about the tie-break, not about the sort, and it failed on a correct implementation. Removed rather than loosened.
 
 **Gate 3 item 2 is withdrawn as written, and the reason matters.** It required "F-14's generated example contains no number the drill asks", citing `llms.txt:99`. That citation is wrong twice over.
 
