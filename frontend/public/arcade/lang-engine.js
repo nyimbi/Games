@@ -174,7 +174,8 @@
     }
 
     function noteFact(e, ok) {
-      window.ArcadeDeck.noteAttempt(state.review, cfg.keyOf(e), ok);
+      const ms = state.shownAt ? performance.now() - state.shownAt : null;
+      window.ArcadeDeck.noteAttempt(state.review, cfg.keyOf(e), ok, null, ms);
     }
 
     /* Same queue discipline as the maths drills: due reviews first, then
@@ -292,6 +293,7 @@
 
     /* ---------------- drill ---------------- */
     function renderQuestion(e) {
+      state.shownAt = performance.now();
       const spec = cfg.prompt(state.mode, e, BANK);
       $('dNum').textContent = state.index + 1;
       $('dTot').textContent = state.queue.length;

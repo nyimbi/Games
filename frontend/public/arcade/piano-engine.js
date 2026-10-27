@@ -456,7 +456,8 @@
     }
 
     function noteFact(q, ok) {
-      window.ArcadeDeck.noteAttempt(state.review, keyOf(q), ok);
+      const ms = state.shownAt ? performance.now() - state.shownAt : null;
+      window.ArcadeDeck.noteAttempt(state.review, keyOf(q), ok, null, ms);
     }
 
     function buildQueue(pool, name, total) {
@@ -511,6 +512,7 @@
         return;
       }
       state.answered = false;
+      state.shownAt = performance.now();
       $('qNum').textContent = state.index + 1;
       $('qTot').textContent = state.queue.length;
       $('qScore').textContent = state.right + ' right';

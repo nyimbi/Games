@@ -165,9 +165,60 @@ def run(pw):
     if got['missing']:
         fails.append('a missing entry was treated as due')
 
-    if exc:
-        fails.append(f'index.html: pageerror {exc[:2]}')
-    pg.close()
+    # --- 6b. latency is recorded, and it is relative ----------------------
+    got = pg.evaluate("""() => {
+        const D = window.ArcadeDeck;
+        const now = 1000000;
+        const r = {};
+        D.noteAttempt(r, 'a', true, now, 4000);
+        const first = { ms: r.a.ms, spd: r.a.spd, base: Math.round(r.a.base) };
+        D.noteAttempt(r, 'a', true, now, 2000);   // twice as fast as usual
+        const fast = { ms: r.a.ms, spd: r.a.spd };
+        D.noteAttempt(r, 'a', true, now, 8000);   // twice as slow
+        const slow = { ms: r.a.ms, spd: r.a.spd };
+        // no measurement at all must not corrupt the average
+        D.noteAttempt(r, 'b', true, now);
+        const unmeasured = r.b;
+        return { first, fast, slow, unmeasured };
+    }""")
+    print(f'== latency: first {got["first"]} then {got["fast"]} then {got["slow"]}')
+    if got['first']['ms'] != 4000 or got['first']['spd'] != 1:
+        fails.append(f'the first sample is not its own baseline: {got["first"]}')
+    if not got['fast']['spd'] < got['first']['spd']:
+        fails.append(f'a fast answer did not lower spd: {got["fast"]}')
+    if not got['slow']['spd'] > got['fast']['spd']:
+        fails.append(f'a slow answer did not raise spd: {got["slow"]}')
+    if 'ms' in got['unmeasured'] or 'spd' in got['unmeasured']:
+        fails.append(f'an unmeasured attempt wrote latency fields: {got["unmeasured"]}')
+
+    # A sub-perceptual sample must not poison the average.
+    #
+    # The sequence matters, and the first version of this fixture got it wrong
+    # in the way a canary is supposed to catch. A junk sample FIRST is masked
+    # by the `r.base > 0 ? r.base : ms` fallback -- there is no baseline to
+    # poison yet, so dropping the floor entirely still read spd 1.0 and the
+    # canary passed against broken code. The junk sample only does damage once
+    # a baseline exists, so the fixture establishes one first.
+    got = pg.evaluate("""() => {
+        const D = window.ArcadeDeck;
+        const r = {};
+        D.noteAttempt(r, 'z', true, 1000000, 3000);   // establish a baseline
+        const clean = r.z.spd;
+        D.noteAttempt(r, 'z', true, 1000000, 0);      // junk: a re-render, not a response
+        const afterJunk = r.z.spd;
+        D.noteAttempt(r, 'z', true, 1000000, 3000);   // a normal answer again
+        return { clean, afterJunk, after: r.z.spd, base: r.z.base, ms: r.z.ms,
+                 finite: isFinite(r.z.spd) && isFinite(r.z.base) };
+    }""")
+    print(f'== baseline spd={got["clean"]:.2f}, after junk spd={got["afterJunk"]:.2f}, '
+          f'after normal spd={got["after"]:.2f}, base={got["base"]:.0f}ms')
+    if not got['finite']:
+        fails.append(f'a zero-millisecond answer produced a non-finite average: {got}')
+    if abs(got['afterJunk'] - got['clean']) > 1e-9:
+        fails.append(f'a sub-perceptual sample moved spd from {got["clean"]:.2f} '
+                     f'to {got["afterJunk"]:.2f}; it should be dropped, not recorded')
+    if abs(got['after'] - 1) > 0.05:
+        fails.append(f'a normal answer after a junk sample read spd={got["after"]:.2f}, expected ~1.0')
 
     # --- 7. the live drills call it ---------------------------------------
     for game, cfg in DRILLS.items():
@@ -198,6 +249,11 @@ def run(pw):
             fails.append(f'{game}: the review entry has no nextAt -- still on the boolean: {rec["entry"]}')
         elif not rec.get('dueNow'):
             fails.append(f'{game}: a missed fact is not due now: {rec["entry"]}')
+        entry = rec.get('entry') or {}
+        if 'ms' not in entry or not isinstance(entry.get('ms'), int):
+            fails.append(f'{game}: the review entry has no latency: {entry}')
+        elif entry['ms'] <= 0:
+            fails.append(f'{game}: latency was recorded as {entry["ms"]}ms')
         if errs:
             fails.append(f'{game}: pageerror {errs[:1]}')
         q.close()

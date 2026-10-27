@@ -564,7 +564,10 @@ h1 span{color:var(--teal-d)}
 
   const factKey = q => `${q.whole}|${q.a}|${q.blank}`;
   function noteFact(q, right) {
-    noteReview(state.review, factKey(q), right);
+    // A re-render without an answer (a resize, a hint) must not leave the
+    // stamp unset; falling back to 0 would record a fifty-year latency.
+    const ms = state.shownAt ? performance.now() - state.shownAt : null;
+    noteReview(state.review, factKey(q), right, ms);
   }
 
   function wholesFor(mode) {
@@ -618,6 +621,10 @@ h1 span{color:var(--teal-d)}
     const q = state.queue[state.index];
     if (!q) return finish();
     state.answered = false; state.input = '';
+    // The clock starts when the question is on screen, not when the page
+    // loaded. Correct-and-slow and correct-and-fast are different states of
+    // knowledge, and the record could not tell them apart.
+    state.shownAt = performance.now();
     markSeen(state.seen, state.mode, `${q.whole}|${q.a}`); save();
     const { whole, a, b, blank } = q;
     const setNode = (circle, text, val, isBlank, dark) => {

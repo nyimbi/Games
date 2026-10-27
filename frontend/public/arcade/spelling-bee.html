@@ -626,6 +626,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     const w = state.queue[state.index];
     if (!w) return finish('drill');
     state.input = '';
+    state.shownAt = performance.now();
     $('dNum').textContent = state.index + 1;
     $('dTot').textContent = state.queue.length;
     $('dScore').textContent = state.right + ' right';
@@ -909,7 +910,8 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
 
   /* ---------------- review ---------------- */
   function noteFact(w, right) {
-    window.ArcadeDeck.noteAttempt(state.review, w.w, right);
+    const ms = state.shownAt ? performance.now() - state.shownAt : null;
+    window.ArcadeDeck.noteAttempt(state.review, w.w, right, null, ms);
   }
 
   /* ---------------- results ---------------- */

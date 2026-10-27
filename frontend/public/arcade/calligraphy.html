@@ -519,7 +519,8 @@ h1 span{color:var(--seal)}
 
   /* ---------------- flow ---------------- */
   function noteFact(e, ok) {
-    window.ArcadeDeck.noteAttempt(state.review, e.char, ok);
+    const ms = state.shownAt ? performance.now() - state.shownAt : null;
+    window.ArcadeDeck.noteAttempt(state.review, e.char, ok, null, ms);
   }
 
   function show(id) {
@@ -531,6 +532,7 @@ h1 span{color:var(--seal)}
     if (state.index >= state.queue.length) return finish();
     const e = state.queue[state.index];
     state.step = 0; state.drawn = []; state.answered = false;
+    state.shownAt = performance.now();
     // Trace shows the character under the hand for the whole run; order
     // shows it only after the last stroke.
     state.showGhost = !!state.traceMode;

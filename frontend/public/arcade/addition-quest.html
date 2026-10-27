@@ -659,7 +659,10 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   /* review queue: a fact missed comes back in the next set */
   const factKey = q => `${q.level}|${q.a}|${q.b}`;
   function noteFact(q, right) {
-    noteReview(state.review, factKey(q), right);
+    // A re-render without an answer (a resize, a hint) must not leave the
+    // stamp unset; falling back to 0 would record a fifty-year latency.
+    const ms = state.shownAt ? performance.now() - state.shownAt : null;
+    noteReview(state.review, factKey(q), right, ms);
   }
   function reviewFacts(level) {
     return Object.entries(state.review)
@@ -723,6 +726,10 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     const q = state.queue[state.index];
     if (!q) return finish();
     state.answered = false; state.input = '';
+    // The clock starts when the question is on screen, not when the page
+    // loaded. Correct-and-slow and correct-and-fast are different states of
+    // knowledge, and the record could not tell them apart.
+    state.shownAt = performance.now();
     markSeen(state.seen, q.level, `${q.a}|${q.b}`); save();
     const S = stacked(q.a, q.b);
     state.S = S;

@@ -152,15 +152,46 @@
    * moment the child missed something, which is both false and the opposite of
    * what a review count is for.
    *
+   * `ms` is how long the question was on screen before it was answered, when
+   * the caller measures it. Correct-and-slow and correct-and-fast are
+   * different states of knowledge and a boolean cannot tell them apart; the
+   * ratio to this fact's own typical time is kept as `spd`, an exponential
+   * average, because the absolute number depends on the child's age, the
+   * keyboard and the question, and comparing it to anything but itself is
+   * meaningless.
+   *
+   * `spd` is relative by construction: 1.0 means "as fast as usual for this
+   * fact", below 1 is faster. Nothing reads it yet -- F-18 turns it into
+   * "knows it" vs "can do it" -- but it costs one number per entry and cannot
+   * be recovered later, so it is recorded now.
+   *
    * `ok` is kept as the count of consecutive successes because capReview ranks
    * on it and because a record written by the previous build carries it; `due`
-   * is kept in sync so the same record stays readable by both. The new fields
-   * are the ones the schedule actually reads. */
-  function noteAttempt(review, key, right, now) {
+   * is kept in sync so the same record stays readable by both. */
+  const SPEED_ALPHA = 0.3;
+  /* A quarter of a second. Nobody reads a question and answers in less, so a
+     sample below this is a re-render, a scripted event or a clock that did not
+     move -- not a response time, and it is not recorded at all.
+     Flooring the baseline instead was wrong: the floor keeps the baseline
+     sane, but the junk sample still enters the average on its own terms, and
+     one 0ms sample followed by a normal 3000ms answer read spd 4.3 against a
+     true 1.0. The attempt is still counted; only the timing is dropped. */
+  const SPEED_FLOOR = 250;
+
+  function noteAttempt(review, key, right, now, ms) {
     const t = now || Date.now();
     const r = review[key] || (review[key] = { n: 0, miss: 0, ok: 0, nextAt: t });
     r.n = (r.n || 0) + 1;
     r.lastAt = t;
+    if (typeof ms === 'number' && isFinite(ms) && ms >= SPEED_FLOOR) {
+      r.ms = Math.round(ms);
+      // A first sample has nothing to be relative to, so it is its own
+      // baseline. `spd` is the ratio to that baseline: 1.0 is "as fast as
+      // usual for this fact", below 1 is faster.
+      const base = r.base > 0 ? r.base : ms;
+      r.spd = r.spd == null ? 1 : (r.spd + (ms / base - r.spd) * SPEED_ALPHA);
+      r.base = base + (ms - base) * SPEED_ALPHA;
+    }
     if (right) {
       r.ok = (r.ok || 0) + 1;
       r.nextAt = t + nextInterval(r.ok - 1);

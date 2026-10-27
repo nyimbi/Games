@@ -110,8 +110,8 @@
    */
   const REVIEW_PASSES = 2;
 
-  function noteReview(review, key, right) {
-    return window.ArcadeDeck.noteAttempt(review, key, right);
+  function noteReview(review, key, right, ms) {
+    return window.ArcadeDeck.noteAttempt(review, key, right, null, ms);
   }
 
   /* Every fact, ordered by how long ago it was served. A deck shorter than the
