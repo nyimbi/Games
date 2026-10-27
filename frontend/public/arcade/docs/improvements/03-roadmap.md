@@ -147,6 +147,21 @@ Three things Phase 2 changed that the plan did not anticipate:
 |---|---|---|
 | F-13 stuck detector | `maths-engine.js:530-575` — `STUCK_MISSES`, `TOPIC_OF`, `stuckTopic`; `offer` sets the label and the default topic | `stuck.py` |
 | F-17 fact families | `deck.js:349-389` — `familyOf`, `familyKey`, `familySiblings`; `maths-engine.js:583-624` — `crossDue`, `crossKeys` | `family.py`, `cross.py` |
+| F-14 example from the mistake | `maths-engine.js` — `spaceOf`, `sameFact`, `distance`, `RENDER`, `exampleFor`; `offer` carries the record into the dialog | `example.py` |
+
+**Gate 3 item 2 is withdrawn as written, and the reason matters.** It required "F-14's generated example contains no number the drill asks", citing `llms.txt:99`. That citation is wrong twice over.
+
+*The rule it cites is a science rule, and it holds there.* `llms.txt:99` sits under "Lessons + figures" beside `physics-lessons.js` and `chemistry-lessons.js`; it says nothing about maths. For a bank of authored questions it is a decidable, satisfiable predicate — and **two shipped science lessons violate it**: physics `motion` works "A train slows from 30 m/s to 10 m/s in 5 s" against a bank question that asks for its deceleration on the same numbers, and chemistry `moles` works calcium carbonate with `Ar: Ca = 40, C = 12, O = 16` — the prompt string the bank uses for five separate questions. Chemistry `periodic` (Group 2, Period 3) collides too. Those are F-44's to catch, and F-44 is Phase 5.
+
+*For maths the same predicate cannot be met.* `addition-quest` enumerates its full pool — level 2 is all 8,100 two-digit pairs, level 1 all 100 single-digit pairs — and `times-table-academy`'s 1–20 mode all 400. Every sum and every table fact *is* a fact the drill asks, so no example drawn from those drills' number range can satisfy it. Ten of the twenty shipped maths examples already break it (`68 + 47`, `74 + 38`, `6 × 7`, `56 ÷ 8`, `72 ÷ 9` and five more are in their drill's pool). A gate on it could only ever fail.
+
+What the rule protects is decidable in both subjects: a lesson must not hand over the answer to the question in front of the child. For maths `example.py` asserts the direct form — the example is never the fact just missed — plus two claims the original item never had: the example's own fact classifies back to the lesson's topic, and its stated answer follows from its stated question. The science form needs a bank-versus-lesson check, which is F-44.
+
+Three things F-14 changed that the plan did not anticipate:
+
+- **A hand-built neighbour does not preserve the topic.** Moving a digit by one looks like "the same kind of mistake" and is not: `2 + 8` is exact-ten `place`, `2 + 9` is `carrying`. The first version worked a non-carrying example under a "Carrying" heading and every other test passed. The generator now searches the fact space and keeps a candidate only if `TOPIC_OF` returns the lesson's topic — true by construction rather than by arithmetic luck.
+- **A bond's identity is what it asks, not its `a` field.** `3|1|whole` and `3|2|whole` are the same question ("what is the whole, given parts 1 and 2"), written with the parts in the other order. Comparing `a` called them different and the example handed over the answer. `sameFact` now keys on the whole and the unordered part pair when the whole is blanked.
+- **`llms.txt:99` is correct for science and inapplicable to maths.** The roadmap cited it as a maths rule; it governs `physics-lessons.js` and `chemistry-lessons.js` only. It stays as written. The maths rule the plan wanted is now `example.py`'s, and the science rule is F-44's — which is now known to have three live violations to find.
 
 Three things F-17 changed that the plan did not anticipate:
 
@@ -159,7 +174,7 @@ Three things F-17 changed that the plan did not anticipate:
 **Gate 3.**
 
 1. F-13 fires at most once per topic per session, and only after ≥3 misses of facts mapped to that topic.
-2. F-14's generated example contains no number the drill asks. This is F-44's content gate — build it here, because this is the first feature that generates lesson text.
+2. ~~F-14's generated example contains no number the drill asks.~~ **Withdrawn** — see the note above. Unsatisfiable for the maths pools (full enumeration) and misattributed to maths (the cited rule is science-only). Replaced by the three claims `example.py` asserts. F-44 still owns the science form of the rule, where it is satisfiable and currently violated by three lessons.
 3. `checkOrder()` still passes; no phase-3 change touches `SUBJECTS`' order.
 
 ---

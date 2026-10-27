@@ -482,6 +482,13 @@
     // Authored text is escaped; figures are SVG and go in as markup. A lesson
     // is written by hand, so a stray `<` should print rather than break the
     // page -- the figures are the only part that is meant to be markup.
+    // An example drawn from this child's own mistake, when the lesson being
+    // read is the lesson for it. `exampleFor` returns null when the record
+    // does not say, and the authored example is what the page was written
+    // with -- so a drill with no misses yet reads exactly as before.
+    const mine = lessonCfg.review ? exampleFor(lessonCfg.game, lessonCfg.review, id) : null;
+    const ex = mine || L.example;
+    const exLabel = mine ? 'Worked example, from your own answers' : 'Worked example';
     $('mathsLessonBody').innerHTML = `
       <button class="close" type="button" id="mathsLessonClose" aria-label="Close lessons">✕</button>
       <h2>${esc(L.title)}</h2>
@@ -491,10 +498,10 @@
       ${figs}
       <ul class="lbeats">${L.beats.map(b => `<li>${esc(b)}</li>`).join('')}</ul>
       <div class="lex">
-        <b>Worked example</b>
-        <p class="lq">${esc(L.example.q)}</p>
-        <ol>${L.example.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
-        <p class="la">${esc(L.example.a)}</p>
+        <b>${exLabel}</b>
+        <p class="lq">${esc(ex.q)}</p>
+        <ol>${ex.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+        <p class="la">${esc(ex.a)}</p>
       </div>
       <div class="lremember"><b>Remember</b><span>${esc(L.remember)}</span></div>
       <p class="ltrap"><b>The usual mistake:</b> ${esc(L.trap)}</p>`;
@@ -538,6 +545,10 @@
    * null. */
   function offer(review, taught) {
     if (!lessonCfg) return null;
+    // The dialog needs the record to build an example from, and this is the
+    // one call every drill makes after every answer. Keeping it here means
+    // the five pages did not each have to learn a second call.
+    lessonCfg.review = review || {};
     const skip = new Set(offeredTopics);
     for (const id of (taught || [])) skip.add(id);
     const topic = stuckTopic(lessonCfg.game, review, lessonCfg.topics, skip);
@@ -551,6 +562,265 @@
       b.setAttribute('aria-label', `Open the lesson on ${name}`);
     }
     return topic;
+  }
+
+  /* ---------- an example drawn from the child's own mistake ----------
+   *
+   * Every worked example is authored, and the docs say it uses numbers the
+   * drill never asks (`llms.txt:99`). That rule is not satisfiable for these
+   * pools and never was: `addition-quest`'s level 2 enumerates all 8,100
+   * two-digit pairs and `times-table-academy`'s 1-20 mode all 400 pairs, so
+   * *every* two-digit sum and *every* table fact is one the drill asks. Ten of
+   * the twenty authored maths examples already break the rule.
+   *
+   * What the rule was protecting is real: a lesson must not hand over the
+   * answer to the question in front of the child. That is a statement about
+   * *this* example, and it is decidable exactly -- the example must not be the
+   * fact the child just missed.
+   *
+   * So the example is the child's own kind of mistake. "Kind" is the
+   * classifier's answer, not a hand-picked neighbour: the example's own fact is
+   * run back through `TOPIC_OF` and kept only if it returns the topic being
+   * taught. That is what makes the claim true by construction. The first
+   * version moved a digit by one and hoped; `2 + 8` is exact-ten `place` and
+   * `2 + 9` is `carrying`, so a "Carrying" lesson worked an example that did
+   * not carry, and every other test passed.
+   *
+   * The candidate set is the missed fact's neighbourhood in its own drill's
+   * fact space, which is small and enumerable. It is searched rather than
+   * constructed because a construction that satisfies the predicate on paper
+   * is exactly what the first version was.
+   *
+   * `exampleFor` returns null rather than a fallback when nothing qualifies,
+   * and the dialog then renders the authored example. A generated example that
+   * silently degrades to the authored one is indistinguishable from a feature
+   * that works; a null is not. */
+
+  /* A drill's fact space, the same shape its own pool uses, bounded so the
+     search stays trivial. The bounds are the pools' own: no drill asks a
+     factor above 20 or a two-digit sum below 10. */
+  function spaceOf(game) {
+    const out = [];
+    if (game === 'number-bonds') {
+      for (let w = 3; w <= 20; w++) for (let a = 1; a < w; a++)
+        for (const blank of ['whole', 'a', 'b']) out.push({ whole: w, a, blank });
+      return out;
+    }
+    if (game === 'addition-quest') {
+      for (let a = 0; a <= 20; a++) for (let b = 0; b <= 20; b++) out.push({ level: '1', a, b });
+      return out;
+    }
+    if (game === 'subtraction-safari') {
+      for (let a = 0; a <= 20; a++) for (let b = 0; b <= a; b++) out.push({ level: '1', a, b });
+      return out;
+    }
+    if (game === 'times-table-academy') {
+      for (let a = 1; a <= 20; a++) for (let b = 1; b <= 20; b++) out.push({ a, b });
+      return out;
+    }
+    for (let d = 2; d <= 20; d++) for (let q = 1; q <= 20; q++)
+      out.push({ divisor: d, dividend: d * q });
+    return out;
+  }
+
+  /* Two facts of the same drill that ask the same question.
+   *
+   * The level is not part of it: `2|68|47` and `1|68|47` are one sum asked at
+   * two levels, and an example that reproduced it would hand over the answer
+   * whatever level the record wrote it under.
+   *
+   * A bond is not identified by its `a` field. When the blank is the whole,
+   * the question is "what is the whole, given these two parts", and `3|1|whole`
+   * and `3|2|whole` ask exactly that -- the same question with the parts
+   * written the other way round. Comparing `a` literally called them different
+   * and the example handed over the answer; the probe caught it. So the
+   * identity is what the question *asks*: the whole and the shown part when a
+   * part is blanked, the whole and the unordered pair when the whole is. */
+  function sameFact(game, p, q) {
+    if (!p || !q) return false;
+    if (game === 'number-bonds') {
+      if (+p.whole !== +q.whole) return false;
+      if (p.blank === 'whole' || q.blank === 'whole') {
+        // Both must ask for the whole to be the same question, and then the
+        // parts are unordered.
+        if (p.blank !== 'whole' || q.blank !== 'whole') return false;
+        const sp = [Math.min(+p.a, +p.whole - +p.a), Math.max(+p.a, +p.whole - +p.a)].join(',');
+        const sq = [Math.min(+q.a, +q.whole - +q.a), Math.max(+q.a, +q.whole - +q.a)].join(',');
+        return sp === sq;
+      }
+      // A blanked part: the question is the whole, the part that is shown, and
+      // which side it sits on.
+      const shown = f => (f.blank === 'a' ? +f.whole - +f.a : +f.a);
+      return p.blank === q.blank && shown(p) === shown(q);
+    }
+    if (game === 'division-diner') {
+      return +p.divisor === +q.divisor && +p.dividend === +q.dividend;
+    }
+    // Addition, subtraction and times: order is not part of the question.
+    // `2 + 8` and `8 + 2` are one fact, and an example that asked the reverse
+    // would be handing over the answer.
+    const s = f => [Math.min(+f.a, +f.b), Math.max(+f.a, +f.b)].join(',');
+    return s(p) === s(q);
+  }
+
+  /* How close a fact is to the one the child missed: fewer changed fields is
+     nearer, and the arithmetic should stay small. Used only to rank, never to
+     accept -- the topic check is what accepts. */
+  function distance(game, from, to) {
+    let d = 0;
+    if (game === 'number-bonds') {
+      d = Math.abs(+from.whole - +to.whole) + Math.abs(+from.a - +to.a);
+      if (from.blank !== to.blank) d += 4;
+      return d;
+    }
+    if (game === 'division-diner') {
+      return Math.abs(+from.divisor - +to.divisor) + Math.abs(+from.dividend - +to.dividend) / 10;
+    }
+    return Math.abs(+from.a - +to.a) + Math.abs(+from.b - +to.b);
+  }
+
+  /* Render a fact as a worked example. One renderer per drill, because the
+     sentence that teaches a column sum is not the sentence that teaches a
+     bond -- and each states the answer the fact implies, so the probe can
+     check the arithmetic rather than trusting the prose. */
+  const RENDER = {
+    'number-bonds': f => {
+      const w = +f.whole, a = +f.a, b = w - a;
+      if (b < 1) return null;
+      if (f.blank === 'whole') {
+        return {
+          q: `Two parts are ${a} and ${b}. What is the whole?`,
+          steps: [
+            `The two parts are ${a} and ${b}.`,
+            `The whole is both parts together: ${a} + ${b}.`,
+            `${a} + ${b} = ${w}, so the whole is ${w}.`
+          ],
+          a: `${w}`
+        };
+      }
+      const shown = f.blank === 'a' ? b : a;
+      const answer = f.blank === 'a' ? a : b;
+      return {
+        q: `A whole is ${w}. One part is ${shown}. What is the other?`,
+        steps: [
+          `The whole is ${w} and one part is ${shown}.`,
+          `The other part is ${w} − ${shown}.`,
+          `${w} − ${shown} = ${answer}, so the parts are ${a} and ${b}.`
+        ],
+        a: `${answer}`
+      };
+    },
+
+    'addition-quest': f => {
+      const a = +f.a, b = +f.b, sum = a + b;
+      const ones = (a % 10) + (b % 10);
+      const carries = ones >= 10;
+      return {
+        q: `What is ${a} + ${b}?`,
+        steps: [
+          `Line up the place values: ${a} over ${b}.`,
+          carries
+            ? `Add the ones: ${a % 10} + ${b % 10} = ${ones}, which is more than nine, so carry one ten.`
+            : `Add the ones: ${a % 10} + ${b % 10} = ${ones}, so nothing carries.`,
+          `Add the tens, including any ten you carried: ${a} + ${b} = ${sum}.`
+        ],
+        a: `${sum}`
+      };
+    },
+
+    'subtraction-safari': f => {
+      const a = +f.a, b = +f.b, diff = a - b;
+      if (diff < 0) return null;
+      const borrows = (a % 10) < (b % 10);
+      return {
+        q: `What is ${a} − ${b}?`,
+        steps: [
+          `Line up the place values: ${a} over ${b}.`,
+          borrows
+            ? `The ones digit ${a % 10} is smaller than ${b % 10}, so borrow a ten before subtracting.`
+            : `The ones digit ${a % 10} is at least ${b % 10}, so nothing is borrowed.`,
+          `${a} − ${b} = ${diff}.`
+        ],
+        a: `${diff}`
+      };
+    },
+
+    'times-table-academy': f => {
+      const a = +f.a, b = +f.b, prod = a * b;
+      return {
+        q: `What is ${a} × ${b}?`,
+        steps: [
+          `${a} × ${b} means ${b} groups of ${a}.`,
+          a === b ? `The two factors are equal, so this is a square.`
+            : `${b} × ${a} is the same fact, so you can start from whichever you know.`,
+          `${a} × ${b} = ${prod}.`
+        ],
+        a: `${prod}`
+      };
+    },
+
+    'division-diner': f => {
+      const d = +f.divisor, n = +f.dividend;
+      if (d < 1 || n < d) return null;
+      const quo = Math.floor(n / d), rem = n % d;
+      return {
+        q: rem ? `What is ${n} ÷ ${d}, and what is left over?` : `What is ${n} ÷ ${d}?`,
+        steps: [
+          `How many ${d}s fit in ${n}?`,
+          `${d} × ${quo} = ${d * quo}.`,
+          rem ? `${d * quo} leaves ${rem}, so ${n} ÷ ${d} = ${quo} remainder ${rem}.`
+            : `${d} × ${quo} = ${n} exactly, so ${n} ÷ ${d} = ${quo}.`
+        ],
+        a: rem ? `${quo} remainder ${rem}` : `${quo}`
+      };
+    }
+  };
+
+  /* The example the dialog should show: the nearest fact of the same topic
+     that is not the fact the child missed, or null.
+
+   * "Nearest" is by `distance`, so the example is recognisably the child's own
+     mistake; "same topic" is the classifier's answer, so the lesson and the
+     example are about the same thing. Both are checked, neither is assumed. */
+  function exampleFor(game, review, topic) {
+    const classify = TOPIC_OF[game];
+    const render = RENDER[game];
+    if (!classify || !render) return null;
+    // The most-missed fact of this topic -- the one the child keeps getting
+    // wrong, not whichever happens to be first in the record.
+    let missed = null, bestMiss = 0;
+    for (const [key, r] of Object.entries(review || {})) {
+      const misses = (r && r.miss) || 0;
+      if (misses < 1 || misses <= bestMiss) continue;
+      let f;
+      try { f = parseFact(game, key); } catch (_) { continue; }
+      let t;
+      try { t = classify(f); } catch (_) { continue; }
+      if (t !== topic) continue;
+      missed = f; bestMiss = misses;
+    }
+    if (!missed) return null;
+
+    const space = spaceOf(game);
+    const ranked = [];
+    for (const f of space) {
+      if (sameFact(game, f, missed)) continue;
+      let t;
+      try { t = classify(f); } catch (_) { continue; }
+      if (t !== topic) continue;
+      ranked.push([distance(game, missed, f), f]);
+    }
+    if (!ranked.length) return null;
+    ranked.sort((x, y) => x[0] - y[0]);
+    // A few of the nearest, so a fact whose sentence cannot be rendered does
+    // not sink the whole feature when the next one can.
+    for (let i = 0; i < Math.min(6, ranked.length); i++) {
+      const ex = render(ranked[i][1]);
+      if (ex && ex.q && Array.isArray(ex.steps) && ex.steps.length >= 2 && ex.a != null) {
+        return ex;
+      }
+    }
+    return null;
   }
 
   /* ---------- the family index ----------
@@ -651,7 +921,7 @@
   window.MathsGame = {
     $, rnd, shuffle, esc,
     freshFirst, markSeen, newCycle, SEEN_CAP, capReview, REVIEW_CAP, noteReview, REVIEW_PASSES,
-    STUCK_MISSES, stuckTopic, offer, crossDue, CROSS_LIMIT,
+    STUCK_MISSES, stuckTopic, offer, crossDue, CROSS_LIMIT, exampleFor,
     tone, goodSound, badSound, clickSound, burst, audio,
     init, open: () => open(null), close, lessonTopic: () => current
   };

@@ -389,7 +389,7 @@ There is no error handler, no CSP, and no way to tell a corrupt record from a ne
 
 **Deepens:** the lesson shape's invariants (`llms.txt:96-100`: ≥2 figures, examples the bank never asks).
 **Why:** Every lesson rule is currently enforced by a human reading a probe's output. A gate that asserts "this lesson's example numbers appear nowhere in the bank" is a predicate the product can run on itself, and it is exactly the rule the docs state.
-**Evidence:** `llms.txt:99-100`; `probes/lessons.py` checks figures render but not that examples are absent from the bank.
+**Evidence:** `llms.txt:99-100`; `probes/lessons.py` checks figures render but not that examples are absent from the bank. Three shipped lessons already fail the predicate this gate would run: physics `motion` (train 30→10 m/s in 5 s) and chemistry `moles` (CaCO₃, `Ar: Ca = 40, C = 12, O = 16` — the bank's own prompt string for five questions) work the bank's own numbers, and chemistry `periodic` collides on Group 2 / Period 3. The gate must therefore be written to *report* before content is fixed, or it cannot pass on the tree as it stands.
 **Cost:** `O(b × e)` for b bank entries and e example numbers, once per lesson at authoring time. Run offline, not in the browser.
 **Depends on:** F-43. **Required before:** F-22, F-31.
 

@@ -63,7 +63,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               twenty Playwright probes run against the pages from file://
+probes/               twenty-one Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
