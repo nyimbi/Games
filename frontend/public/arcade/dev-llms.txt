@@ -9,12 +9,17 @@ Line numbers are approximate — they drift with every edit. Names and constants
 ## The inventory
 
 ```
-16,306 lines across 36 source files (18 pages, 18 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus four Playwright probes in `probes/`.
+17,608 lines across 41 source files (18 pages, 23 scripts). No build, no bundler, no test runner.
+Verification is `node --check` per inline block plus seventeen Playwright probes in `probes/`.
 
-index.html              663   hub: 16 cards, stars from each game's bucket, suggestion lane
-session.html            324   the day: plan list, meter, 21-day strip
-session.js              313   session state, alternation guard, completion observer, toast
+index.html              675   hub: 16 cards, stars from each game's bucket, suggestion lane
+session.html            451   the day: plan list, meter, 21-day strip, backup buttons
+session.js              422   session state, alternation guard, completion observer, toast
+deck.js                 280   one deck identity: freshness, review schedule, mastery decay
+record.js               167   one storage contract: fresh/ok/migrated/corrupt, bounded stash
+backup.js               152   the record as one JSON file: dump, parse, restore, download
+errors.js               116   the ring of the last fifty errors, and the toast that shows them
+escape.js                39   `esc()` for the one place text reaches innerHTML
 
 lang-engine.js          473   quiz engine: french, swahili, chinese
 science-engine.js       507   quiz engine + lesson scheduler: physics, chemistry
@@ -91,40 +96,77 @@ later passes forbid only an immediate repeat. Without the counter the loop never
 pool smaller than the deck (Make 10 is 9 splits × 3 blank positions = 27 cards against a deck of
 50). Every implementation also carries a `guard` bound (`total * 400`) as a second backstop.
 
-**`noteFact(key, ok)`** — `review[key] = { n, miss, due }`. `n` counts graded attempts, `miss`
-counts wrong ones, `due` sets on a miss and clears on a correct answer. `buildQueue` pulls up to
-two due facts to the head, filtered to the current level/mode so a review card never arrives from
-a level the learner is not in.
+**`noteAttempt(review, key, right, now, ms)`** — `deck.js`. Replaces the old `noteFact`'s
+`{n, miss, due}` with a schedule: `{n, miss, ok, lastAt, nextAt, due}` plus, when the caller
+measures it, `{ms, spd, base}`. A success climbs `LADDER = [2, 10, 60, 240, 1440]` minutes and sets
+`nextAt = now + interval`; a miss resets `ok` to 0 and sets `nextAt = now`. The asymmetry is the
+whole schedule — a miss two minutes out would leave the home screen reading "0 due" the moment a
+child missed something. `spd` is the ratio to the fact's own baseline (`1.0` = as fast as usual),
+dropped entirely below `SPEED_FLOOR = 250 ms`. `due` is kept in sync so a previous build's record
+still reads.
+
+**`isDue` / `dueCount` / `reviewFirst`** — `deck.js`. An entry with no `nextAt` (written by an older
+build) falls back to the boolean, so a mid-migration record does not lose its queue. `reviewFirst`
+returns `{due, rest}`, most-missed first, and the caller filters both to the current level.
+
+**`mastery(bucket, savedAt)`** — `deck.js`. The hub's stars. Takes the strongest value in a bucket
+and relaxes it toward 50% by 0.12/day, capped at 7 whole days. Whole days because the curve is
+stated per day; a record 300 ms old decaying by a fraction dropped a card a star on the next render.
+The arena's own `ema` shape (`{ema: 0.8}`) reads as 80%.
 
 Stars, shared everywhere: `pct >= 90 → 3`, `pct >= 70 → 2`, else 1.
 
+**`record.js`** — the storage contract every page goes through. `load(key, opts)` returns
+`{state, data}` with `state` one of `fresh` / `ok` / `migrated` / `corrupt`; `opts.version: 0`
+accepts any schema (the hub cannot track seventeen games' versions), `opts.stash: false` reads
+without adding to the corrupt stash, `opts.require` names fields a shape check cannot imply.
+A corrupt record is stashed under `arcade.corrupt.<key>` (cap 8) and the page shows a banner.
+
+**`backup.js`** — the record as one file. `dump`/`toJSON` read every `arcade.*` key except the
+error ring and the corrupt stash; `parse` validates without writing; `restore(parsed, {replace})`
+merges by default. Values are stored as the raw strings the games wrote, never re-serialised, so an
+older build's record restores byte for byte.
+
 ## Per-file reference
 
-### session.js (313)
+### session.js (422)
 
 `KEY = 'arcade.session.v1'`, `KEEP_DAYS = 120`, `MATHS` = the six maths page names.
 
-`SUBJECTS` (38–52) is the single source of order: eleven entries of `{id, kind, name, note, games}`.
-`checkOrder()` (60–72) throws at load if two `kind: 'lang'` are adjacent or if `SUBJECTS[0]` is not
+`SUBJECTS` (40) is the single source of order: eleven entries of `{id, kind, name, note, games}`.
+`checkOrder()` throws at load if two `kind: 'lang'` are adjacent or if `SUBJECTS[0]` is not
 a language — an IIFE, so it runs before anything else. With six others and five languages, exactly
 one `other`-`other` pair is expected, at the end; the guard does not forbid it because perfect
 alternation is impossible while spelling stays first. `BY_GAME` maps page name → subject.
 
 | Function | Line | Does |
 |---|---|---|
-| `dayKey(d)` | 68 | local `YYYY-MM-DD`, not UTC |
-| `dayNumber(d)` | 73 | days since epoch, drives maths rotation |
-| `read/write` | 78/86 | `write` trims to `KEEP_DAYS` then `setItem` in try/catch |
-| `gameFor(subject, d)` | 104 | `games[dayNumber(d) % games.length]` |
-| `plan(d)` | 111 | every subject in order with game, href, done — never writes |
-| `mark(id)` | 129 | returns `{changed, done, total}`; idempotent per day |
-| `streak(d)` | 142 | run of complete days ending today; today counts only once complete |
-| `history(n)` | 161 | last n days oldest-first, gaps present with done 0 |
-| `isFinished()` | 186 | reads the marker the page *declares* |
-| `toast/announce` | 204/251 | inline-styled banner, `id="sessionToast"` |
-| `check/start` | 268/276 | observer callback and install |
+| `dayKey(d)` | 134 | local `YYYY-MM-DD`, not UTC |
+| `dayNumber(d)` | 139 | days since epoch, drives maths rotation |
+| `read/write` | 149/155 | `write` trims to `KEEP_DAYS` then `setItem` in try/catch |
+| `todayRecord` | 165 | the day's record, created on demand |
+| `gameFor(subject, d)` | 174 | `games[dayNumber(d) % games.length]` |
+| `plan(d)` | 181 | every subject in order with game, href, done — never writes |
+| `progress()` | 191 | `{done, total}` for the meter |
+| `mark(id, result)` | 211 | returns `{changed, done, total}`; keeps the day's best percentage |
+| `streak(d)` | 235 | run of complete days ending today; today counts only once complete |
+| `history(n)` | 254 | last n days oldest-first, gaps present with done 0 and `acc: null` |
+| `resultPct()` | 296 | reads the score off a finished drill; `%` wins over `N of M` |
+| `toast/announce` | 332/379 | inline-styled banner, `id="sessionToast"` |
+| `check/start` | 396/404 | observer callback and install |
+| `isFinished()` | 415 | reads the marker the page *declares* |
 
-`isFinished()` (186–199) is the load-bearing predicate: if `#done` exists, the marker is `'on'`
+`mark` keeps the day's **best** percentage per subject, not the last: a replay that goes worse must
+not lower the day. A result outside 0..100, or not a number, is refused rather than stored — it
+would poison the day's mean. `history(n)` reports `acc` as the mean of the subjects that were
+actually scored, and `null` for a day of unscored games, because "played but unscored" and "scored
+zero" are different days and the strip must be able to tell them apart.
+
+`resultPct()` reads `RESULT_IDS = ['rPct', 'doneText', 'qPct', 'pPct', 'dPct', 'tPct']`. It is
+scoped to those ids on purpose: a percentage elsewhere on the page must not be read as the result.
+A `%` wins over a fraction when both appear.
+
+`isFinished()` is the load-bearing predicate: if `#done` exists, the marker is `'on'`
 when the element has class `stage`, `'show'` when it has class `done`, and `null` otherwise — a
 page that declares neither can never be finished. Only if there is no `#done` does it fall back to
 `#summaryPanel` + `show`.
@@ -194,7 +236,7 @@ qPlay qHint qLesson qHintBox qFb qExplain qExit qNext`; play `pCount pProgress p
 pNext pKeys pFeedback pExit pHear pAgain`; lesson `lTopic lBody lHome lDone`; done `stars doneTitle
 doneText missed rAgain rHome`.
 
-### lang-engine.js (473)
+### lang-engine.js (471)
 
 `window.LangGame.init(cfg)` at 127; exports `{init, fold, esc, shuffle, speak}` at 472.
 
@@ -212,7 +254,7 @@ stars missed doneTitle rAgain rHome`. Stages are `.stage` elements switched by `
 |---|---|---|
 | `buildQueue` | 188 | ≤3 due entries first, then `freshFirst`, cycling; guard `total*400` |
 | `modePool` | 171 | `all.filter(cfg.pool)` when that leaves anything, else the whole tier |
-| `noteFact` | 177 | the `{n, miss, due}` record |
+| `noteFact` | 177 | wrapper: `ArcadeDeck.noteAttempt(state.review, keyOf(e), ok, null, ms)` |
 | `render` | 259 | dispatches to `renderLearn` (267) or `renderQuestion` (299) |
 | `checkTyped` | 349 | typed answers via the page's `check` |
 | `pick` | 357 | choice answers, strict `value === spec.answer` |
@@ -234,7 +276,7 @@ Accents: a page's `check` may return the string `'accent'`, which the engine rep
 word, wrong accents"* rather than a plain miss. Every option list is shuffled — the article and
 tone drills originally put the answer first on every card.
 
-### science-engine.js (507)
+### science-engine.js (501)
 
 `window.ScienceGame.init(cfg)` (149); page supplies `{lessons, bank, key, total: 20, topics,
 modes}`. Same DOM-contract style as the language engine; mode ids are opaque except that the
@@ -278,7 +320,7 @@ text → timestamp. `review` keyed by question text.
 Common shape: `TOTAL = 50`, storage `{best, perLevel|perMode, review, seen}`, `#done.show`,
 stars 90/70. The five drills load `maths-engine.js` + `maths-lessons.js`; the arena loads neither.
 
-### maths-engine.js (332)
+### maths-engine.js (393)
 
 `window.MathsGame`. Loaded before the drill's inline script, so the aliasing at the top of each
 page (`const MG = window.MathsGame; const freshFirst = MG.freshFirst, …`) is safe.
@@ -337,7 +379,7 @@ Notable per file:
   `alpha = n < 5 ? .45 : .22`, clamped `[.02, .99]`. `endRun` (611) shows `#summaryPanel`. Decay on
   load: `ema += (0.5-ema) * (days*0.12)`, days capped at 7. No `review` at all.
 
-### typing-tutor.html (615)
+### typing-tutor.html (652)
 
 `arcade.typing.v1` = `{ progress: { lessonId: bestAccuracy } }`. Twelve lessons in `LESSONS`
 (299–324), each `{id, name, desc, lines}`; a run is `lines.slice(0,3).join(' ')` (424). Unlock:
@@ -353,7 +395,7 @@ used for stars (95/85/80 on accuracy). `progress[id]` written only on completion
 timer expiry calls `finish()` without saving (507–510). `#done.show` (530). Audio is WebAudio
 `tone()` in try/catch — no `speechSynthesis` here.
 
-### spelling-bee.html (1113)
+### spelling-bee.html (1115)
 
 `arcade.spelling.v1` = `{ best, perTier, review, seen, tier }`. `TOTAL = 50`, `BEE_RUN = 20`,
 `SEEN_CAP = 1400`. Tiers 1–3 = Starter/Middle/Champion. `poolFor(tier)` (516); the bee uses
@@ -361,13 +403,13 @@ timer expiry calls `finish()` without saving (507–510). `#done.show` (530). Au
 
 Four modes: study card (`startStudy` 950), typed drill (`checkDrill` 674), four-option differ
 (`renderDiffer` 774, options from `pairs` then `nearMiss` 742), and the bee (`checkBee` 875, three
-lives, queue truncated to attempted words at zero lives). `noteFact` (912) clears `due` only when
-`r.n >= 2`. Speech: `pickVoice` (490) prefers en-GB/en-US by name, `sayWord` (511) speaks twice
+lives, queue truncated to attempted words at zero lives). `noteFact` (912) delegates to
+`ArcadeDeck.noteAttempt`, so a miss is due now and a success climbs the ladder. Speech: `pickVoice` (490) prefers en-GB/en-US by name, `sayWord` (511) speaks twice
 700 ms apart at 0.78. No visual fallback when synthesis is absent.
 
 `#done` is `<section class="stage">`; `show('done')` (939) → `.on`.
 
-### calligraphy.html (653)
+### calligraphy.html (669)
 
 `arcade.calligraphy.v1` = `{ best, perTier, review, seen, tier }`, `TOTAL = 20`. Bank strokes are
 `{name, pts:[[x,y]…], hint}` in a 0–100 box.
@@ -385,7 +427,7 @@ The endpoint term is the direction check: a reversed stroke covers the same pixe
 the last resampled point. Each accepted stroke `score += 6`; a wrong stroke resets the streak and
 records `char + ' stroke ' + n` in `review`.
 
-### how-things-work.html (379)
+### how-things-work.html (388)
 
 `arcade.howthingswork.v1` = `{ v, explored:{slug:ts}, perGroup:{group:pct}, day }`. A 26-entry
 manifest `M` and six `GROUPS`. `featured()` starts at `dayNumber() % 26` and walks forward to the
@@ -394,7 +436,7 @@ first un-explored entry. `#hadAGo` writes `explored[slug]` and `day = today()`, 
 820 px (740 px under the phone media query) — not measured at runtime, because `file://` blocks
 cross-frame reads in Chromium and WebKit.
 
-### index.html (663)
+### index.html (675)
 
 Each card carries `data-key` and `data-bucket`. `bestPct(card)` (519) walks the bucket, taking the
 max numeric value or `v.ema * 100` for a skill record. `paintProgress` (531) writes the stars and

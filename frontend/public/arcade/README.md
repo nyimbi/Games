@@ -3,7 +3,8 @@
 Sixteen games and a daily session page, each one a self-contained HTML file, with no build step,
 no accounts, and no network. A child opens `index.html` — from a web server or straight from the
 file system (`file://` works; nothing is fetched) — picks a game or follows today's session, and
-every bit of progress lives in that browser's `localStorage`.
+every bit of progress lives in that browser's `localStorage` — and the session page can save all
+of it to one JSON file and load it back, which is the only backup an offline page can offer.
 
 Nothing here talks to a server, ever. That is the first rule of the arcade and every other rule
 serves it. The folder also has its own git repository — see "This repository" at the end for what
@@ -62,7 +63,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               four Playwright probes run against the pages from file://
+probes/               seventeen Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -77,7 +78,8 @@ Which page loads what:
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |
 | the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` — the drill's own model inline |
 | `infinite-arena.html`, `typing-tutor.html` | `session.js` only — each carries its own engine inline |
-| `index.html`, `session.html` | `session.js` |
+| `index.html` | `session.js` — the hub reads every game's bucket, but never writes one |
+| `session.html` | `session.js`, `backup.js` — the only page that saves or loads the record |
 
 The split is deliberate: a page that carried its own 1,239-word bank inline would triple in size
 and bury the engine. Content that is large and tabular is written as data; interaction that
@@ -696,20 +698,26 @@ rehearsal of the next question.
 | `arcade.howthingswork.v1`  | how things work   | `{ v, explored: {slug: ts}, perGroup: {group: pct}, day }` — no `best` and no `review`; the shelf has no score |
 | `arcade.lastplay`          | `index.html` only | `{ './page.html': timestamp }` — what the suggestion lane sorts on |
 
-The maths drills' `review` is `{n, miss, due}` per fact key, the same shape the language engine
-uses. The arena is the exception: it keeps no `review` at all. The machine shelf keeps neither —
+Every `review` is `ArcadeDeck.noteAttempt`'s entry per fact key: `{n, miss, ok, lastAt, nextAt,
+due}`, plus `{ms, spd, base}` when the page measures answer latency. `nextAt` is the schedule —
+a miss sets it to now, a success pushes it out along `LADDER`. `due` is kept in sync so a record
+written by an older build still reads. The arena is the exception: it keeps no `review` at all. The machine shelf keeps neither —
 `explored` is the whole record, and `day` is the local date it was last marked.
 
 Two rules are invisible but binding. Every key is namespaced with the game and a version, and the
-version is bumped when the shape changes — never reused with a new meaning. And the `taught` map
+version is bumped when the shape changes — never reused with a new meaning. The suffix is the
+schema *generation*: bumping it abandons the old record, which is why `backup.js` stores raw
+strings and a bump should ship a migration rather than a new suffix. And the `taught` map
 rides the same record as the freshness map, so a learner who has read ten lessons keeps that
 credit whatever happens to their streak. Every one of these writes sits inside a `try`/`catch`:
 a full quota must cost a save, not the game.
 
 **How the hub reads it.** Each card in `index.html` declares `data-key` and `data-bucket`.
-`bestPct()` reads that key, walks the bucket, and takes the maximum of its numeric values — or of
-`v.ema * 100` where the arena stores a skill record — and maps it to the same 90/70 stars the
-games use. So a game's card is correct without the game telling the hub anything, and a new game
+`bestPct()` reads that key with `{ version: 0, stash: false }` — it cannot know seventeen games'
+schema versions and must not add to the corrupt stash it is only looking at — and hands the bucket
+to `ArcadeDeck.mastery`, which takes the strongest value (`v.ema * 100` for the arena's shape) and
+decays it toward 50% by 0.12 per whole day away, capped at 7. The stars are then the same 90/70
+the games use. A best-ever is a score; the shelf shows an estimate of what the child can do now. So a game's card is correct without the game telling the hub anything, and a new game
 only has to declare the two attributes.
 
 ## Rules any change must keep

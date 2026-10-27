@@ -109,6 +109,24 @@ Seven nodes. F-13 is the feature `README.md:783-788` asks for by name. Everythin
 2. A record written by the previous schema loads without throwing and is reported as migrated, not silently defaulted.
 3. The hub's stars change when a child's accuracy drops — i.e. the estimate decays. **Canary:** seed a high `perLevel`, set `savedAt` 14 days back, assert the reported mastery is lower.
 
+**Status: complete.** Gate 2 closed 2026-10-27; all seventeen probes pass.
+
+| Item | Landed | Probe |
+|---|---|---|
+| F-1 spaced repetition | `deck.js:123-206` — `LADDER`, `nextAt`, `noteAttempt`, `isDue`, `dueCount`, `reviewFirst` | `schedule.py` |
+| F-10 schema version check | `record.js` — four states, `require`, `version: 0`, `stash: false` | `record.py` |
+| F-42 empty vs corrupt | `record.js:notice` — bounded stash (`CORRUPT_CAP = 8`), banner on the page | `record.py` |
+| F-4 latency signal | `deck.js:186-194` — `ms`, `spd`, `base`; `SPEED_FLOOR` drops sub-perceptual samples | `schedule.py` |
+| F-5 mastery estimate | `deck.js:241-273` — `decayed`, `mastery`; whole days, cap at 7 | `mastery.py` |
+| F-7 per-game history | `session.js:mark` / `resultPct`; `acc` is `null` for an unscored day | `history.py` |
+| F-9 export/import | `backup.js` — `dump`/`parse`/`restore`/`download`, wired on `session.html` | `export.py` |
+
+Three things Phase 2 changed that the plan did not anticipate:
+
+- **A miss schedules the fact for now, not for the first rung.** The first implementation climbed the ladder on any attempt, which made the home screen read "0 due for review" the moment a child missed something. The asymmetry is the schedule.
+- **The hub reads with `version: 0, stash: false`.** A read-only observer cannot enforce a schema version it has no way to know across seventeen games, and must not churn the corrupt stash it is only looking at.
+- **The export stores raw strings, never re-serialised objects.** Restoring through `JSON.parse`/`JSON.stringify` passes every round trip whose input was already canonical, and silently reformats a record another build wrote. `export.py` claim 7 is the gate.
+
 ---
 
 ## Phase 3 — The learner model
