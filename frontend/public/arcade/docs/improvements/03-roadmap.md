@@ -182,6 +182,15 @@ Three things F-11 changed that the plan did not anticipate:
 - **A graph that omits a node is not a wrong graph, it is a graph about a different arcade.** Savanna Run was added to `SUBJECTS` and not to `SUBJECT_SKILLS`, and every check stayed green: `order('subjects')` returned eleven valid nodes, the acyclic walk passed, the frontier agreed with brute force, and the arena hint rendered. The load-time guard that already existed skipped edges naming subjects outside the plan, so it could not see the omission either — it guarded the direction that throws and not the direction that silently loses a subject. `checkPrerequisites()` now asserts coverage first, and `skills.py`'s claim 8 asserts it independently of the guard (canaried by disarming the guard and removing the node: the probe still fails).
 - **A gate can fail on a correct chain.** The first `topoOrder` test asserted the deepest node came last; `a` and `z` are both leaves and either may end the order. That assertion was a fact about the tie-break, not about the sort, and it failed on a correct implementation. Removed rather than loosened.
 
+**F-24 found a live grading bug and a false comment.** The page compared a drawn stroke against exactly one template stroke and reported "Not that one" for every failure, so "right shape, wrong order" and "not a stroke in this character" were the same message. Splitting them meant scoring the attempt against the whole character, which is what `diagnose` does.
+
+Two things came out of building it that the plan did not ask for:
+
+- **A stroke drawn out of order was being accepted as correct.** `diagnose` returns the score against the stroke the attempt *does* match, and for a `later` verdict that score has `ok: true`. The page tested `if (r.ok)`, so drawing stroke 3 when stroke 2 was asked for incremented the position and drew it in. The branch is now on `verdict === 'right'`. Canaried: restoring `if (r.ok)` makes the probe's out-of-order claim fail with an empty feedback panel, which is what the child saw.
+- **437 of 3,086 strokes passed when drawn backwards.** The comment above `renderStroke` claimed a backwards stroke fails "even though it covers the same pixels", and the endpoint term is supposed to be what rejects it. Measured over the bank: it does not. The mean and endpoint distances are absolute in a 0–100 box, so a reversed dot is only ~7 units off and passes -- 14% of all strokes, across 236 characters, overwhelmingly 点 and 横. A chord cosine is scale-free, rejects all 437, and still accepts every stroke drawn within ±3 units and 3 units of jitter (measured: 100%). The comment is corrected rather than left as a claim the code does not keep.
+
+The probe's first threshold canary was also worthless: it scaled a stroke about its centroid, and both paths are resampled to equal arc length first, so a scaled copy is identical point for point. It passed at 0.6x and 1.6x with the same mean. The distortion is now a bow perpendicular to the chord — 6 units passes the whole bank, 16 units fails 60% of it — and both directions are asserted, because a threshold that rejects everything is as useless as one that accepts everything.
+
 **F-23 is a schedule with a renderer, not an animation.** The obvious build is a `setTimeout` chain in the page, and its probe can only watch it finish. The bank gives every stroke as a polyline in a 0–100 box, so the whole character is a pure function of the stroke list: durations from stroke length, clamped at both ends, separated by a fixed gap. `stroke-anim.js` is that function and nothing else. The page's job is to draw whatever the schedule says, and `stroke.py` asserts the schedule over all 440 characters and 3,086 strokes rather than watching one run end.
 
 Three things F-23 changed that the plan did not anticipate:
@@ -265,6 +274,7 @@ Three things F-17 changed that the plan did not anticipate:
 | Item | Landed | Probe |
 |---|---|---|
 | F-23 stroke-order animation | `stroke-anim.js` — `timeline`, `at`, `lengthOf`, `pathD`; `calligraphy.html`'s `playOrder`/`stopOrder` draw the whole character in bank order | `stroke.py` |
+| F-24 shape vs order | `stroke-grade.js` — `strokeScore` (16-point resample + chord cosine), `diagnose` (`right`/`later`/`earlier`/`shape`); the page branches on the verdict and names the position | `strokeorder.py` |
 
 
 ---

@@ -10,7 +10,7 @@ Line numbers are approximate — they drift with every edit. Names and constants
 
 ```
 20,142 lines across 45 source files (19 pages, 26 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus twenty-seven Playwright probes in `probes/`.
+Verification is `node --check` per inline block plus twenty-eight Playwright probes in `probes/`.
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
@@ -48,6 +48,7 @@ chinese-bank.js         CHINESE_BANK        300
 calligraphy-bank.js     CALLIGRAPHY_BANK    440, each with stroke polylines
 calligraphy-sketch.js   CALLI_SKETCH        char → hand-drawn SVG
 stroke-anim.js          ArcadeStrokeAnim    stroke order → a timed schedule
+stroke-grade.js         ArcadeStrokeGrade   shape + direction + position → a verdict
 physics-bank.js         PHYSICS_BANK        240 over 10 topics
 chemistry-bank.js       CHEMISTRY_BANK      240 over 10 topics
 physics-lessons.js      PHYSICS_LESSONS     10, keyed by topic id
@@ -68,7 +69,7 @@ Which page loads what:
 | `french/swahili/chinese.html` | own bank, `lang-engine.js`, `session.js` |
 | `physics/chemistry.html` | own bank, `science-engine.js`, own lessons, `session.js` |
 | `piano.html` | `piano-bank.js`, `piano-lessons.js`, `piano-engine.js`, `session.js` |
-| `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `session.js` |
+| `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
 | the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` |
@@ -429,13 +430,18 @@ lives, queue truncated to attempted words at zero lives). `noteFact` (912) deleg
 | Function | Line | Does |
 |---|---|---|
 | `buildQueue` | 341 | `freshFirst` over the tier, sliced to 20 — **no due-first injection** |
-| `renderStroke` | 352 | SVG polyline, `w || 4.2`, round caps; guides dashed cinnabar |
+| `renderStroke` | 361 | SVG polyline, `w || 4.2`, round caps; guides dashed cinnabar |
 | `resample` | 420 | 16 points of equal arc length |
 | `scoreStroke` | 438 | pass iff `mean < 9 && endErr < 16` |
-| `endDraw` | 468 | judge, score, completion |
+| `endDraw` | 446 | judge, score, completion |
 | `say` | 638 | `zh-CN`, rate 0.75, voice `/^zh/i` |
 | `stopOrder` | 673 | cancel the run, clear `#animInk` |
 | `playOrder` | 681 | `ArcadeStrokeAnim.timeline` → one `requestAnimationFrame` loop; reduced motion steps instead |
+
+Shape and direction are scored in `stroke-grade.js`, not in the page: `strokeScore` is the
+16-point resample plus a chord cosine, and `diagnose` returns `right` / `later` / `earlier` /
+`shape` against the whole character. The page branches on the verdict, never on `score.ok` -- for
+a stroke drawn out of order `score` is the pass against the stroke it *does* match.
 
 The endpoint term is the direction check: a reversed stroke covers the same pixels and fails on
 the last resampled point. Each accepted stroke `score += 6`; a wrong stroke resets the streak and
@@ -570,7 +576,7 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     forgot what it had served. Both division and number bonds now pass their own `keyOf`.
     `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all twenty-seven: no page makes a request outside its own origin (the favicon
+Two properties survive all twenty-eight: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 19 pages still initialise from `file://`.
 
 ## Adding a game
