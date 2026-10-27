@@ -171,7 +171,7 @@
     }
     const save = () => {
       try {
-        localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier, taught: state.taught }));
+        localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier, taught: state.taught, savedAt: Date.now() }));
       } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
     };
 

@@ -431,7 +431,8 @@
       try {
         localStorage.setItem(KEY, JSON.stringify({
           v: RECORD_V, best: state.best, seen: state.seen, review: state.review, perTier: state.perTier,
-          tier: state.tier, taught: state.taught, piecesDone: state.piecesDone || {}
+          tier: state.tier, taught: state.taught, piecesDone: state.piecesDone || {},
+          savedAt: Date.now()
         }));
       } catch (_) { }
     };

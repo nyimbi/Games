@@ -151,7 +151,7 @@
       try {
         localStorage.setItem(KEY, JSON.stringify({
           v: RECORD_V, best: state.best, perTier: state.perTier,
-          review: state.review, seen: state.seen, tier: state.tier
+          review: state.review, seen: state.seen, tier: state.tier, savedAt: Date.now()
         }));
       } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
     };

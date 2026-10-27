@@ -274,7 +274,7 @@ h1 span{color:var(--seal)}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier }));
+      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, seen: state.seen, review: state.review, perTier: state.perTier, tier: state.tier, savedAt: Date.now() }));
     } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   };
 

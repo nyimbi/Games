@@ -363,7 +363,7 @@ h1 span{color:var(--sky-d)}
     if (s) state.progress = s.progress || {};
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, progress: state.progress })); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
+    try { localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, progress: state.progress, savedAt: Date.now() })); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
   function unlocked(i) { return i === 0 || (state.progress[LESSONS[i - 1].id] || 0) >= 80; }
 

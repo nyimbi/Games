@@ -215,8 +215,66 @@
     return { due, rest: pool.filter(f => !seenKeys.has(keyOf(f))) };
   }
 
+  /* ---------- mastery ----------
+   *
+   * `perLevel` is `{level -> best pct}`. It records the best run, not current
+   * ability, and the hub took `Math.max` over it: a child who scored 90% in
+   * March and 40% today showed three stars. That is a score, not an estimate
+   * of what the child can do now, and README.md:778 is explicit that the
+   * machine shelf excludes scores.
+   *
+   * The arena had this right -- it relaxes `ema` toward 0.5 by 0.12 per day
+   * away, capped at 7 days -- and nothing else had any decay at all. Rather
+   * than invent a second model, the same one is here, applied to the bucket
+   * the hub already reads.
+   *
+   * Three choices worth stating:
+   *
+   *   - It decays toward 0.5, not toward 0. A child away for a month has not
+   *     forgotten everything, and a card that reads "not started" after a
+   *     holiday is a card that punishes absence.
+   *   - The cap at 7 days means the curve flattens: one long absence is not
+   *     worse than a slightly longer one, so there is nothing to gain by
+   *     staying away or by rushing back.
+   *   - It reports; it gates nothing. Nothing here turns a game off.
+   */
+  const DECAY_PER_DAY = 0.12;
+  const DECAY_DAYS_CAP = 7;
+  const DAY_MS = 86400000;
+
+  function decayed(pct, savedAt, now) {
+    if (typeof pct !== 'number' || !isFinite(pct)) return 0;
+    const t = now || Date.now();
+    // Whole days only. The curve is stated per day, and a record written three
+    // hundred milliseconds ago is zero days old -- decaying it by a fraction
+    // of a day moved a 90% card to 89.99% and dropped it a star on the next
+    // render, which is a visible jump caused by nothing the child did.
+    const days = savedAt
+      ? Math.min(DECAY_DAYS_CAP, Math.max(0, Math.floor((t - savedAt) / DAY_MS)))
+      : 0;
+    if (days <= 0) return pct;
+    const frac = pct / 100;
+    const relaxed = frac + (0.5 - frac) * (days * DECAY_PER_DAY);
+    return Math.max(0, Math.min(100, relaxed * 100));
+  }
+
+  /* A card's mastery: the strongest level it has, decayed by how long ago the
+     record was written. `best` is the highest pct in the bucket, decayed as a
+     whole rather than per level -- a level's own timestamp does not exist, and
+     inventing one per level would be a second source of truth for the same
+     fact. */
+  function mastery(bucket, savedAt, now) {
+    let best = 0;
+    for (const v of Object.values(bucket || {})) {
+      if (typeof v === 'number') best = Math.max(best, v);
+      else if (v && typeof v.ema === 'number') best = Math.max(best, v.ema * 100);
+    }
+    return decayed(best, savedAt, now);
+  }
+
   window.ArcadeDeck = {
     freshFirst, markSeen, newCycle, shuffle, SEEN_CAP,
-    LADDER, nextInterval, isDue, dueCount, noteAttempt, reviewFirst
+    LADDER, nextInterval, isDue, dueCount, noteAttempt, reviewFirst,
+    DECAY_PER_DAY, DECAY_DAYS_CAP, decayed, mastery
   };
 })();

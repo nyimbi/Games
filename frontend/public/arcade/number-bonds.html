@@ -558,7 +558,7 @@ h1 span{color:var(--teal-d)}
   }
   const save = () => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen }));
+      localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, best: state.best, perMode: state.perMode, review: capReview(state.review), seen: state.seen, savedAt: Date.now() }));
     } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   };
 

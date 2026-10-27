@@ -557,18 +557,19 @@ footer .dot{opacity:.45;margin:0 8px}
     return res.data;
   }
 
-  /* A card's stars come from the best percentage it has stored. Every game
-     keeps a bucket of {level -> pct}; the arena keeps {skill -> {ema, n}}. */
+  /* A card's stars come from its mastery, not from its best-ever run. Every
+     game keeps a bucket of {level -> pct}; the arena keeps {skill -> {ema, n}}.
+     Reading `Math.max` over the bucket meant a child who scored 90% in March
+     and 40% today showed three stars -- a score, not an estimate of what they
+     can do now.
+
+     The estimate decays with the record's age, using the arena's own curve
+     (see ArcadeDeck.mastery). Games that stamp `savedAt` get a real age; games
+     that do not are treated as current, which is what they were before. */
   function bestPct(card) {
     const s = read(card.dataset.key);
     if (!s) return 0;
-    const bucket = s[card.dataset.bucket] || {};
-    let best = 0;
-    for (const v of Object.values(bucket)) {
-      if (typeof v === 'number') best = Math.max(best, v);
-      else if (v && typeof v.ema === 'number') best = Math.max(best, v.ema * 100);
-    }
-    return best;
+    return window.ArcadeDeck.mastery(s[card.dataset.bucket], s.savedAt);
   }
 
   function paintProgress() {

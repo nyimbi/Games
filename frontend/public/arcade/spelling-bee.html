@@ -457,7 +457,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     try {
       localStorage.setItem(KEY, JSON.stringify({
         v: RECORD_V, best: state.best, perTier: state.perTier, review: state.review,
-        seen: state.seen, tier: state.tier,
+        seen: state.seen, tier: state.tier, savedAt: Date.now(),
       }));
     } catch (_) {}
   };
