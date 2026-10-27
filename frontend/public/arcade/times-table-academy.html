@@ -337,6 +337,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   const TOTAL = 50;
   const KEY = 'arcade.times.v2';
   const R = window.ArcadeRecord;
+  const D = window.ArcadeDeck;
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
   const MG = window.MathsGame;
@@ -809,7 +810,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   function buildQueue() {
     const hi = state.table ? 20 : (state.mode === '1-10' ? 10 : 20);
     const out = Object.entries(state.review)
-      .filter(([k, r]) => r.due)
+      .filter(([k, r]) => D.isDue(r))
       // Level first, then rank, then take two. Slicing before the level filter
       // let two due facts from another table take both slots, so the in-level
       // fact was never served -- and the deck stayed 50 long, so it looked fine.

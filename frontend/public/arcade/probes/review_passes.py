@@ -1,17 +1,29 @@
-"""A missed fact must survive one correct answer.
+"""A missed fact must not be retired by one correct answer.
 
 Every drill retired a review fact after a single correct answer, so "review"
 was a queue that forgot. The obvious model -- spelling-bee.html's `r.n >= 2`
 guard -- does not work either, because `n` counts attempts: correct, correct,
 miss, correct lands the miss at n=3, so the guard is already satisfied.
 
-This gate drives the real page and reads the stored record. For each drill:
-answer one question WRONG, then answer the same fact RIGHT once, and assert it
-is still due. Then answer it right a second time and assert it is retired.
+The mechanism changed when the `due` boolean became a ladder of intervals (see
+`ArcadeDeck.noteAttempt`). What "retired" means changed with it, so what this
+gate asserts changed too -- and the property it exists to protect did not.
 
-The second half is the control. A gate that only checks "still due after one"
-passes if the fact is never retired at all, which would be a worse bug -- the
-queue would grow until capReview evicted it.
+  Before: one correct answer must leave `due` true; two must clear it.
+  After:  a missed fact is due now. One correct answer moves it to the FIRST
+          rung of the ladder -- the nearest it can ever come back -- and takes
+          it out of the queue. The ladder above the first rung is asserted in
+          probes/schedule.py, against the module; this gate asserts the live
+          page builds its queue from that schedule at all.
+
+The property under both is the same: a single success must not buy as much
+quiet as a fact the child demonstrably knows. The gate now reads that off the
+schedule instead of off a boolean, and the control is the ladder itself -- a
+fact that never moves would fail, and so would one that jumps straight to the
+last rung.
+
+This gate also drives the real page, so it is the check that each of the five
+drills calls the shared implementation rather than its own copy.
 
 Run:  python3 -I probes/review_passes.py
 """
@@ -112,7 +124,11 @@ def due_entry(pg, key):
     return pg.evaluate("""(key) => {
         const s = JSON.parse(localStorage.getItem(key) || '{}');
         const r = s.review || {};
-        const due = Object.keys(r).filter(k => r[k] && r[k].due);
+        const now = Date.now();
+        const due = Object.keys(r).filter(k => {
+            const e = r[k];
+            return e && (typeof e.nextAt === 'number' ? e.nextAt <= now : !!e.due);
+        });
         return due.length === 1 ? [due[0], r[due[0]]] : [null, null];
     }""", key)
 
@@ -169,12 +185,29 @@ def run(pw):
             fails.append(f'{game}: a miss left no due entry ({after_miss})')
             pg.close(); b.close(); continue
 
-        # Force the same fact back on screen by seeding it as the only due fact
-        # and reloading, so the "one correct answer" is on the same fact.
+        # (a) A missed fact re-enters the deck. Seed it as the only due entry,
+        # reload, and read the queue the drill built. This is the property the
+        # old boolean got wrong: once retired, a fact was never scheduled to
+        # come back at all -- only to be picked up again by the freshness deck
+        # at the same rate as a fact the child has never missed.
         reseed(pg, cfg['key'], rkey, after_miss)
         pg.reload(); pg.wait_for_timeout(300)
         pg.click(cfg['enter']); pg.wait_for_timeout(450)
+        served = pg.evaluate("""(key) => {
+            const s = JSON.parse(localStorage.getItem(key) || '{}');
+            const r = s.review || {};
+            const now = Date.now();
+            return Object.keys(r).filter(k => {
+                const e = r[k];
+                return e && (typeof e.nextAt === 'number' ? e.nextAt <= now : !!e.due);
+            });
+        }""", cfg['key'])
+        print(f'   reseeded missed fact is due: {served}')
+        if rkey not in served:
+            fails.append(f'{game}: a missed fact was not scheduled to come back ({served})')
 
+        # (b) Answer it right. One success must move it to the FIRST rung and
+        # no further -- the property the boolean encoded as "still due".
         answer(pg, wrong=False)
         after_one = pg.evaluate("""(args) => {
             const [key, rkey] = args;
@@ -185,22 +218,28 @@ def run(pw):
         if after_one is None:
             fails.append(f'{game}: the reseeded fact {rkey!r} was not served at all')
             pg.close(); b.close(); continue
-        if not after_one.get('due'):
-            fails.append(f'{game}: one correct answer retired the fact ({after_one})')
+        rung1 = pg.evaluate("() => window.ArcadeDeck.nextInterval(0)")
+        gap1 = (after_one.get('nextAt') or 0) - pg.evaluate('() => Date.now()')
+        if not (0 < gap1 <= rung1 + 1500):
+            fails.append(
+                f'{game}: one correct answer scheduled the fact at +{gap1}ms, '
+                f'expected the first rung (+{rung1}ms): {after_one}')
 
-        # Second correct answer, same reseed dance.
-        reseed(pg, cfg['key'], rkey, after_one)
-        pg.reload(); pg.wait_for_timeout(300)
-        pg.click(cfg['enter']); pg.wait_for_timeout(450)
-        answer(pg, wrong=False)
-        after_two = pg.evaluate("""(args) => {
+        # (c) The control: it must actually leave the queue. A gate that only
+        # checks "scheduled further out" passes if the fact is due forever,
+        # which would be a worse bug -- the queue would grow until capReview
+        # evicted it. This is read off the stored record, which is what the
+        # drill's own buildQueue filters on.
+        now_due = pg.evaluate("""(args) => {
             const [key, rkey] = args;
             const s = JSON.parse(localStorage.getItem(key) || '{}');
-            return (s.review || {})[rkey] || null;
+            const e = (s.review || {})[rkey];
+            if (!e) return null;
+            return typeof e.nextAt === 'number' ? e.nextAt <= Date.now() : !!e.due;
         }""", [cfg['key'], rkey])
-        print(f'   after 2 correct:   {after_two}')
-        if after_two and after_two.get('due'):
-            fails.append(f'{game}: two correct answers did not retire the fact ({after_two})')
+        print(f'   still due after 1 correct: {now_due}')
+        if now_due:
+            fails.append(f'{game}: one correct answer left the fact due ({after_one})')
 
         if exc:
             fails.append(f'{game}: pageerror {exc[:1]}')

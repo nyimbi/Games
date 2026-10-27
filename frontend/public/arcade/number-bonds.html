@@ -341,6 +341,7 @@ h1 span{color:var(--teal-d)}
   'use strict';
   const KEY = 'arcade.bonds.v4';
   const R = window.ArcadeRecord;
+  const D = window.ArcadeDeck;
   const TOTAL = 50;
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
@@ -578,7 +579,7 @@ h1 span{color:var(--teal-d)}
     // let two due facts from another whole take both slots, so the in-level
     // fact was never served -- and the deck stayed 50 long, so it looked fine.
     const out = Object.entries(state.review)
-      .filter(([k, r]) => r.due)
+      .filter(([k, r]) => D.isDue(r))
       .filter(([k]) => ws.includes(+k.split('|')[0]))
       .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)

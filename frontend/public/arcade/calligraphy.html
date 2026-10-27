@@ -519,9 +519,7 @@ h1 span{color:var(--seal)}
 
   /* ---------------- flow ---------------- */
   function noteFact(e, ok) {
-    const r = state.review[e.char] || { n: 0, miss: 0, due: false };
-    r.n++; if (!ok) { r.miss++; r.due = true; } else if (r.due) r.due = false;
-    state.review[e.char] = r;
+    window.ArcadeDeck.noteAttempt(state.review, e.char, ok);
   }
 
   function show(id) {

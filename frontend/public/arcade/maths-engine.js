@@ -78,8 +78,13 @@
     if (keys.length <= REVIEW_CAP) return review;
     keys.sort((x, y) => {
       const a = review[x], b = review[y];
-      // due first (kept), then most misses, then most attempts
-      if (!!a.due !== !!b.due) return a.due ? 1 : -1;
+      // due first (kept), then most misses, then most attempts. The due flag
+      // is read through isDue so an entry on the new schedule ranks by its
+      // nextAt rather than by a boolean that only ever describes the last
+      // answer -- a fact answered right an hour ago and one answered right a
+      // minute ago both carry due:false, and only the stamp separates them.
+      const aDue = window.ArcadeDeck.isDue(a), bDue = window.ArcadeDeck.isDue(b);
+      if (aDue !== bDue) return aDue ? 1 : -1;
       if ((a.miss || 0) !== (b.miss || 0)) return (a.miss || 0) - (b.miss || 0);
       return (a.n || 0) - (b.n || 0);
     });
@@ -96,24 +101,17 @@
    * counts attempts, not successes: trace correct, correct, miss, correct and
    * the miss lands at n=3, so one right answer still retires it.
    *
-   * `ok` counts consecutive correct answers since the last miss, and a fact
-   * leaves the queue after two. That is the smallest schedule that is a
-   * schedule: one success cannot distinguish knowing it from having guessed.
+   * The boolean was replaced by a ladder of intervals and a `nextAt` stamp in
+   * deck.js, because one bit cannot say how long a fact should stay out of the
+   * queue. The entry still carries `ok` (successes since the last miss) and
+   * `due` (kept in sync), so a record written by the previous build reads the
+   * same way. See `ArcadeDeck.noteAttempt` for why a miss is due now rather
+   * than two minutes out.
    */
   const REVIEW_PASSES = 2;
 
   function noteReview(review, key, right) {
-    const r = review[key] || (review[key] = { n: 0, miss: 0, ok: 0, due: false });
-    r.n = (r.n || 0) + 1;
-    if (right) {
-      r.ok = (r.ok || 0) + 1;
-      if (r.due && r.ok >= REVIEW_PASSES) r.due = false;
-    } else {
-      r.miss = (r.miss || 0) + 1;
-      r.ok = 0;
-      r.due = true;
-    }
-    return r;
+    return window.ArcadeDeck.noteAttempt(review, key, right);
   }
 
   /* Every fact, ordered by how long ago it was served. A deck shorter than the

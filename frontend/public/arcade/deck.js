@@ -87,5 +87,105 @@
     return pool.slice().sort((x, y) => (bucket[keyOf(x)] || 0) - (bucket[keyOf(y)] || 0));
   }
 
-  window.ArcadeDeck = { freshFirst, markSeen, newCycle, shuffle, SEEN_CAP };
+  /* ---------- the schedule ----------
+   *
+   * Every drill carried a boolean `due`. It says one thing -- "this fact was
+   * missed and has not been answered right REVIEW_PASSES times since" -- and
+   * one bit cannot express the question a schedule asks: how long since this
+   * was last served, and how well is it known.
+   *
+   * The consequences are concrete, not theoretical:
+   *
+   *   - A fact missed once and answered right twice leaves the queue forever.
+   *     It is not scheduled to come back; it is only picked up again by the
+   *     freshness deck, at the same rate as a fact never missed.
+   *   - The queue has no ordering among due facts beyond miss count. A fact
+   *     missed forty minutes ago and one missed eight times outrank by count,
+   *     not by how far it has decayed.
+   *   - "12 due for review" on the home screen counts facts that were missed
+   *     once, last month, and answered right since. It is a number that only
+   *     goes up and only ever describes the past.
+   *
+   * The replacement is the smallest schedule that is one: a ladder of
+   * intervals, chosen by whether the last answer was right, and a `nextAt`
+   * stamp. The intervals are in minutes and short because a child plays for
+   * ten minutes, not ten days -- a schedule whose first step is "tomorrow"
+   * never fires inside a session and is indistinguishable from no schedule.
+   *
+   * A miss resets to the first rung. A hit climbs one. The interval is read
+   * off the entry's own `n` (successes since the last miss), so the entry is
+   * self-describing: there is no separate ladder position to get out of sync.
+   *
+   * Deliberately NOT a streak. README.md:778 forbids anything that punishes
+   * absence: `nextAt` moving into the past while the child is away is the
+   * whole mechanism, and nothing about it reports lateness.
+   */
+  const LADDER = [2, 10, 60, 240, 1440];   // minutes
+
+  function nextInterval(step) {
+    const i = Math.max(0, Math.min(LADDER.length - 1, step | 0));
+    return LADDER[i] * 60000;
+  }
+
+  /* Is this entry ready to be served? An entry written by an older build has
+     no `nextAt`; it is due if it was flagged due, which is exactly the old
+     behaviour, so a record mid-migration does not lose its queue. */
+  function isDue(r, now) {
+    if (!r) return false;
+    if (typeof r.nextAt === 'number') return r.nextAt <= (now || Date.now());
+    return !!r.due;
+  }
+
+  function dueCount(review, now) {
+    const t = now || Date.now();
+    return Object.values(review || {}).filter(r => isDue(r, t)).length;
+  }
+
+  /* Record one attempt. A miss schedules the fact for now -- the child got it
+     wrong, so it belongs at the front of the next deck, which is exactly what
+     the boolean did. A success climbs the ladder.
+   *
+   * The asymmetry is deliberate and it is the whole schedule: the ladder
+   * describes how long a fact stays out of the queue once it is known, and a
+   * fact just missed is not known. A miss that pushed the fact even two
+   * minutes out would leave the home screen reading "0 due for review" the
+   * moment the child missed something, which is both false and the opposite of
+   * what a review count is for.
+   *
+   * `ok` is kept as the count of consecutive successes because capReview ranks
+   * on it and because a record written by the previous build carries it; `due`
+   * is kept in sync so the same record stays readable by both. The new fields
+   * are the ones the schedule actually reads. */
+  function noteAttempt(review, key, right, now) {
+    const t = now || Date.now();
+    const r = review[key] || (review[key] = { n: 0, miss: 0, ok: 0, nextAt: t });
+    r.n = (r.n || 0) + 1;
+    r.lastAt = t;
+    if (right) {
+      r.ok = (r.ok || 0) + 1;
+      r.nextAt = t + nextInterval(r.ok - 1);
+      r.due = false;
+    } else {
+      r.miss = (r.miss || 0) + 1;
+      r.ok = 0;
+      r.nextAt = t;
+      r.due = true;
+    }
+    return r;
+  }
+
+  /* Due first, most-missed first, then the rest of the deck. */
+  function reviewFirst(pool, review, keyOf, now) {
+    requireKeyOf(keyOf, 'reviewFirst');
+    const t = now || Date.now();
+    const due = pool.filter(f => isDue(review[keyOf(f)], t))
+      .sort((x, y) => ((review[keyOf(y)] || {}).miss || 0) - ((review[keyOf(x)] || {}).miss || 0));
+    const seenKeys = new Set(due.map(keyOf));
+    return { due, rest: pool.filter(f => !seenKeys.has(keyOf(f))) };
+  }
+
+  window.ArcadeDeck = {
+    freshFirst, markSeen, newCycle, shuffle, SEEN_CAP,
+    LADDER, nextInterval, isDue, dueCount, noteAttempt, reviewFirst
+  };
 })();

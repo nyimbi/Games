@@ -522,7 +522,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
   function buildQueue(pool, key, total) {
     const out = [];
     const due = Object.entries(state.review)
-      .filter(([, r]) => r.due)
+      .filter(([, r]) => window.ArcadeDeck.isDue(r))
       .map(([w]) => BY_WORD.get(w))
       .filter(w => w && pool.includes(w))
       .slice(0, 3);
@@ -909,11 +909,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
 
   /* ---------------- review ---------------- */
   function noteFact(w, right) {
-    const r = state.review[w.w] || { n: 0, miss: 0, due: false };
-    r.n++;
-    if (!right) { r.miss++; r.due = true; }
-    else if (r.due && r.n >= 2) r.due = false;
-    state.review[w.w] = r;
+    window.ArcadeDeck.noteAttempt(state.review, w.w, right);
   }
 
   /* ---------------- results ---------------- */
@@ -1013,7 +1009,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     }));
 
     const known = Object.values(state.review).filter(r => r.n > 0).length;
-    const due = Object.values(state.review).filter(r => r.due).length;
+    const due = window.ArcadeDeck.dueCount(state.review);
     const mastered = Object.values(state.review).filter(r => r.n >= 3 && r.miss === 0).length;
     $('stats').innerHTML = `
       <div class="stat"><b>${BANK.length}</b><span>words in the bank</span></div>

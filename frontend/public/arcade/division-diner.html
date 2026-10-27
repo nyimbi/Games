@@ -285,6 +285,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
   const TOTAL = 50;
   const KEY = 'arcade.division.v1';
   const R = window.ArcadeRecord;
+  const D = window.ArcadeDeck;
   const $ = id => document.getElementById(id);
   const rnd = n => Math.floor(Math.random() * n);
   const MG = window.MathsGame;
@@ -529,7 +530,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;font-family
     // let two due facts from another divisor take both slots, so the in-level
     // fact was never served -- and the deck stayed 50 long, so it looked fine.
     const out = Object.entries(state.review)
-      .filter(([k, r]) => r.due)
+      .filter(([k, r]) => D.isDue(r))
       .filter(([k]) => ds.includes(+k.split('|')[0]))
       .sort((x, y) => (y[1].miss || 0) - (x[1].miss || 0))
       .slice(0, 2)

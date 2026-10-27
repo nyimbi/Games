@@ -174,11 +174,7 @@
     }
 
     function noteFact(e, ok) {
-      const k = cfg.keyOf(e);
-      const r = state.review[k] || { n: 0, miss: 0, due: false };
-      r.n++;
-      if (!ok) { r.miss++; r.due = true; } else if (r.due) r.due = false;
-      state.review[k] = r;
+      window.ArcadeDeck.noteAttempt(state.review, cfg.keyOf(e), ok);
     }
 
     /* Same queue discipline as the maths drills: due reviews first, then
@@ -187,7 +183,7 @@
     function buildQueue(pool, name, total) {
       const out = [];
       Object.entries(state.review)
-        .filter(([, r]) => r.due)
+        .filter(([, r]) => window.ArcadeDeck.isDue(r))
         .map(([k]) => BY_KEY.get(k))
         .filter(e => e && pool.includes(e))
         .slice(0, 3)
@@ -234,7 +230,7 @@
       }));
 
       const known = Object.values(state.review).filter(r => r.n > 0).length;
-      const due = Object.values(state.review).filter(r => r.due).length;
+      const due = window.ArcadeDeck.dueCount(state.review);
       const clean = Object.values(state.review).filter(r => r.n >= 3 && r.miss === 0).length;
       $('stats').innerHTML = `
         <div class="stat"><b>${BANK.length}</b><span>entries in the bank</span></div>

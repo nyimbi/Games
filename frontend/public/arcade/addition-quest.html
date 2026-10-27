@@ -383,6 +383,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   const TOTAL = 50;
   const KEY = 'arcade.addition.v3';
   const R = window.ArcadeRecord;
+  const D = window.ArcadeDeck;
   const LEVELS = ['bond', '1', '2', '3'];
   const LABEL = { bond: 'Make 10', '1': '1-digit', '2': '2-digit', '3': '3-digit' };
   const $ = id => document.getElementById(id);
@@ -662,7 +663,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   }
   function reviewFacts(level) {
     return Object.entries(state.review)
-      .filter(([k, r]) => r.due && k.startsWith(level + '|'))
+      .filter(([k, r]) => D.isDue(r) && k.startsWith(level + '|'))
       .map(([k]) => { const [, a, b] = k.split('|'); return { a: +a, b: +b }; });
   }
 

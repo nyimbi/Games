@@ -179,14 +179,12 @@
     const topicOf = t => BANK.filter(q => q.topic === t);
 
     function noteFact(q, ok) {
-      const r = state.review[keyOf(q)] || { n: 0, miss: 0, due: false };
-      r.n++; if (!ok) { r.miss++; r.due = true; } else if (r.due) r.due = false;
-      state.review[keyOf(q)] = r;
+      window.ArcadeDeck.noteAttempt(state.review, keyOf(q), ok);
     }
 
     function buildQueue(pool, name, total) {
       const bucket = state.seen[name] || (state.seen[name] = {});
-      const due = Object.entries(state.review).filter(([, r]) => r.due)
+      const due = Object.entries(state.review).filter(([, r]) => window.ArcadeDeck.isDue(r))
         .map(([k]) => pool.find(q => keyOf(q) === k)).filter(Boolean).slice(0, 2);
       const order = freshFirst(pool.filter(q => !due.includes(q)), bucket, keyOf);
       return due.concat(order).slice(0, Math.min(total, due.length + order.length));
