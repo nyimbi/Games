@@ -254,6 +254,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
 </style>
   <script src="./errors.js"></script>
   <script src="./escape.js"></script>
+  <script src="./wordproblems.js"></script>
   <script src="./deck.js"></script>
   <script src="./record.js"></script>
 </head>
@@ -811,6 +812,19 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
         : 'Add the ones first. Regroup ten ones into a ten, then add the tens.';
     // Three-digit sums are where a carried digit goes wrong unnoticed.
     if (state.index >= 2 && q.level === '3') checkPlausible(q, false);
+    // Every fourth question is told as a story, with the columns hidden so
+    // the story is the question. Most three-digit sums have no story -- see
+    // the module's ceiling note -- and show as a column sum, which is right.
+    // The bond level passes `null` instead of skipping the call: `apply` clears
+    // the box and restores the digits, and a skipped call would leave the
+    // previous question's story on screen under a different sum. It is passed
+    // no fact because a bond's answer is the missing part while a story asks
+    // for the total, so a story here would be asking a different question from
+    // the one this page grades.
+    if (window.ArcadeStory) {
+      window.ArcadeStory.apply('addition-quest', q.level === 'bond' ? null : q,
+        state.index, ['#qTop', '#qBot']);
+    }
   }
 
   function paintAnswer() {

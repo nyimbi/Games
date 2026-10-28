@@ -65,15 +65,23 @@ DRILLS = {
     },
     'addition-quest': {
         'key': 'arcade.addition.v3', 'enter': '#tabPractice',
+        # Two shapes. The column sum speaks "3 plus 7"; the bond speaks
+        # "3 plus what makes 10?", because the old wording read the missing
+        # part aloud to a screen reader while the sighted child saw a blank.
+        # The bond's key is still `a|b`, so b is recovered from the whole.
         'qkey': """() => {
             const t = document.getElementById('qsay').textContent;
-            const m = /(\\d+) plus (\\d+)/.exec(t);
+            let m = /(\\d+) plus what makes (\\d+)/.exec(t);
+            if (m) return `${m[1]}|${+m[2] - +m[1]}`;
+            m = /(\\d+) plus (\\d+)/.exec(t);
             return m ? `${m[1]}|${m[2]}` : null;
         }""",
         'answer': """() => {
             const t = document.getElementById('qsay').textContent;
-            const m = /(\\d+) plus (\\d+)/.exec(t);
-            return String(+m[1] + +m[2]);
+            let m = /(\\d+) plus what makes (\\d+)/.exec(t);
+            if (m) return String(+m[2] - +m[1]);
+            m = /(\\d+) plus (\\d+)/.exec(t);
+            return m ? String(+m[1] + +m[2]) : null;
         }""",
     },
     'subtraction-safari': {
@@ -144,7 +152,12 @@ def reseed(pg, key, rkey, entry):
 
 def answer(pg, wrong):
     """Type a wrong answer, submit, then advance to the same fact again."""
+    assert DRILLS_CURRENT is not None
     ans = pg.evaluate(f"() => ({DRILLS_CURRENT['answer']})()")
+    # The reader returns null on a question shape it does not recognise -- the
+    # bond's "plus what makes" is one. Typing the string "None" would then be
+    # graded as a wrong answer and read as a passing miss.
+    assert ans is not None, f'no answer read off {DRILLS_CURRENT["key"]}; the matcher missed the wording'
     if wrong:
         # a wrong answer must differ from the right one and be non-empty
         bad = '0' if ans != '0' else '1'

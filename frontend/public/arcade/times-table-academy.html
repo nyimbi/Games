@@ -214,6 +214,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
 </style>
   <script src="./errors.js"></script>
   <script src="./escape.js"></script>
+  <script src="./wordproblems.js"></script>
   <script src="./deck.js"></script>
   <script src="./record.js"></script>
 </head>
@@ -886,6 +887,9 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
     $('hint').textContent = state.table
       ? `${state.table} groups of ${q.b}. Count up in ${state.table}s.`
       : 'Use a trick: double, halve, or take one away from ten.';
+    // The array picture and the story say the same thing two ways; showing
+    // both at once is the child reading the answer off the dots.
+    if (window.ArcadeStory) window.ArcadeStory.apply('times-table-academy', q, state.index, ['.qcard', '#miniarray']);
 
     const ma = $('miniarray');
     ma.innerHTML = '';

@@ -223,6 +223,7 @@ h1 span{color:var(--teal-d)}
 </style>
   <script src="./errors.js"></script>
   <script src="./escape.js"></script>
+  <script src="./wordproblems.js"></script>
   <script src="./deck.js"></script>
   <script src="./record.js"></script>
 </head>
@@ -662,6 +663,10 @@ h1 span{color:var(--teal-d)}
       : blank === 'a'
         ? `Count up from ${b} to ${whole}.`
         : `Count up from ${a} to ${whole}.`;
+    // Every fourth question is told as a story. The bonds diagram is the
+    // symbol, and hiding it is what makes the story the question rather than
+    // a caption under the answer.
+    if (window.ArcadeStory) window.ArcadeStory.apply('number-bonds', q, state.index, ['.bonds']);
   }
 
   function paintInput() {

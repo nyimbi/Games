@@ -32,6 +32,7 @@ piecegen.js             193   the eight pieces as a distribution, walked from a 
 conjugation.js          150   the present tense of the bank's verbs, -er derived
 maths-engine.js         348   deck, audio, confetti + lesson overlay: the five maths drills
 worksheet.js             98   a finished deck as a printed sheet, answers left off
+wordproblems.js         386   a fact told as a story: 12 templates, 12 units, 8 containers
 piano.html              320   home, quiz, play and lesson stages
 calligraphy.html        769   own stroke-matching logic (no engine); writes the order out
 
@@ -79,7 +80,7 @@ Which page loads what:
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
-| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `worksheet.js`, `session.js` |
+| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `worksheet.js`, `wordproblems.js`, `session.js` |
 | `infinite-arena.html`, `typing-tutor.html` | `session.js` only |
 | `savanna-run.html` | `algebra-bank.js`, `african-history.js`, `session.js` |
 | `index.html`, `session.html` | `session.js` |

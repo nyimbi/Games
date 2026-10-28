@@ -270,7 +270,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-28 Kiswahili agreement ✅ | — |
 | F-29 Mandarin tone pairs ✅ | — |
 | F-27 French conjugation ✅ | F-11 |
-| F-21 word problems | F-17 |
+| F-21 word problems ✅ | F-17 |
 | F-36 printed worksheet ✅ | — |
 
 **Why these can run in parallel.** Each touches one page and one bank. None shares a data structure with another. This is the phase to parallelise if more than one person is working.
@@ -294,6 +294,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-36 printed worksheet | `worksheet.js` — `fromQueue` formats each drill's own queue, `render` lays out the blanks, one `@media print` rule hides the page by position; a button mounted into each drill's done screen | `worksheet.py` |
 | F-27 French conjugation | `conjugation.js` — `FORMS` (22 verbs × 6 persons), `regular` derives the -er class from the stem, `subject` applies the elision, `questions` enumerates the 132 verb/person pairs; `french.html`'s *Conjugate* mode asks one verb in one person with the other persons as the options | `conjugate.py` |
 | F-29 Mandarin tone pairs | `tone-sandhi.js` — `written`/`spoken`/`yi`/`bu`/`cells`/`deck`/`options`; `chinese.html`'s *Said, not written* mode asks the spoken pattern against the spelling, which is always among the wrong options | `sandhi.py` |
+| F-21 word problems | `wordproblems.js` — `factOf` maps each drill's own question to `{op,x,y}`, 12 templates over 12 units and 8 containers, `fits` applies both ceilings, `apply` shows a story every fourth question and hides the symbolic form; the five drills each pass their question and their own digit selectors | `wordproblems.py` |
 
 **F-29 found a live data defect and a convention the spec did not anticipate.** 回家 huíjiā stored `tones: "2 2"` against a pinyin spelling of 2 then 1, and its trap told the child both syllables rise. The tone mode grades against that field, so it was teaching the wrong pattern. Fixed in the bank; the probe's first claim is the one that would catch it coming back.
 
@@ -324,6 +325,14 @@ Three things F-17 changed that the plan did not anticipate:
 **F-36's probe had to be made to fail before it could pass.** The first version recomputed each answer from the printed row and asserted the row did not contain it -- and it flagged `4.0 + 2 = ☐` as leaking `2`, because the answer to `0 + 2` is one of its own operands. That is true of every `+ 0` fact and most `× 1` ones, so the predicate was wrong, not the sheet. Worse, the ordinal split ate a leading digit: `4.0 + 2` became `0 + 2`. The claim that works is structural rather than numeric -- every row carries exactly one blank and exactly two numbers, so a printed answer is a row with three numbers and a missing blank is a row with one. Five canaries confirm it: the answer written into the blank, the answer as a `data-answer`, the print rule deleted, `close` keeping the markup, and the sheet truncated to 25 rows.
 
 **The worksheet's play-out loop was testing the wrong thing.** The first version played fifty questions to reach a visible button. That is two minutes of clicking per drill, it failed intermittently on subtraction because a wrong answer reveals Next rather than advancing, and it was re-testing the drill's advance path, which `grading.py` already owns. The button is mounted at load and reads `state.queue`, which `start` fills, so the deck is complete the moment the drill starts -- clicked through the DOM, the probe runs in seconds and its failures are about the sheet.
+
+**F-21: the story must not ask a different question from the one the drill grades.** A bond's answer is the missing part; a story asks for a total. Handing a bond fact to the template layer produced a story whose answer was the whole while the box graded the part -- two right answers, and the child told they were wrong. The bond level now passes `null`, which still runs `apply` so the previous question's story is cleared. It does not skip the call: `style.display` set on one question outlives the next one's `innerHTML` rewrite, so a skipped call leaves a story on screen under a different sum.
+
+**The numeral check had to compare sets, not counts.** `5 + 5` is "5 shells and 5 shells": the operand appears twice, so a deduplicated want compared against a non-deduplicated have reported every square fact as a red herring. The template is also allowed to spell a container count of one -- "There is one jar, with 2 marbles in it" -- which is why the check admits `one` as the numeral 1, and only when an operand is 1.
+
+**The cadence is deterministic; whether a fact has a story is not.** `wanted(index)` is true at 3, 7, 11, but a subtraction with `b = 0` has no story and the deck is shuffled, so the claim is about which positions *may* hold a story. The first version bounded the count -- "at most three in eight" -- and the canary that halved the interval passed it: two in four is three in eight. The assertion is now positional, and the canary trips.
+
+**Two content bugs the probe found, both from a noun doing double duty.** `mul-groups` wrote "There are 1 drawers"; the count of containers needs `counted(c.b, c.p1)`, and a count of one needs its own branch, because "one drawer" and "1 drawer" are different sentences and only the second can be assembled by concatenation. `mul-rows` read `b` as a row count and produced "a basket holds 1 rows of 7 stamps", so it requires `b >= 2`.
 
 **Two of F-28's canaries first reported as construction errors.** Canaries B and C surfaced as 30-second click timeouts rather than findings: a render that throws leaves nothing to click, so the defect buried itself under a harness race. Bounding the default timeout and driving the loop off `#dNum`, the engine's own question counter, turned both into named failures. The last question has no successor — answering it flips `#done` and `#dNum` stops moving — which the first version of that check reported as "question 30 never advanced".
 

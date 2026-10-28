@@ -57,8 +57,12 @@ DRILLS = {
     'addition-quest': {
         'key': 'arcade.addition.v3', 'bucket': 'bond', 'enter': '#tabPractice',
         'facts': 'a => { const o=[]; for (let x=0;x<=10;x++) o.push(`${x}|${10-x}`); for (let w=5;w<=12;w++) for (let x=0;x<=w;x++) o.push(`${x}|${w-x}`); return o; }',
-        'match': 'q => /(\\d+) plus (\\d+)/.exec(q)',
-        'asked': 'm => m ? `${m[1]}|${m[2]}` : null',
+        # The bond speaks "6 plus what makes 10?", not "6 plus 4": the old
+        # wording read the missing part aloud to a screen reader while the
+        # sighted child saw a blank. The fact is still `a|b`, with b recovered
+        # from the whole.
+        'match': 'q => { let m = /(\\d+) plus what makes (\\d+)/.exec(q); if (m) return {a: +m[1], b: +m[2] - +m[1]}; m = /(\\d+) plus (\\d+)/.exec(q); if (!m) return null; return {a: +m[1], b: +m[2]}; }',
+        'asked': 'm => m ? `${m.a}|${m.b}` : null',
     },
     'subtraction-safari': {
         'key': 'arcade.subtraction.v3', 'bucket': 'bond', 'enter': '#tabPractice',

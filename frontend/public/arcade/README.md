@@ -42,6 +42,7 @@ piecegen.js            the eight pieces as a distribution, walked from a seed
 conjugation.js         the present tense of the bank's verbs, with the -er class derived
 maths-engine.js        the five maths drills — freshness deck, audio, confetti, lesson overlay
 worksheet.js           a finished deck as a printed sheet, answers left off
+wordproblems.js        the same fact told as a story, every fourth question
 
 ── content banks ──
 spelling-bank.js       1,239 words in three tiers, each with a rule and an origin
@@ -85,7 +86,7 @@ Which page loads what:
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |
-| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `worksheet.js`, `session.js` — the drill's own model inline |
+| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `worksheet.js`, `wordproblems.js`, `session.js` — the drill's own model inline |
 | `infinite-arena.html` | `skills.js`, `session.js` — the engine is inline; the skill graph is data |
 | `savanna-run.html` | `algebra-bank.js`, `african-history.js`, `session.js` — the engine is inline; the equations and the history are data |
 | `typing-tutor.html` | `session.js` only — carries its own engine inline |

@@ -72,7 +72,11 @@ DRILLS = {
             '3|13|5': {'n': 3, 'miss': 2, 'due': True},
             'bond|3|7': {'n': 3, 'miss': 2, 'due': True},
         },
-        'want': '3 plus 7',
+        # The bond speaks the whole, not the addend: `bond|3|7` is `3 + ? = 10`,
+        # and saying "3 plus 7" read the missing part aloud to a screen reader
+        # while the sighted child saw a blank. Pinning the whole also pins the
+        # sum the fixture keys on.
+        'want': '3 plus what makes 10?',
     },
     'subtraction-safari': {
         'key': 'arcade.subtraction.v3', 'enter': '#tabPractice',
