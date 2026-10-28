@@ -266,7 +266,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-25 generated pieces ✅ | — |
 | F-15 typing weak-key drill ✅ | — |
 | F-28 Kiswahili agreement ✅ | — |
-| F-29 Mandarin tone pairs | — |
+| F-29 Mandarin tone pairs ✅ | — |
 | F-27 French conjugation | F-11 |
 | F-21 word problems | F-17 |
 | F-36 printed worksheet | — |
@@ -289,6 +289,15 @@ Three things F-17 changed that the plan did not anticipate:
 | F-15 typing weak-key drill | `typing-tutor.html` — `state.weak` (cumulative, saved), `buildDrill`, `curriculum`, `easeDrill`; a thirteenth card appended after the twelve, generated from the five worst keys and halved by a clean run | `typing_drill.py` |
 | F-25 generated pieces | `piecegen.js` — `profile` measures range, pitch classes, steps, durations and first notes off `PIANO_PIECES`; `generate` walks that distribution from a seed with a boundary reflection and rejection on the steps; `piano.html`'s `#pGen` opens one | `pieces.py` |
 | F-28 Kiswahili agreement | `swahili-agree.js` — `STEMS` (four stems, ≥3 distinct forms each), `asks`, `cite`, `question`; `swahili.html`'s `agree` mode asks which form agrees with a named noun, options drawn from the one stem | `swahili_agree.py` |
+| F-29 Mandarin tone pairs | `tone-sandhi.js` — `written`/`spoken`/`yi`/`bu`/`cells`/`deck`/`options`; `chinese.html`'s *Said, not written* mode asks the spoken pattern against the spelling, which is always among the wrong options | `sandhi.py` |
+
+**F-29 found a live data defect and a convention the spec did not anticipate.** 回家 huíjiā stored `tones: "2 2"` against a pinyin spelling of 2 then 1, and its trap told the child both syllables rise. The tone mode grades against that field, so it was teaching the wrong pattern. Fixed in the bank; the probe's first claim is the one that would catch it coming back.
+
+**Pinyin already spells 一 and 不.** The spec asks for a tone-pair drill from the 4×4 space, which suggests applying sandhi to the bank's `tones`. But 一起 is written yìqǐ and 一定 is written yídìng — the spelling holds the *changed* tone. A module that read those as citation and then applied the rules would double-apply them and produce yí for 一起, which nobody says. So `written` is the spelling and the only rule that fires is 3+3, which pinyin never writes. `yi`/`bu` are stated anyway and the probe checks the bank's spellings against them; 对不起 duìbuqǐ is the documented exception, where the word neutralises 不 and no pair rule can know.
+
+**The deck has to reach the cells where nothing happens.** A drill built from the 3+3 cell alone is one rule repeated, and a child who answers 2 3 every time scores 100%. The deck draws from all sixteen cells, so that child is wrong in fifteen. The canary that restricts the deck to 3+3 fails on two counts: cell coverage and the no-change share.
+
+**One canary tested nothing because it was the same code.** Replacing `w[i]` with `out[i]` in a left-to-right loop leaves `out[i + 1]` still unchanged, so the mutation is a no-op. The mutation the comment actually describes is a right-to-left pass, which gives 3 2 3 for a run of three and fails the claim. A canary that does not change the behaviour cannot test the behaviour.
 
 **F-15 needed a second counter.** The spec said the weak-key list was "computed on every `paintWeak()` call and thrown away", which is half true: it was also cleared at `startLesson`, so it was per-run as well as per-render. A drill built from `keyErr` would have existed only while a lesson was being played badly and vanished when the child started the drill. `state.weak` is the same count kept across runs and saved with the record, and it is what `buildDrill` reads; `keyErr` stays the on-screen chips.
 

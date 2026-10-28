@@ -245,7 +245,14 @@
       state.mode = mode;
       const name = tierKey(state.tier) + ':' + mode;
       const pool = modePool(mode, state.tier);
-      state.queue = buildQueue(pool, name, mode === 'learn' ? Math.min(TOTAL, pool.length) : TOTAL);
+      /* A mode whose questions are *made* rather than picked -- the tone
+         sandhi pairs are every combination of four tones, not entries in the
+         bank -- supplies its own queue. It is the same hook either way, so
+         the rest of the engine does not need to know which kind it has. */
+      const made = cfg.deck ? cfg.deck(mode, pool, name, TOTAL) : null;
+      state.queue = made && made.length
+        ? made
+        : buildQueue(pool, name, mode === 'learn' ? Math.min(TOTAL, pool.length) : TOTAL);
       state.index = 0; state.right = 0; state.misses = []; state.hintUsed = false;
       state.modeName = name;
       show(mode === 'learn' ? 'learn' : 'drill');

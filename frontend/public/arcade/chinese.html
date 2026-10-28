@@ -212,6 +212,7 @@ h1 span{color:var(--blue)}
 </div>
 
 <script src="./chinese-bank.js"></script>
+<script src="./tone-sandhi.js"></script>
 <script src="./lang-engine.js"></script>
 <script src="./session.js"></script>
 <script>
@@ -261,6 +262,33 @@ h1 span{color:var(--blue)}
     };
   }
 
+  /* What is written against what is said.
+   *
+   * The tone mode asks for the pattern the bank stores, which is pinyin
+   * spelling. Spelling writes 3 3 for 你好 and every speaker says 2 3, so the
+   * child who reads the spelling aloud is right about the word and wrong
+   * about the sound. This asks the other question: what does it sound like?
+   *
+   * The options are the four patterns the module offers, of which the answer
+   * is the spoken one and the spelling is always among the wrong ones when
+   * the two differ. That is the mistake the card exists to catch. */
+  function sandhiPrompt(e) {
+    const T = window.ArcadeToneSandhi;
+    if (!T) return tonePrompt(e);
+    const opts = T.options(e, Math.random);
+    return {
+      type: 'choose', kind: 'Said, not written',
+      prompt: `<p class="big" style="font-size:2.2rem">${esc(e.hanzi)}</p>` +
+        `<p class="small">${esc(e.pinyin)} — written <b>${esc(e.tones)}</b>. How is it said?</p>`,
+      options: opts,
+      answer: e.spoken, short: e.pinyin,
+      hint: e.trap,
+      note: e.spoken === e.tones
+        ? 'Written and said the same: no tone here changes.'
+        : `Written ${e.tones}, said ${e.spoken}.`
+    };
+  }
+
   function sw2en(e) {
     return {
       type: 'choose', kind: 'Meaning',
@@ -272,6 +300,7 @@ h1 span{color:var(--blue)}
 
   function prompt(mode, e, bank) {
     if (mode === 'tone') return tonePrompt(e);
+    if (mode === 'sandhi') return sandhiPrompt(e);
     if (mode === 'zh2en') {
       return {
         type: 'choose', kind: 'Meaning',
@@ -319,6 +348,7 @@ h1 span{color:var(--blue)}
     modes: [
       { id: 'learn', icon: '📖', name: 'Learn', desc: 'Character, pinyin, meaning, radical, strokes and a sentence.' },
       { id: 'tone', icon: '🎵', name: 'Tones', desc: 'The same syllable means four things. Pick the tone pattern.' },
+      { id: 'sandhi', icon: '🔊', name: 'Said, not written', desc: 'Written 3 3 is said 2 3. Pick the pattern you would hear.' },
       { id: 'zh2en', icon: '🇨🇳', name: 'Character → English', desc: 'Read the character, pick the meaning.' },
       { id: 'pinyin', icon: '✍️', name: 'Write the pinyin', desc: 'Type the pinyin. Tone marks forgiven, syllables not.' },
       { id: 'pick', icon: '🀄', name: 'Pick the character', desc: 'Given the meaning and pinyin, choose the character.' }
@@ -337,6 +367,14 @@ h1 span{color:var(--blue)}
     ],
     extra: e => `<div class="exrow"><span class="extag">Pinyin</span><p>${esc(e.pinyin)} — tones ${esc(e.tones)}.</p></div>` +
       `<div class="exrow"><span class="extag">Build</span><p>Radical ${esc(e.radical)}, ${e.strokes} strokes.</p></div>`,
+    // The sandhi mode's questions are pairs, not bank entries: every
+    // combination of the four tones, built from the bank's own single
+    // syllables so each half is a character the child has met.
+    deck: (mode, pool, name, total) => {
+      const T = window.ArcadeToneSandhi;
+      if (mode !== 'sandhi' || !T) return null;
+      return T.deck(BANK, total, Math.random);
+    },
     prompt: (mode, e, bank) => prompt(mode, e, bank),
     check
   });

@@ -34,6 +34,7 @@ session.js             session state — plan, streak, completion, the alternati
 
 ── shared engines (hold the interaction; banks hold the content) ──
 lang-engine.js         French, Kiswahili, Mandarin — one quiz engine, three vocabularies
+tone-sandhi.js         written tones against spoken: 你好 is written 3 3 and said 2 3
 science-engine.js      physics, chemistry — one quiz engine plus the lesson system
 piano-engine.js        the piano course — staff renderer, keyboard, synth, play stage
 ear.js                 hearing the answer you chose against the one that was
@@ -69,7 +70,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               thirty-two Playwright probes run against the pages from file://
+probes/               thirty-three Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
