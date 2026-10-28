@@ -9,7 +9,7 @@
 ## The hard invariants (break these and the product changes, not the code)
 
 - [Offline-only](index.html): zero `fetch`, zero `XMLHttpRequest`, zero external fonts or icon
-  fonts across all 18 pages, and no third-party library at all. Any new asset must be inline SVG
+  fonts across all 19 pages, and no third-party library at all. Any new asset must be inline SVG
   or a sibling `.js`/`.png` file. A page that pulls from a CDN is a broken guarantee, not a slow
   page. Probe: wire a `request` listener in Playwright and assert every URL starts with the served
   base; then load the page from `file://` with `context.set_offline(True)` and assert it still
@@ -146,6 +146,20 @@
   WebGL meshes and textures would break all three. Parallax is derived from scroll offset, not from
   spawned objects, so nothing accumulates between runs.
 - Record: `arcade.savanna.v1` = `{ best, perLevel, review, seen, savedAt }`.
+
+## Typing weak-key drill
+
+- [typing-tutor.html](typing-tutor.html): a miss is recorded against the key that was **wanted**, and
+  `state.weak` keeps that count across runs. Twelve fixed lessons, plus a thirteenth card generated
+  from the five worst keys — appended last so `state.lesson` still indexes the fixed twelve, always
+  unlocked, and never scored, because its text is regenerated on every finish.
+- The drill's text is lesson words scored by how many weak keys they carry, top fourteen, plus a
+  four-key run for any named key those fourteen leave out. A key named and never asked for is a
+  label, not a lesson, and `;` lives in exactly one word in the corpus. Space cannot appear inside
+  a word, so a space-only child gets the shortest words instead.
+- Playing the drill clean **halves** the counts it was built on. Without that the counter only
+  rises, and "your hardest keys" becomes a fact about history rather than about now.
+- Probe: `probes/typing_drill.py`.
 
 ## The pages and their shape
 

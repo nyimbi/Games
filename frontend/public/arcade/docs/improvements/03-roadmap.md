@@ -250,11 +250,11 @@ Three things F-17 changed that the plan did not anticipate:
 
 | Item | Depends on |
 |---|---|
-| F-23 stroke-order practice | — |
-| F-24 shape vs order scoring | F-23 |
+| F-23 stroke-order practice ✅ | — |
+| F-24 shape vs order scoring ✅ | F-23 |
 | F-26 ear trainer | — |
 | F-25 generated pieces | — |
-| F-15 typing weak-key drill | — |
+| F-15 typing weak-key drill ✅ | — |
 | F-28 Kiswahili agreement | — |
 | F-29 Mandarin tone pairs | — |
 | F-27 French conjugation | F-11 |
@@ -275,6 +275,13 @@ Three things F-17 changed that the plan did not anticipate:
 |---|---|---|
 | F-23 stroke-order animation | `stroke-anim.js` — `timeline`, `at`, `lengthOf`, `pathD`; `calligraphy.html`'s `playOrder`/`stopOrder` draw the whole character in bank order | `stroke.py` |
 | F-24 shape vs order | `stroke-grade.js` — `strokeScore` (16-point resample + chord cosine), `diagnose` (`right`/`later`/`earlier`/`shape`); the page branches on the verdict and names the position | `strokeorder.py` |
+| F-15 typing weak-key drill | `typing-tutor.html` — `state.weak` (cumulative, saved), `buildDrill`, `curriculum`, `easeDrill`; a thirteenth card appended after the twelve, generated from the five worst keys and halved by a clean run | `typing_drill.py` |
+
+**F-15 needed a second counter.** The spec said the weak-key list was "computed on every `paintWeak()` call and thrown away", which is half true: it was also cleared at `startLesson`, so it was per-run as well as per-render. A drill built from `keyErr` would have existed only while a lesson was being played badly and vanished when the child started the drill. `state.weak` is the same count kept across runs and saved with the record, and it is what `buildDrill` reads; `keyErr` stays the on-screen chips.
+
+**The cover rule was tested by a fixture that could not fail.** The first probe seeded four keys the corpus carries in many words. The canary that removed the cover rule passed clean, because every seeded key already appeared in the top fourteen words — the test was a fixture where the bug could not appear. The fixture that works pits `e`, the commonest letter in the corpus, against `;`, which appears in one word: `e` fills all fourteen slots and `;` is crowded out, which is the case the rule exists for. Same lesson as the `href="/…"` link checker: a predicate that only ever sees the passing case is not a predicate.
+
+**Two guards were redundant, and the probe said so.** `buildDrill` had `if (!ranked.length) return null` and `if (!text) return null`. Disabling either alone left every claim passing — an empty `weak` map produces no scored words, so `text` is empty and the second guard catches it; and an empty `text` cannot arise while `ranked` is non-empty except through the space-only path, which the fallback now handles. The first guard was removed rather than kept as belt-and-braces: a guard no test can distinguish is a line that will drift.
 
 
 ---

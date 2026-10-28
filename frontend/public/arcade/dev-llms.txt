@@ -9,8 +9,8 @@ Line numbers are approximate — they drift with every edit. Names and constants
 ## The inventory
 
 ```
-20,142 lines across 45 source files (19 pages, 26 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus twenty-eight Playwright probes in `probes/`.
+20,727 lines across 47 source files (19 pages, 28 scripts). No build, no bundler, no test runner.
+Verification is `node --check` per inline block plus twenty-nine Playwright probes in `probes/`.
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
@@ -35,8 +35,8 @@ subtraction-safari.html 974
 times-table-academy.html 1057
 division-diner.html     720
 infinite-arena.html     760   weighted generator, not a deck
-savanna-run.html        837   canvas runner: algebra gates, history levels
-typing-tutor.html       616
+savanna-run.html        853   canvas runner: algebra gates, history levels
+typing-tutor.html       793   twelve lessons + a generated weak-key drill
 spelling-bee.html      1115   own engine + 4 modes
 how-things-work.html    380   iframe wrapper over figures/
 
@@ -57,9 +57,9 @@ maths-lessons.js        MATHS_LESSONS       20 (4 per drill), keyed by drill the
 piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
-probes/                 24 Playwright probes: lessons, grading, shell, freshness, ...
+probes/                 29 Playwright probes: lessons, grading, shell, freshness, ...
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
-docs/design.md          370   the design narrative
+docs/design.md          453   the design narrative
 ```
 
 Which page loads what:
@@ -392,21 +392,34 @@ Notable per file:
   `alpha = n < 5 ? .45 : .22`, clamped `[.02, .99]`. `endRun` (611) shows `#summaryPanel`. Decay on
   load: `ema += (0.5-ema) * (days*0.12)`, days capped at 7. No `review` at all.
 
-### typing-tutor.html (652)
+### typing-tutor.html (793)
 
-`arcade.typing.v1` = `{ progress: { lessonId: bestAccuracy } }`. Twelve lessons in `LESSONS`
-(299–324), each `{id, name, desc, lines}`; a run is `lines.slice(0,3).join(' ')` (424). Unlock:
-`unlocked(i) = i === 0 || (progress[LESSONS[i-1].id] || 0) >= 80` (343).
+`arcade.typing.v1` = `{ progress: { lessonId: bestAccuracy }, weak: { key: misses } }`. Twelve
+lessons in `LESSONS` (322–349), each `{id, name, desc, lines}`; a run is
+`lines.slice(0,3).join(' ')` (561). Unlock: `unlocked(i)` (472) reads `curriculum()[i]`, which is
+`LESSONS` plus the drill appended last (370); the drill is always unlocked, because it is earned by
+the mistakes that built it rather than by the lesson before it.
+
+**The weak-key drill (F-15).** `state.weak` counts every miss against the key that was *wanted*,
+cumulatively across runs and saved with the record; `state.keyErr` is this run and drives the
+on-screen chips. `buildDrill()` (374) ranks `weak`, scores every word in the twelve lesson texts by
+how many of the five worst keys it carries, takes the top fourteen, and appends a four-key run for
+any named key the fourteen leave out — the only way `;`, present in one word in the corpus, gets
+practised. Space cannot sit inside a word, so a space-only child gets the shortest words instead.
+`easeDrill()` (434) halves the counts a clean drill run was built on; a drill records no best score,
+since its text is regenerated. Rebuilt at load (455) and at `finish()` (655), and saved at
+`finish()` and at `toLessons()` (733) so a lesson abandoned mid-way still counts.
 
 Input path: a visually hidden `#capture` input, refocused by a document-level keydown, drained per
-`input` event through `typeChar` (479). Backspace swallowed at `keydown`; Enter → `typeChar('\n')`
-where the target has a newline. A miss records against the **expected** key (`state.keyErr[want]`),
-which is what `paintWeak` (466) turns into the five worst-key chips.
+`input` event through `typeChar` (616). Backspace swallowed at `keydown`; Enter → `typeChar('\n')`
+where the target has a newline. A miss records against the **expected** key (`state.keyErr[want]`,
+`state.weak[want]`), which is what `paintWeak` (603) turns into the five worst-key chips.
 
-Accuracy `round(correct/typed*100)` (453); WPM `(correct/5)/elapsedMinutes` (452) shown but not
-used for stars (95/85/80 on accuracy). `progress[id]` written only on completion (524–527); a
-timer expiry calls `finish()` without saving (507–510). `#done.show` (530). Audio is WebAudio
-`tone()` in try/catch — no `speechSynthesis` here.
+Accuracy `round(correct/typed*100)`; WPM `(correct/5)/elapsedMinutes` shown but not used for stars
+(95/85/80 on accuracy). `progress[id]` written only on completion and never for the drill (684);
+one `save()` per finished run. A timer expiry calls `finish()` without completing, so it writes the
+key counts but no score. `#done.show` (694). Audio is WebAudio `tone()` in try/catch — no
+`speechSynthesis` here.
 
 ### spelling-bee.html (1115)
 
@@ -576,7 +589,7 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     forgot what it had served. Both division and number bonds now pass their own `keyOf`.
     `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all twenty-eight: no page makes a request outside its own origin (the favicon
+Two properties survive all twenty-nine: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 19 pages still initialise from `file://`.
 
 ## Adding a game

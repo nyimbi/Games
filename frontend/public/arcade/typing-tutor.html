@@ -55,6 +55,9 @@ h1 span{color:var(--sky-d)}
 .lesson:hover{background:#fff}
 .lesson:active{transform:translateY(2px);box-shadow:1px 1px 0 var(--ink)}
 .lesson[aria-pressed="true"]{background:#dff1ff}
+.lesson.weak{background:#fff6dd;border-color:var(--ink)}
+.lesson.weak .no{background:var(--amber,#f5a300)}
+.lesson.weak[aria-pressed="true"]{background:#ffe9b8}
 .lesson:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;transform:none}
 .lesson .no{width:34px;height:34px;flex:0 0 34px;border-radius:10px;border:2.5px solid var(--ink);
   display:grid;place-items:center;font-weight:900;font-size:.95rem;background:var(--sky);color:#fff}
@@ -343,16 +346,109 @@ h1 span{color:var(--sky-d)}
       lines: ['The cat sat on the mat.', 'We can run to the park.', 'She said it was a good day.', 'Eight plus seven makes fifteen.', 'Type slowly and the speed will come.'] }
   ];
 
+  /* ---------------- the weak-key drill ----------------
+   *
+   * `state.keyErr` counts, for each key, how often the child pressed something
+   * else when that key was wanted. `paintWeak()` ranks it, prints the top five
+   * and throws it away -- and `startLesson` clears it, so the ranking lasts one
+   * lesson. This turns the count into the practice it was counting for: a
+   * lesson generated from the keys the child actually misses.
+   *
+   * Two counters, not one. `state.keyErr` is this run and drives the on-screen
+   * list; `state.weak` is cumulative across runs and is what the drill is built
+   * from, so the drill exists when the page opens rather than only after a
+   * lesson has been played badly. `state.weak` is saved with the record.
+   *
+   * The corpus is the lesson text already in this file, so the drill introduces
+   * no word the child has not met, and a miss on `g` pulls in `jug`, `dog`,
+   * `big` rather than an invented syllable.
+   */
+  let drill = null;
+
+  /* `LESSONS`, plus the drill when there is one. Appended, never inserted, so
+     every existing index keeps its meaning -- `state.lesson` is one of them. */
+  function curriculum() { return drill ? LESSONS.concat([drill]) : LESSONS; }
+
+  /* `O(w log w)` over the corpus words, once per finished lesson and once at
+     load. `w` is the distinct words in the twelve lesson texts. */
+  function buildDrill() {
+    const ranked = Object.entries(state.weak)
+      .filter(([, n]) => n > 0)
+      .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+      .slice(0, 5);
+
+    const weight = {};
+    ranked.forEach(([k, n]) => { weight[k] = n; });
+
+    const seen = new Set(), scored = [];
+    for (const L of LESSONS) {
+      for (const line of L.lines) {
+        for (const w of line.toLowerCase().split(/\s+/)) {
+          if (!w || seen.has(w)) continue;
+          seen.add(w);
+          let hits = 0, score = 0;
+          for (const ch of w) if (weight[ch]) { hits++; score += weight[ch]; }
+          if (hits) scored.push({ w, hits, score });
+        }
+      }
+    }
+    scored.sort((a, b) => b.hits - a.hits || b.score - a.score
+      || a.w.length - b.w.length || (a.w < b.w ? -1 : 1));
+
+    let body = scored.slice(0, 14).map(x => x.w).join(' ');
+
+    /* Space cannot appear inside a word, so a child whose only weak key is the
+       space bar scores nothing above and would get no drill at all. Every
+       drill is words with spaces between them, so any text exercises it --
+       take the shortest words, which need the most spaces per character. */
+    if (!body && weight[' ']) {
+      const words = [...seen].filter(w => /^[a-z]+$/.test(w)).sort((a, b) => a.length - b.length);
+      body = words.slice(0, 14).join(' ');
+    }
+
+    /* Cover every key the drill names. The card says "your hardest keys: g j
+       ; q" and a drill that never asks for one of them is a label, not a
+       lesson. The top words are chosen by how many weak keys they carry, so a
+       key whose only words rank below the cut is named and never practised --
+       which is exactly the case for a key the corpus barely carries. Each
+       uncovered key gets a run of its own. */
+    const missing = ranked.map(([k]) => k)
+      .filter(k => k !== ' ' && body.indexOf(k) < 0);
+    const pad = missing.map(k => k.repeat(4)).join(' ');
+    const text = [body, pad].filter(Boolean).join(' ').trim();
+    if (!text) return null;
+
+    return {
+      id: 'weak', drill: true, name: 'Weak keys',
+      keys: ranked.map(([k]) => k),
+      desc: 'Your hardest keys: ' + ranked.map(([k]) => k === ' ' ? 'space' : k).join(' '),
+      lines: [text]
+    };
+  }
+
+  /* A drill the child plays clean is a drill that worked. Halve what it was
+     built on, so a key fixed this week is gone in a couple of runs instead of
+     being drilled forever -- `state.weak` only ever grows otherwise, and a
+     counter that never falls makes "your hardest keys" a fact about history
+     rather than about now. `O(k)`, k <= 5. */
+  function easeDrill() {
+    if (!drill) return;
+    for (const k of drill.keys) {
+      const n = Math.floor((state.weak[k] || 0) / 2);
+      if (n > 0) state.weak[k] = n; else delete state.weak[k];
+    }
+  }
+
   /* ---------------- state ---------------- */
   const state = {
     lesson: 0, len: 0, text: '', pos: 0,
     typed: 0, correct: 0, errors: 0, keyErr: {},
     started: false, startAt: 0, timer: null, done: false,
-    progress: {}
+    progress: {}, weak: {}
   };
 
   const R = window.ArcadeRecord;
-  const SHAPE = { progress: R.is.obj };
+  const SHAPE = { progress: R.is.obj, weak: R.is.obj };
   const RECORD_V = 1;
   let loadStatus = 'fresh';
 
@@ -360,25 +456,41 @@ h1 span{color:var(--sky-d)}
     const res = R.load(KEY, { version: RECORD_V, shape: SHAPE });
     loadStatus = res.status;
     const s = res.data;
-    if (s) state.progress = s.progress || {};
+    if (s) {
+      state.progress = s.progress || {};
+      state.weak = s.weak || {};
+    }
+    drill = buildDrill();
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ v: RECORD_V, progress: state.progress, savedAt: Date.now() })); } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        v: RECORD_V, progress: state.progress, weak: state.weak, savedAt: Date.now()
+      }));
+    } catch (e) { ArcadeErrors.note('storage', e && e.message, KEY); }
   }
-  function unlocked(i) { return i === 0 || (state.progress[LESSONS[i - 1].id] || 0) >= 80; }
+  function unlocked(i) {
+    const L = curriculum()[i];
+    if (!L) return false;
+    // The drill is earned by the mistakes that built it, not by the lesson
+    // before it. A child whose first lesson went badly has a drill on lesson
+    // two, and a lock there would hide the one thing the page learned.
+    if (L.drill) return true;
+    return i === 0 || (state.progress[curriculum()[i - 1].id] || 0) >= 80;
+  }
 
   /* ---------------- lesson picker ---------------- */
   function renderLessons() {
     const box = $('lessons');
     box.innerHTML = '';
-    LESSONS.forEach((L, i) => {
+    curriculum().forEach((L, i) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'lesson';
+      b.className = 'lesson' + (L.drill ? ' weak' : '');
       b.disabled = !unlocked(i);
       b.setAttribute('aria-pressed', String(i === state.lesson));
       const no = document.createElement('span');
-      no.className = 'no'; no.textContent = i + 1;
+      no.className = 'no'; no.textContent = L.drill ? '★' : i + 1;
       const txt = document.createElement('span');
       txt.className = 'txt';
       const nm = document.createElement('span');
@@ -447,7 +559,7 @@ h1 span{color:var(--sky-d)}
 
   /* ---------------- typing ---------------- */
   function buildText(lesson) {
-    const L = LESSONS[lesson];
+    const L = curriculum()[lesson];
     const lines = L.lines;
     // join two or three lines so a lesson is a short paragraph, not one word
     const take = Math.min(lines.length, 3);
@@ -516,6 +628,10 @@ h1 span{color:var(--sky-d)}
     } else {
       state.errors++;
       state.keyErr[want] = (state.keyErr[want] || 0) + 1;
+      state.weak[want] = (state.weak[want] || 0) + 1;
+      // Saved at `finish`/`toLessons`, not here: a struggling child produces a
+      // write per wrong keystroke, and a synchronous storage write on the input
+      // path is the one place it is felt.
       const el = keyEl(want);
       if (el) { el.classList.add('miss'); setTimeout(() => el.classList.remove('miss'), 220); }
       errSound();
@@ -543,16 +659,37 @@ h1 span{color:var(--sky-d)}
     const elapsed = Math.max(.001, (performance.now() - state.startAt) / 60000);
     const wpm = Math.round((state.correct / 5) / elapsed);
     const acc = state.typed ? Math.round(state.correct / state.typed * 100) : 100;
-    const L = LESSONS[state.lesson];
+    /* The lesson actually played, read before the rebuild can change what the
+       curriculum is. */
+    const L = curriculum()[state.lesson];
     const completed = state.pos >= state.text.length;
-    const score = completed ? acc : Math.round(acc * (state.pos / state.text.length));
-    if (completed) {
-      state.progress[L.id] = Math.max(state.progress[L.id] || 0, acc);
-      save();
+    /* Rebuild only on a run that says something. A timeout with no mistakes
+       carries no new information about which keys are weak, and letting it
+       rebuild would erase the drill a previous lesson earned -- the child
+       would watch the card disappear for having been slow rather than wrong.
+       A clean completion is the one case that *does* clear it: buildDrill
+       returns null when nothing was missed, and null is the right answer. */
+    if (completed || state.errors > 0) {
+      // A drill played clean has done its job; halve what it was built on.
+      if (completed && L.drill && state.errors === 0) easeDrill();
+      drill = buildDrill();
+      // `state.lesson` is an index, and clearing the drill shortens the list.
+      state.lesson = Math.min(state.lesson, curriculum().length - 1);
     }
+    const score = completed ? acc : Math.round(acc * (state.pos / state.text.length));
+    /* The drill is regenerated from the next set of misses, so a best score on
+       it is a fact about a text that will not exist again. Recording it would
+       put a star on a lesson the child cannot return to. */
+    if (completed && !L.drill) {
+      state.progress[L.id] = Math.max(state.progress[L.id] || 0, acc);
+    }
+    // One write per finished run, covering both the score and the key counts.
+    // `typeChar` deliberately does not save; this is the point where a run
+    // stops being provisional.
+    save();
     $('target').classList.add('done');
     document.querySelectorAll('#kb .key.next').forEach(k => k.classList.remove('next'));
-    const next = LESSONS[state.lesson + 1];
+    const next = curriculum()[state.lesson + 1];
     if (completed) {
       $('done').classList.add('show');
       $('doneTitle').textContent = acc >= 95 ? 'Flawless!' : acc >= 80 ? 'Lesson complete!' : 'Finished — keep practising';
@@ -584,7 +721,7 @@ h1 span{color:var(--sky-d)}
     $('timeUp').classList.remove('show');
     $('target').classList.remove('done');
     $('target').style.display = '';
-    $('hint').textContent = LESSONS[i].desc + '. Type the highlighted letter.';
+    $('hint').textContent = curriculum()[i].desc + '. Type the highlighted letter.';
     paintTarget(); paintStats(); paintWeak(); highlightNext();
     renderLessons();
     const cap = $('capture');
@@ -595,6 +732,10 @@ h1 span{color:var(--sky-d)}
 
   function toLessons() {
     clearInterval(state.timer);
+    // A child who leaves mid-lesson has still told the page which keys they
+    // miss, and `finish()` is not the only way out. Save here too, once, when
+    // there is something new to save.
+    if (!state.done && state.errors > 0) save();
     state.done = true;
     $('playPanel').hidden = true;
     $('pickPanel').hidden = false;
@@ -639,7 +780,7 @@ h1 span{color:var(--sky-d)}
   $('timeUpLessons').addEventListener('click', () => toLessons());
   $('nextLesson').addEventListener('click', () => {
     const next = state.lesson + 1;
-    if (next < LESSONS.length && unlocked(next)) startLesson(next);
+    if (next < curriculum().length && unlocked(next)) startLesson(next);
     else toLessons();
   });
 

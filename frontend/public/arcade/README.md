@@ -66,7 +66,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               twenty-eight Playwright probes run against the pages from file://
+probes/               twenty-nine Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -406,13 +406,20 @@ percentage is `correct / count` against the run's own length, not a fixed denomi
 
 ### 07 · Typing Tutor — `typing-tutor.html`
 
-`arcade.typing.v1` → `{ progress: { lessonId: bestAccuracy } }`. Nothing else is stored; the run
+`arcade.typing.v1` → `{ progress: { lessonId: bestAccuracy }, weak: { key: misses } }`. The run
 is not resumable and the timer modes leave no trace.
 
 **Lessons.** Twelve in `LESSONS`, each `{ id, name, desc, lines }` with five lines of target text:
 home row, home-row words, top row, top-row words, bottom row, bottom-row words, all three rows,
 capitals, numbers, punctuation, common words, sentences. `buildText()` takes `lines.slice(0, 3)` —
 a run is the first three lines joined, not all five.
+
+**The weak-key drill.** `weak` counts every miss against the key that was *wanted*, cumulative
+across runs and saved. When it is non-empty the picker grows a thirteenth card, always last and
+always unlocked, whose text is generated from the five worst keys: the lesson words that carry
+most of them, plus a run of any named key the top fourteen words leave out. Playing the drill
+clean halves the counts it was built on, so a key fixed this week stops being drilled; missing in
+it raises the key again. A drill run records no best score, because its text is regenerated.
 
 **Unlocking.** `unlocked(i)` is `i === 0 || (progress[LESSONS[i-1].id] || 0) >= 80`. The lesson
 picker renders every lesson with its disabled state and star count, so a locked lesson is visible
@@ -696,7 +703,7 @@ rehearsal of the next question.
 | `arcade.session.v1`        | every page        | `{ v, days: { 'YYYY-MM-DD': { done: {...} } } }`  |
 | `arcade.addition.v3`, `arcade.bonds.v4`, `arcade.subtraction.v3`, `arcade.times.v2`, `arcade.division.v1` | the five maths drills | `{ best, perLevel or perMode, review, seen }` — `perLevel` for addition, subtraction, division; `perMode` for bonds and times tables |
 | `arcade.arena.v1`          | infinite-arena    | `{ best, skill, seen, savedAt }` — no `review`; the arena has no per-fact record |
-| `arcade.typing.v1`         | typing tutor      | `{ progress: { lessonId: bestAccuracy } }` — 80% unlocks the next lesson |
+| `arcade.typing.v1`         | typing tutor      | `{ progress: { lessonId: bestAccuracy }, weak: { key: misses } }` — 80% unlocks the next lesson; `weak` builds the drill |
 | `arcade.spelling.v1`       | spelling bee      | `{ best, perTier, review, seen, tier }`            |
 | `arcade.french.v1` / `arcade.swahili.v1` / `arcade.chinese.v1` | language pages | `{ best, perTier, review, seen, tier }`; `review` holds `{n, miss, due}` per entry — attempts, misses, and whether it is owed |
 | `arcade.calligraphy.v1`    | calligraphy       | `{ best, perTier, review, seen, tier }`            |
