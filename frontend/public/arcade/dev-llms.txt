@@ -9,8 +9,8 @@ Line numbers are approximate — they drift with every edit. Names and constants
 ## The inventory
 
 ```
-21,303 lines across 50 source files (19 pages, 31 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus thirty-three Playwright probes in `probes/`.
+21,807 lines across 52 source files (19 pages, 33 scripts). No build, no bundler, no test runner.
+Verification is `node --check` per inline block plus thirty-four Playwright probes in `probes/`.
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
@@ -30,6 +30,7 @@ piano-engine.js         977   staff renderer, keyboard, synth, play stage
 ear.js                  180   the comparison after a wrong ear answer (no audio)
 piecegen.js             193   the eight pieces as a distribution, walked from a seed
 maths-engine.js         348   deck, audio, confetti + lesson overlay: the five maths drills
+worksheet.js             98   a finished deck as a printed sheet, answers left off
 piano.html              320   home, quiz, play and lesson stages
 calligraphy.html        769   own stroke-matching logic (no engine); writes the order out
 
@@ -61,7 +62,7 @@ maths-lessons.js        MATHS_LESSONS       20 (4 per drill), keyed by drill the
 piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
-probes/                 33 Playwright probes: lessons, grading, shell, freshness, ...
+probes/                 34 Playwright probes: lessons, grading, shell, freshness, ...
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
 docs/design.md          463   the design narrative
 ```
@@ -77,7 +78,7 @@ Which page loads what:
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
-| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` |
+| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `worksheet.js`, `session.js` |
 | `infinite-arena.html`, `typing-tutor.html` | `session.js` only |
 | `savanna-run.html` | `algebra-bank.js`, `african-history.js`, `session.js` |
 | `index.html`, `session.html` | `session.js` |
@@ -621,7 +622,7 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     forgot what it had served. Both division and number bonds now pass their own `keyOf`.
     `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all thirty-three: no page makes a request outside its own origin (the favicon
+Two properties survive all thirty-four: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 19 pages still initialise from `file://`.
 
 ## Adding a game

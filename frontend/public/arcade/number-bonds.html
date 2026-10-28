@@ -336,6 +336,7 @@ h1 span{color:var(--teal-d)}
 <script src="./session.js"></script>
 <script src="./maths-engine.js"></script>
 <script src="./maths-lessons.js"></script>
+<script src="./worksheet.js"></script>
 <script>
 (() => {
   'use strict';
@@ -794,6 +795,11 @@ h1 span{color:var(--teal-d)}
   $('playBtn').addEventListener('click', showPlay);
   $('backBtn').addEventListener('click', showExplore);
   $('again').addEventListener('click', () => start(state.mode));
+  // The deck is already built; the worksheet is that same list on paper.
+  ArcadeWorksheet.mount($('done').querySelector('.actions'), () => ({
+    title: 'Number bonds', sub: 'Write the missing number.',
+    items: ArcadeWorksheet.fromQueue('number-bonds', state.queue)
+  }));
   $('nextBtn').addEventListener('click', advance);
   document.querySelectorAll('#playpanel .mode').forEach(b =>
     b.addEventListener('click', () => start(b.dataset.mode)));

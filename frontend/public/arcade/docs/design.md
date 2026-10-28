@@ -164,6 +164,20 @@ The Explore tab is a table with plates. The child sets the cookie count and the 
 
 ---
 
+## The worksheet (`worksheet.js`)
+
+A parent's most common request of a learning product is something to hand a child away from the screen. Each of the five maths drills already builds an ordered deck of fifty questions and then discards it when the run ends. Rendering that list to a print stylesheet is a pure function of data the product has computed, needs no network, and costs one button.
+
+**The answers are never printed.** A worksheet whose answers are on the same sheet — or on a second sheet in the same stack, or one inspector keystroke away in the markup of a screen a child is looking at — teaches the child to read backwards from the answer. `fromQueue` returns `{q, a}` because `open` needs the count and the deck is the natural place to get it, and `render` drops `a` entirely: it emits the question, a numbered ordinal and an empty `<span class="b">`, and nothing else. The probe recomputes each answer from the printed row rather than reading it off the queue, so it does not trust the same closure the feature does.
+
+**Print CSS is scoped by position, not by name.** The five drills have five different stage machines and no shared root, so `body > *:not(#wsSheet)` hides the page and `#wsSheet` is promoted to `position: static`. Nothing else in the arcade has an `@media print` block, so this is the only rule that can fire — and the probe asserts the *page* is hidden under `emulate_media('print')`, because a check on the sheet alone passes with no print rule at all.
+
+**Closing removes the markup.** A closed sheet that still holds fifty prompts is fifty prompts in the DOM behind a hidden class, and the next `open` would have to trust that `render` overwrote every byte of it. `close` sets `innerHTML = ''` and restores body scroll.
+
+The button is mounted at load and reads `state.queue`, which `start` fills — so the deck is complete the moment the drill starts. The probe clicks it directly through the DOM rather than playing fifty questions out to reach a visible done screen: the play-out would test the drill's advance path, which `grading.py` owns.
+
+---
+
 ## 06 · Infinite Arena (`infinite-arena.html`)
 
 **Teaches:** everything, adaptively, with no finish line.

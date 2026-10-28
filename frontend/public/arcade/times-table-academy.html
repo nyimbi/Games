@@ -331,6 +331,7 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
 <script src="./session.js"></script>
 <script src="./maths-engine.js"></script>
 <script src="./maths-lessons.js"></script>
+<script src="./worksheet.js"></script>
 <script>
 (() => {
   'use strict';
@@ -1080,6 +1081,10 @@ table.mgrid td.hit{background:var(--lime);color:#fff;font-weight:900}
   $('nextStep').addEventListener('click', () => { E.step = Math.min(E.step + 1, E.max); renderExplore(); clickSound(); });
   $('prevStep').addEventListener('click', () => { E.step = Math.max(E.step - 1, 1); renderExplore(); clickSound(); });
   $('again').addEventListener('click', start);
+  ArcadeWorksheet.mount($('done').querySelector('.actions'), () => ({
+    title: 'Times tables', sub: 'Write the product.',
+    items: ArcadeWorksheet.fromQueue('times-table-academy', state.queue)
+  }));
   $('nextBtn').addEventListener('click', advance);
   $('pictureBtn').addEventListener('click', () => {
     state.showPicture = !state.showPicture;

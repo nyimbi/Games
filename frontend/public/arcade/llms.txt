@@ -77,6 +77,12 @@
   interaction — bonds drag a divider, the column drills animate base-ten blocks, times tables step
   an array, division deals cookies. `init({topics, lessons})` mounts a fixed-position **Learn**
   button; the dialog injects its own CSS so it takes the palette of whichever page it is on.
+- [worksheet.js](worksheet.js): turns a drill's finished deck into a printed sheet. `mount(host,
+  cfg)` puts a *Print a worksheet* button into a done screen's actions; `fromQueue(game, queue)`
+  formats the five queue shapes; `render` emits the question, an ordinal and an empty blank, and
+  **drops the answer** — a sheet the child can read backwards from is not a worksheet. Print CSS is
+  scoped by position (`body > *:not(#wsSheet)`) because the five drills share no root. `close`
+  clears the markup rather than hiding it.
 
 ## Content banks (data beside the page, never inline)
 

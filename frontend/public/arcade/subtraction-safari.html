@@ -387,6 +387,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
 <script src="./session.js"></script>
 <script src="./maths-engine.js"></script>
 <script src="./maths-lessons.js"></script>
+<script src="./worksheet.js"></script>
 <script>
 (() => {
   'use strict';
@@ -986,6 +987,10 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   document.querySelectorAll('#practice .lv[data-level]').forEach(b =>
     b.addEventListener('click', () => start(b.dataset.level)));
   $('again').addEventListener('click', () => start(state.level));
+  ArcadeWorksheet.mount($('done').querySelector('.actions'), () => ({
+    title: 'Subtraction', sub: 'Write the difference.',
+    items: ArcadeWorksheet.fromQueue('subtraction-safari', state.queue)
+  }));
   $('nextLevel').addEventListener('click', () => {
     const next = LEVELS[LEVELS.indexOf(state.level) + 1];
     if (next) start(next);

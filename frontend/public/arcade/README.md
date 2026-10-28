@@ -40,6 +40,7 @@ piano-engine.js        the piano course — staff renderer, keyboard, synth, pla
 ear.js                 hearing the answer you chose against the one that was
 piecegen.js            the eight pieces as a distribution, walked from a seed
 maths-engine.js        the five maths drills — freshness deck, audio, confetti, lesson overlay
+worksheet.js           a finished deck as a printed sheet, answers left off
 
 ── content banks ──
 spelling-bank.js       1,239 words in three tiers, each with a rule and an origin
@@ -70,7 +71,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               thirty-three Playwright probes run against the pages from file://
+probes/               thirty-four Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -83,7 +84,7 @@ Which page loads what:
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |
-| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `session.js` — the drill's own model inline |
+| the five maths drills | `maths-engine.js`, `maths-lessons.js`, `worksheet.js`, `session.js` — the drill's own model inline |
 | `infinite-arena.html` | `skills.js`, `session.js` — the engine is inline; the skill graph is data |
 | `savanna-run.html` | `algebra-bank.js`, `african-history.js`, `session.js` — the engine is inline; the equations and the history are data |
 | `typing-tutor.html` | `session.js` only — carries its own engine inline |
