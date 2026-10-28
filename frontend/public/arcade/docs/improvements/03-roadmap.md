@@ -265,7 +265,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-26 ear trainer ✅ | — |
 | F-25 generated pieces ✅ | — |
 | F-15 typing weak-key drill ✅ | — |
-| F-28 Kiswahili agreement | — |
+| F-28 Kiswahili agreement ✅ | — |
 | F-29 Mandarin tone pairs | — |
 | F-27 French conjugation | F-11 |
 | F-21 word problems | F-17 |
@@ -288,6 +288,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-26 ear trainer | `hear` mode already played intervals and chords with the staff hidden; `ear.js` adds the comparison after a wrong answer — the chosen interval, then the played one, same root and direction | `ear.py` |
 | F-15 typing weak-key drill | `typing-tutor.html` — `state.weak` (cumulative, saved), `buildDrill`, `curriculum`, `easeDrill`; a thirteenth card appended after the twelve, generated from the five worst keys and halved by a clean run | `typing_drill.py` |
 | F-25 generated pieces | `piecegen.js` — `profile` measures range, pitch classes, steps, durations and first notes off `PIANO_PIECES`; `generate` walks that distribution from a seed with a boundary reflection and rejection on the steps; `piano.html`'s `#pGen` opens one | `pieces.py` |
+| F-28 Kiswahili agreement | `swahili-agree.js` — `STEMS` (four stems, ≥3 distinct forms each), `asks`, `cite`, `question`; `swahili.html`'s `agree` mode asks which form agrees with a named noun, options drawn from the one stem | `swahili_agree.py` |
 
 **F-15 needed a second counter.** The spec said the weak-key list was "computed on every `paintWeak()` call and thrown away", which is half true: it was also cleared at `startLesson`, so it was per-run as well as per-render. A drill built from `keyErr` would have existed only while a lesson was being played badly and vanished when the child started the drill. `state.weak` is the same count kept across runs and saved with the record, and it is what `buildDrill` reads; `keyErr` stays the on-screen chips.
 
@@ -298,6 +299,11 @@ Three things F-17 changed that the plan did not anticipate:
 **The determinism claim was measuring a field it set.** Two pieces from seeds 42 and 43 always differ when stringified whole, because the returned object carries its own `seed`. Replacing `mulberry32(seed)` with `mulberry32(1)` left the module-level claim green and only the page claim caught it. The probe now compares `p.notes`.
 
 **Two guards were redundant, and the probe said so.** `buildDrill` had `if (!ranked.length) return null` and `if (!text) return null`. Disabling either alone left every claim passing — an empty `weak` map produces no scored words, so `text` is empty and the second guard catches it; and an empty `text` cannot arise while `ranked` is non-empty except through the space-only path, which the fallback now handles. The first guard was removed rather than kept as belt-and-braces: a guard no test can distinguish is a line that will drift.
+
+**F-28's table is smaller than the rule it replaces.** The spec says "a class and a root determine the agreement prefix", which is the argument for generating forms rather than authoring them. Applied literally it produces wrong Kiswahili: `-eupe` is `cheupe` in class 7 and `nyeupe` in class 9, `-pya` is `jipya`, `kipya`, `vipya`, `mpya`, `-refu` is `mrefu` and `ndefu`. Mechanical extraction failed too — stripping class prefixes off bank words produced `('9','ekundu')`; regexes for `ni X` caught demonstratives and possessives. The working method was to cite a bank entry whose own `ex_sw` or `trap` contains the form as a whole word, and hand-verify every row. Four stems survived at ≥3 distinct forms; `refu` and `eusi` are attested and two-form, so neither can make a question with more than two options, and class 4 and class 11 nouns have no attested form at all — the pool refuses them rather than asking a question with no answer.
+
+**Two of F-28's canaries first reported as construction errors.** Canaries B and C surfaced as 30-second click timeouts rather than findings: a render that throws leaves nothing to click, so the defect buried itself under a harness race. Bounding the default timeout and driving the loop off `#dNum`, the engine's own question counter, turned both into named failures. The last question has no successor — answering it flips `#done` and `#dNum` stops moving — which the first version of that check reported as "question 30 never advanced".
+
 
 
 ---

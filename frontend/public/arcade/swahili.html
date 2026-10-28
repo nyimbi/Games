@@ -212,6 +212,7 @@ h1 span{color:var(--blue)}
 </div>
 
 <script src="./swahili-bank.js"></script>
+<script src="./swahili-agree.js"></script>
 <script src="./lang-engine.js"></script>
 <script src="./session.js"></script>
 <script>
@@ -283,6 +284,25 @@ h1 span{color:var(--blue)}
         hint: e.trap, note: e.ex_sw
       };
     }
+    if (mode === 'agree') {
+      // The table is the module's, not this page's, so the probe can check the
+      // same rows the child sees. `pick` is the page's own shuffle.
+      const q = window.SwahiliAgree.question(e, bank, {
+        one: n => Math.floor(Math.random() * n),
+        shuffle: a => shuffle(a.slice())
+      });
+      return {
+        type: 'choose', kind: 'Agreement',
+        prompt: `<p class="big">${esc(q.noun)} <span class="small">— ${esc(e.en)}</span></p>` +
+          `<p class="small">Class ${q.cls} · ${esc(CLASS_NAME[q.cls] || '')}. Which form of <b>-${esc(q.stem)}</b> (${esc(q.gloss)}) agrees?</p>`,
+        options: q.options.map(v => ({ value: v })),
+        answer: q.answer, short: `${q.noun} (${q.stem})`,
+        // The citation is the bank's own sentence, so the note teaches the form
+        // in use rather than restating the table the question already showed.
+        hint: e.trap,
+        note: q.cite ? q.cite.text : e.ex_sw
+      };
+    }
     if (mode === 'sw2en') return sw2en(e);
     return {
       type: 'type', kind: 'Write it',
@@ -310,13 +330,18 @@ h1 span{color:var(--blue)}
     modes: [
       { id: 'learn', icon: '📖', name: 'Learn', desc: 'The word, its sound, its class, a sentence, and the trap.' },
       { id: 'class', icon: '🧩', name: 'Noun class', desc: 'Every noun belongs to a class, and the class sets every prefix that follows.' },
+      { id: 'agree', icon: '🔗', name: 'Agreement', desc: 'The adjective changes with the class of the noun it describes.' },
       { id: 'sw2en', icon: '🇰🇪', name: 'Kiswahili → English', desc: 'Read the word, pick the meaning.' },
       { id: 'en2sw', icon: '✍️', name: 'English → Kiswahili', desc: 'Write the Kiswahili from the English.' }
     ],
     word: e => e.sw,
-    // The class drill is nouns only: only a noun has a class, so the deck draws
-    // from nouns rather than padding with questions the drill cannot ask.
-    pool: (mode, e) => mode !== 'class' || (e.pos === 'noun' && !!e.class),
+    // Each drill that cannot ask every entry draws from the entries it can ask:
+    // only a noun has a class, and only a class with an attested adjective form
+    // has an agreement question. Padding either with entries it cannot ask
+    // makes a deck of questions the mode does not know how to ask.
+    pool: (mode, e) => mode === 'class' ? (e.pos === 'noun' && !!e.class)
+      : mode === 'agree' ? window.SwahiliAgree.asks(e)
+      : true,
     say: e => e.say,
     meaning: e => e.en,
     sentenceHTML,

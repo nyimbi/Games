@@ -44,6 +44,7 @@ maths-engine.js        the five maths drills — freshness deck, audio, confetti
 spelling-bank.js       1,239 words in three tiers, each with a rule and an origin
 french-bank.js         300 entries: words and sentences
 swahili-bank.js        300 entries: noun classes
+swahili-agree.js       the adjective agreement table, four stems, every row cited
 chinese-bank.js        300 entries: characters with pinyin and glosses
 calligraphy-bank.js    the 440 characters and their stroke orders
 calligraphy-sketch.js  hand-drawn pictograms and composition sketches
@@ -68,7 +69,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               thirty-one Playwright probes run against the pages from file://
+probes/               thirty-two Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -507,11 +508,24 @@ the article and tone drills originally put the answer first on every card.
 
 ### 10 · Kiswahili — `swahili.html`
 
-`arcade.swahili.v1`, same engine, same shape. **Modes.** `learn`, `class`, `sw2en`, `en2sw`. The
-class drill is the one that matters: noun class governs agreement across the whole sentence, so
-the bank stores `class` on nouns only and `cfg.pool` keeps the class deck to `e.pos === 'noun' &&
-!!e.class`. Pronunciation is written for an English reader (`asante` → `ah-SAHN-teh`) and that
-`say` field is also the fallback for speech on a machine with no Kiswahili voice.
+`arcade.swahili.v1`, same engine, same shape. **Modes.** `learn`, `class`, `agree`, `sw2en`,
+`en2sw`. The class drill is the one that matters: noun class governs agreement across the whole
+sentence, so the bank stores `class` on nouns only and `cfg.pool` keeps the class deck to
+`e.pos === 'noun' && !!e.class`. Pronunciation is written for an English reader (`asante` →
+`ah-SAHN-teh`) and that `say` field is also the fallback for speech on a machine with no
+Kiswahili voice.
+
+**The agreement drill** asks for the adjective form that agrees with a named noun: class 1 *kaka*
+takes *mdogo*, class 8 *vidole* takes *vidogo*. Naming a class is recall; producing the agreed form
+is the productive half, and a child who has the table can describe a noun the bank never showed
+them. The table is `swahili-agree.js`, four stems with three or more distinct forms each, and every
+row cites a bank entry whose own text contains the form as a whole word — the module resolves that
+citation against `SWAHILI_BANK` at render time rather than copying the sentence, so the table cannot
+drift from the bank silently. The options are all forms of the *one* stem; a distractor from another
+adjective could be eliminated by meaning instead of by agreement, which is the skill being drilled.
+`cfg.pool` draws from `SwahiliAgree.asks(e)`, which refuses class 4 and class 11 nouns — the bank
+has them, and no attested stem covers them, so a question about one would have no answer. A stem
+with only two forms is excluded for the same reason: two options is a coin toss.
 
 **Finish.** `#done.on`.
 

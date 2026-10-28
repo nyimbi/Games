@@ -82,6 +82,7 @@
 
 - [spelling-bank.js](spelling-bank.js) 1,239 graded words (315 / 379 / 545 across three tiers) · [french-bank.js](french-bank.js)
   words+sentences · [swahili-bank.js](swahili-bank.js) noun classes ·
+  [swahili-agree.js](swahili-agree.js) the adjective agreement table, every row cited to the bank ·
   [chinese-bank.js](chinese-bank.js) characters+pinyin+gloss ·
   [calligraphy-bank.js](calligraphy-bank.js) 440 characters with stroke order ·
   [calligraphy-sketch.js](calligraphy-sketch.js) hand-drawn pictograms + composition sketches ·
@@ -160,6 +161,25 @@
 - Playing the drill clean **halves** the counts it was built on. Without that the counter only
   rises, and "your hardest keys" becomes a fact about history rather than about now.
 - Probe: `probes/typing_drill.py`.
+
+## Kiswahili agreement
+
+- [swahili.html](swahili.html) · [swahili-agree.js](swahili-agree.js): a fifth mode, `agree`, that
+  names a noun and asks which form of an adjective agrees with it. Naming a class is recall; the
+  agreed form is what the class system actually produces, and the bank shows one form per adjective
+  and never asks for another.
+- **A table, not a prefix rule.** "Stem plus the class prefix" is true of `-dogo` and false of
+  `-eupe` (`cheupe` in class 7, `nyeupe` in class 9), `-pya` (`jipya`, `kipya`, `vipya`, `mpya`) and
+  `-refu` (`mrefu`, `ndefu`). Four stems, three or more distinct forms each, and every row cites a
+  bank entry whose text contains the form — resolved at render time, not copied, so a row that
+  loses its evidence shows no note instead of a confident wrong one.
+- **Options are the one stem's other forms.** A distractor borrowed from another adjective can be
+  eliminated by meaning without knowing any agreement, which is a vocabulary test in disguise.
+- **Two-form stems and class 4 / class 11 nouns are excluded**, not overlooked: two options is a
+  coin toss, and no attested stem covers class 4 or 11, so those nouns would be asked a question
+  with no answer.
+- Probe: `probes/swahili_agree.py` — resolves every citation against the bank, crosses the
+  generator against every question the pool can serve, and plays thirty through the real stage.
 
 ## The pages and their shape
 
