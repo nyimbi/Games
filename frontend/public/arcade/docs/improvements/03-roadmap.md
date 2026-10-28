@@ -355,7 +355,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-43 browser self-test | F-42 |
 | F-45 storage budget | F-41, F-2 |
 | F-46 seeded replay | F-41 |
-| F-40 keyboard-first | — |
+| F-40 keyboard-first — modals done, drills already complete | — |
 | F-22 rule-based spelling pairs | F-44 |
 
 **F-31 is last on purpose.** It is the only feature that puts user-authored text into markup, and it is the one that turns D-4 from latent to live. It ships only after F-49 and F-44.
@@ -367,6 +367,10 @@ Three things F-17 changed that the plan did not anticipate:
 The second sitting already worked (`featured` walks forward to the first unmet machine and falls back to the date's own pick once all 26 are met), so nothing was added for it. `probes/shelf.py` is the gate: it strips `//` and `/* */` from each figure before reading the declaration, so a field swallowed by a comment counts as missing rather than as present, and it compares all 26 rows in both directions. Four canaries fire — the hint put back inside the comment, the wrapper's title changed, the wrapper's hint changed, and the figure's title changed — each restoring byte-identical.
 
 **A checker for "every row" that enumerated one quote style.** Correcting the fridge's copy to the figure's straight apostrophe turned that row from a single-quoted into a double-quoted string. Both are valid JS and both are the same row, but the probe's regex matched `h:'…'` only, so it silently parsed 25 of 26 and reported the fridge as "on disk but not listed". The same bug as the `href="/…"`-only link checker, on the register meant to check coverage: the parser now takes either quoting and a row is a row.
+
+**F-40's premise was wrong, and measuring it was the work.** The spec says the five drills "have handlers whose coverage differs" and that "the work is enumerating what each drill's answer actually is". All five already take digits, Backspace and Enter, all five focus the Next button when a wrong answer reveals it, and Enter on a focused Next advances. The differences the spec lists are input length caps (2, 3, 4 and 5 digits), which are facts about each pool's largest answer rather than gaps. Driven end to end from a fresh page with Tab and Enter only, every drill reaches its first question in 3 to 5 keys — 32 for `number-bonds`, whose explore mode has a row per bond before `#playBtn`.
+
+**The real gap was the dialogs.** Both `aria-modal` surfaces let Tab walk out into the page behind them, and both dropped focus on `<body>` when they closed. That is the one thing on this item that was actually broken, and `focus.js` fixes it with five canaries behind it. `spelling-bee.html`'s Escape handler was bound at document level with no open guard, so Escape mid-quiz pulled focus to the rules button.
 
 **Gate 5.**
 
