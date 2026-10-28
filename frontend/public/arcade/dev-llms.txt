@@ -10,7 +10,7 @@ Line numbers are approximate — they drift with every edit. Names and constants
 
 ```
 21,807 lines across 52 source files (19 pages, 33 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus thirty-four Playwright probes in `probes/`.
+Verification is `node --check` per inline block plus thirty-five Playwright probes in `probes/`.
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
@@ -29,6 +29,7 @@ science-engine.js       507   quiz engine + lesson scheduler: physics, chemistry
 piano-engine.js         977   staff renderer, keyboard, synth, play stage
 ear.js                  180   the comparison after a wrong ear answer (no audio)
 piecegen.js             193   the eight pieces as a distribution, walked from a seed
+conjugation.js          150   the present tense of the bank's verbs, -er derived
 maths-engine.js         348   deck, audio, confetti + lesson overlay: the five maths drills
 worksheet.js             98   a finished deck as a printed sheet, answers left off
 piano.html              320   home, quiz, play and lesson stages
@@ -62,7 +63,7 @@ maths-lessons.js        MATHS_LESSONS       20 (4 per drill), keyed by drill the
 piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
-probes/                 34 Playwright probes: lessons, grading, shell, freshness, ...
+probes/                 35 Playwright probes: lessons, grading, shell, freshness, ...
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
 docs/design.md          463   the design narrative
 ```
@@ -71,7 +72,7 @@ Which page loads what:
 
 | Page | `<script src>` |
 |---|---|
-| `french/chinese.html` | own bank, `lang-engine.js`, `session.js` (`chinese.html` also loads `tone-sandhi.js`) |
+| `french/chinese.html` | own bank, `lang-engine.js`, `session.js` (`chinese.html` also loads `tone-sandhi.js`, `french.html` `conjugation.js`) |
 | `swahili.html` | own bank, `swahili-agree.js`, `lang-engine.js`, `session.js` |
 | `physics/chemistry.html` | own bank, `science-engine.js`, own lessons, `session.js` |
 | `piano.html` | `piano-bank.js`, `piano-lessons.js`, `ear.js`, `piecegen.js`, `piano-engine.js`, `session.js` |
@@ -622,7 +623,7 @@ knows the shape of the bug rather than rediscovering it, and so a regression is 
     forgot what it had served. Both division and number bonds now pass their own `keyOf`.
     `probes/freshness.py` exists because no play-through probe can see this class of bug.
 
-Two properties survive all thirty-four: no page makes a request outside its own origin (the favicon
+Two properties survive all thirty-five: no page makes a request outside its own origin (the favicon
 is a sibling file), and all 19 pages still initialise from `file://`.
 
 ## Adding a game

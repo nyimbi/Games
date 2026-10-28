@@ -39,6 +39,7 @@ science-engine.js      physics, chemistry — one quiz engine plus the lesson sy
 piano-engine.js        the piano course — staff renderer, keyboard, synth, play stage
 ear.js                 hearing the answer you chose against the one that was
 piecegen.js            the eight pieces as a distribution, walked from a seed
+conjugation.js         the present tense of the bank's verbs, with the -er class derived
 maths-engine.js        the five maths drills — freshness deck, audio, confetti, lesson overlay
 worksheet.js           a finished deck as a printed sheet, answers left off
 
@@ -71,7 +72,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               thirty-four Playwright probes run against the pages from file://
+probes/               thirty-five Playwright probes run against the pages from file://
 ```
 
 Which page loads what:

@@ -267,7 +267,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-15 typing weak-key drill ✅ | — |
 | F-28 Kiswahili agreement ✅ | — |
 | F-29 Mandarin tone pairs ✅ | — |
-| F-27 French conjugation | F-11 |
+| F-27 French conjugation ✅ | F-11 |
 | F-21 word problems | F-17 |
 | F-36 printed worksheet ✅ | — |
 
@@ -290,11 +290,18 @@ Three things F-17 changed that the plan did not anticipate:
 | F-25 generated pieces | `piecegen.js` — `profile` measures range, pitch classes, steps, durations and first notes off `PIANO_PIECES`; `generate` walks that distribution from a seed with a boundary reflection and rejection on the steps; `piano.html`'s `#pGen` opens one | `pieces.py` |
 | F-28 Kiswahili agreement | `swahili-agree.js` — `STEMS` (four stems, ≥3 distinct forms each), `asks`, `cite`, `question`; `swahili.html`'s `agree` mode asks which form agrees with a named noun, options drawn from the one stem | `swahili_agree.py` |
 | F-36 printed worksheet | `worksheet.js` — `fromQueue` formats each drill's own queue, `render` lays out the blanks, one `@media print` rule hides the page by position; a button mounted into each drill's done screen | `worksheet.py` |
+| F-27 French conjugation | `conjugation.js` — `FORMS` (22 verbs × 6 persons), `regular` derives the -er class from the stem, `subject` applies the elision, `questions` enumerates the 132 verb/person pairs; `french.html`'s *Conjugate* mode asks one verb in one person with the other persons as the options | `conjugate.py` |
 | F-29 Mandarin tone pairs | `tone-sandhi.js` — `written`/`spoken`/`yi`/`bu`/`cells`/`deck`/`options`; `chinese.html`'s *Said, not written* mode asks the spoken pattern against the spelling, which is always among the wrong options | `sandhi.py` |
 
 **F-29 found a live data defect and a convention the spec did not anticipate.** 回家 huíjiā stored `tones: "2 2"` against a pinyin spelling of 2 then 1, and its trap told the child both syllables rise. The tone mode grades against that field, so it was teaching the wrong pattern. Fixed in the bank; the probe's first claim is the one that would catch it coming back.
 
 **Pinyin already spells 一 and 不.** The spec asks for a tone-pair drill from the 4×4 space, which suggests applying sandhi to the bank's `tones`. But 一起 is written yìqǐ and 一定 is written yídìng — the spelling holds the *changed* tone. A module that read those as citation and then applied the rules would double-apply them and produce yí for 一起, which nobody says. So `written` is the spelling and the only rule that fires is 3+3, which pinyin never writes. `yi`/`bu` are stated anyway and the probe checks the bank's spellings against them; 对不起 duìbuqǐ is the documented exception, where the word neutralises 不 and no pair rule can know.
+
+**F-27 found the tier pool holds no verbs, and the mode was serving nouns.** The deck was built from the tier's pool, and every verb in the bank is tier 2 or 3 -- so a tier-1 child's pool is a hundred nouns, the deck came back empty, and `lang-engine.js` reads an empty deck as "this mode has no deck" and fills the queue from the pool. The button said *Conjugate* and the card asked what *rose* means. The deck now draws from the bank's verbs and takes the entry's own tier, so the badge is not a lie either. The probe's canary for this is the one-line revert to `pool`.
+
+**A distractor can be a wrong answer that no check reads.** `voir` with `vois` in the ils slot answers every card correctly for the person asked; only the fourth option is wrong, and a probe that reads the answer alone cannot see it. Two structural claims now pin the plural cells: no plural person shares a form with any other person (`ils vois` is not a form that exists), and every third-person plural ends in -nt. The singular twins are real and are not asserted -- je/tu share in most verbs and the -er class shares je/tu/il.
+
+**A count with a floor hides a missing form.** Mistyping avoir's `a` as `as` does not make a sentence disagree with the table; it makes `a` disappear from it, so "La table a quatre pieds" contains no table form and is skipped. The agreement count fell from 70 to 54 under a floor of 40 and the probe passed. The count is now pinned at 70: a form missing from the table has to fail, and the only way to see it is to know how many sentences the check is supposed to read.
 
 **The deck has to reach the cells where nothing happens.** A drill built from the 3+3 cell alone is one rule repeated, and a child who answers 2 3 every time scores 100%. The deck draws from all sixteen cells, so that child is wrong in fifteen. The canary that restricts the deck to 3+3 fails on two counts: cell coverage and the no-change share.
 

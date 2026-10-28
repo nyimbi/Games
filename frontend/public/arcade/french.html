@@ -213,6 +213,7 @@ h1 span{color:var(--blue)}
 </div>
 
 <script src="./french-bank.js"></script>
+<script src="./conjugation.js"></script>
 <script src="./lang-engine.js"></script>
 <script src="./session.js"></script>
 <script>
@@ -312,10 +313,45 @@ h1 span{color:var(--blue)}
     };
   }
 
+  /* The verb in a person.
+   *
+   * The bank lists twenty-two verbs in the infinitive and its example
+   * sentences use them in the infinitive too, so the child learns what a verb
+   * means and never sees it agree with anything. This asks for one form of
+   * one verb, which is the smallest unit conjugation can be practised in.
+   *
+   * The options are the same verb in other persons, not other verbs. A card
+   * offering "mange, bois, lis, prends" could be answered from the meaning
+   * alone; offering "mange, manges, mangeons, mangent" can only be answered
+   * from the agreement. */
+  function conjugatePrompt(e) {
+    const C = window.ArcadeConjugation;
+    if (!C) return fr2en(e);
+    const f = C.forms(e.infinitive);
+    if (!f) return fr2en(e);
+    const answer = C.phrase(e.infinitive, e.person);
+    const wrong = [];
+    for (let i = 0; i < C.PERSONS.length && wrong.length < 3; i++) {
+      if (i === e.person) continue;
+      wrong.push(C.phrase(e.infinitive, i));
+    }
+    const opts = shuffle([answer, ...wrong]);
+    return {
+      type: 'choose', kind: 'Conjugation',
+      prompt: `<p class="big">${esc(e.infinitive)} <span class="small">— ${esc(e.gloss)}</span></p>` +
+        `<p class="small">${esc(C.PERSONS[e.person])} ____ — present tense</p>`,
+      options: opts.map(v => ({ value: v })),
+      answer, short: e.infinitive,
+      hint: e.trap,
+      note: `The six forms: ${C.PERSONS.map((p, i) => C.subject(i, f[i]) + f[i]).join(', ')}.`
+    };
+  }
+
   function prompt(mode, e, bank) {
     if (mode === 'gender') return articlePrompt(e);
     if (mode === 'fr2en') return fr2en(e);
     if (mode === 'sentence') return sentencePrompt(e);
+    if (mode === 'conjugate') return conjugatePrompt(e);
     return en2fr(e);
   }
 
@@ -351,7 +387,11 @@ h1 span{color:var(--blue)}
 
   window.LangGame.init({
     bank: BANK, key: 'arcade.french.v1', total: 30, lang: 'fr-FR',
-    keyOf: e => e.fr.toLowerCase(),
+    // A conjugation card is one person of one verb, so it keys on both. Keyed
+    // on the verb alone, six questions would share one review slot: a child
+    // who gets "nous" right would clear "je" with it, and the verb's score in
+    // the other modes would be written over by whichever person came last.
+    keyOf: e => e.person === undefined ? e.fr.toLowerCase() : e.fr.toLowerCase() + ':' + e.person,
     tiers: [
       { n: 1, name: 'Débutant', note: 'ages 8–9' },
       { n: 2, name: 'Élémentaire', note: 'ages 10–11' },
@@ -362,10 +402,40 @@ h1 span{color:var(--blue)}
       { id: 'gender', icon: '⚖️', name: 'le or la', desc: 'Nouns only. The article is the fact you cannot look up from the ending.' },
       { id: 'fr2en', icon: '🇫🇷', name: 'French → English', desc: 'Read the word, pick the meaning.' },
       { id: 'en2fr', icon: '✍️', name: 'English → French', desc: 'Write the French, article included. Accents forgiven, spelling not.' },
-      { id: 'sentence', icon: '💬', name: 'Sentences', desc: 'Read a whole French sentence and pick its meaning. Grammar in use, not in pieces.' }
+      { id: 'sentence', icon: '💬', name: 'Sentences', desc: 'Read a whole French sentence and pick its meaning. Grammar in use, not in pieces.' },
+      { id: 'conjugate', icon: '🔤', name: 'Conjugate', desc: 'One verb, one person, present tense. The ending is the whole answer.' }
     ],
+    // The conjugation cards are made, not picked: 22 verbs x 6 persons is 132
+    // questions, none of which is a bank entry. The entry passed through is a
+    // verb carrying the person to ask, which is what `prompt` reads.
+    //
+    // Drawn from the bank's verbs, not from the tier's pool. Every verb in
+    // the bank is tier 2 or 3, so a tier-1 child's pool has no verbs at all
+    // and a deck built from it comes back empty -- which the engine reads as
+    // "this mode has no deck" and fills with nouns, serving a meaning card
+    // under the conjugation button. The tier still selects which *nouns* the
+    // child meets; the verbs are the drill's own subject matter and it takes
+    // all of them.
+    deck: (mode, pool, name, total) => {
+      const C = window.ArcadeConjugation;
+      if (mode !== 'conjugate' || !C) return null;
+      const verbs = BANK.filter(e => e.pos === 'verb' && C.forms(e.fr))
+        .map(e => ({ infinitive: e.fr, gloss: e.en, trap: e.trap, tier: e.tier }));
+      if (!verbs.length) return null;
+      const qs = C.questions(verbs.map(v => v.infinitive));
+      const byVerb = new Map(verbs.map(v => [v.infinitive, v]));
+      const out = [];
+      for (let i = 0; i < total; i++) {
+        const q = qs[Math.floor(Math.random() * qs.length)];
+        const v = byVerb.get(q.infinitive);
+        // The source entry's own tier, not a constant: the card's badge reads
+        // it, and stamping tier 1 on a tier-3 verb is a false label.
+        out.push({ ...v, person: q.person, pos: 'verb', family: 'verbs', fr: v.infinitive });
+      }
+      return out;
+    },
     word: e => withArticle(e),
-    pool: (mode, e) => mode !== 'gender' || isNoun(e),
+    pool: (mode, e) => mode === 'gender' ? isNoun(e) : true,
     say: e => e.say,
     meaning: e => e.en,
     sentenceHTML,
