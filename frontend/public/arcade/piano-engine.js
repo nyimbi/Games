@@ -719,6 +719,33 @@
      */
     const WINDOW = 9;
 
+    /* Generated practice pieces.
+     *
+     * Eight pieces is enough to learn a tune and not enough to learn to read.
+     * The profile is measured off `PIECES` rather than written down, so the
+     * generator follows the bank instead of drifting from it.
+     *
+     * The seed advances per press and is shown nowhere; the piece it produces
+     * is reproducible from the number, which is why the number exists at all.
+     * A fixed starting seed would give every child the same first practice
+     * piece, and `Date.now()` would give none of them the same one twice. */
+    let genSeed = (Date.now() % 100000) >>> 0;
+    let genProf = null;
+    function generatedPiece() {
+      const G = window.ArcadePieceGen;
+      if (!G || !PIECES.length) return null;
+      try {
+        if (!genProf) genProf = G.profile(PIECES);
+        genSeed = (genSeed + 1) >>> 0;
+        return G.generate(genProf, genSeed);
+      } catch (e) {
+        // A bank the generator cannot profile is a bug, not a child's problem:
+        // the button does nothing rather than taking the page down.
+        if (window.ArcadeErrors) window.ArcadeErrors.note('piecegen', e && e.message, 'piano');
+        return null;
+      }
+    }
+
     function openPiece(piece) {
       state.piece = piece;
       state.pieceIndex = 0;
@@ -845,6 +872,19 @@
         const p = PIECES.find(x => x.id === b.dataset.piece);
         if (p) openPiece(p);
       }));
+
+      /* The practice button is rendered only when the generator loaded. A
+         button that silently does nothing is worse than no button: the child
+         presses it, nothing happens, and the page looks broken. */
+      const gen = $('pGen');
+      if (gen) gen.hidden = !(window.ArcadePieceGen && PIECES.length);
+      if (gen && !gen.dataset.wired) {
+        gen.dataset.wired = '1';
+        gen.addEventListener('click', () => {
+          const p = generatedPiece();
+          if (p) openPiece(p);
+        });
+      }
 
       const known = Object.values(state.review).filter(r => r.n > 0).length;
       const clean = Object.values(state.review).filter(r => r.n >= 1 && r.miss === 0).length;

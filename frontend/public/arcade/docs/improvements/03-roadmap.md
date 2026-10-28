@@ -262,8 +262,8 @@ Three things F-17 changed that the plan did not anticipate:
 |---|---|
 | F-23 stroke-order practice ✅ | — |
 | F-24 shape vs order scoring ✅ | F-23 |
-| F-26 ear trainer | — |
-| F-25 generated pieces | — |
+| F-26 ear trainer ✅ | — |
+| F-25 generated pieces ✅ | — |
 | F-15 typing weak-key drill ✅ | — |
 | F-28 Kiswahili agreement | — |
 | F-29 Mandarin tone pairs | — |
@@ -287,10 +287,15 @@ Three things F-17 changed that the plan did not anticipate:
 | F-24 shape vs order | `stroke-grade.js` — `strokeScore` (16-point resample + chord cosine), `diagnose` (`right`/`later`/`earlier`/`shape`); the page branches on the verdict and names the position | `strokeorder.py` |
 | F-26 ear trainer | `hear` mode already played intervals and chords with the staff hidden; `ear.js` adds the comparison after a wrong answer — the chosen interval, then the played one, same root and direction | `ear.py` |
 | F-15 typing weak-key drill | `typing-tutor.html` — `state.weak` (cumulative, saved), `buildDrill`, `curriculum`, `easeDrill`; a thirteenth card appended after the twelve, generated from the five worst keys and halved by a clean run | `typing_drill.py` |
+| F-25 generated pieces | `piecegen.js` — `profile` measures range, pitch classes, steps, durations and first notes off `PIANO_PIECES`; `generate` walks that distribution from a seed with a boundary reflection and rejection on the steps; `piano.html`'s `#pGen` opens one | `pieces.py` |
 
 **F-15 needed a second counter.** The spec said the weak-key list was "computed on every `paintWeak()` call and thrown away", which is half true: it was also cleared at `startLesson`, so it was per-run as well as per-render. A drill built from `keyErr` would have existed only while a lesson was being played badly and vanished when the child started the drill. `state.weak` is the same count kept across runs and saved with the record, and it is what `buildDrill` reads; `keyErr` stays the on-screen chips.
 
 **The cover rule was tested by a fixture that could not fail.** The first probe seeded four keys the corpus carries in many words. The canary that removed the cover rule passed clean, because every seeded key already appeared in the top fourteen words — the test was a fixture where the bug could not appear. The fixture that works pits `e`, the commonest letter in the corpus, against `;`, which appears in one word: `e` fills all fourteen slots and `;` is crowded out, which is the case the rule exists for. Same lesson as the `href="/…"` link checker: a predicate that only ever sees the passing case is not a predicate.
+
+**F-25's profile is measured, and the bound was set from a canary.** The generator has no written-down profile: `profile(PIECES)` reads the range, pitch classes, step distribution, durations and first notes off the eight pieces, so adding a ninth changes the output without anyone editing the module. The distribution claim is a total-variation distance to the bank's own steps, and the first bound was 0.15 — which the canary that deletes the boundary reflection passed, at 0.130. Ten seed offsets of 1000 pieces each put the real generator at 0.069–0.075 and the reflection-less walk at 0.123–0.143, so the bound moved to 0.10. A bound chosen before the canary ran was a bound that did not test the step it was written for.
+
+**The determinism claim was measuring a field it set.** Two pieces from seeds 42 and 43 always differ when stringified whole, because the returned object carries its own `seed`. Replacing `mulberry32(seed)` with `mulberry32(1)` left the module-level claim green and only the page claim caught it. The probe now compares `p.notes`.
 
 **Two guards were redundant, and the probe said so.** `buildDrill` had `if (!ranked.length) return null` and `if (!text) return null`. Disabling either alone left every claim passing — an empty `weak` map produces no scored words, so `text` is empty and the second guard catches it; and an empty `text` cannot arise while `ranked` is non-empty except through the space-only path, which the fallback now handles. The first guard was removed rather than kept as belt-and-braces: a guard no test can distinguish is a line that will drift.
 
