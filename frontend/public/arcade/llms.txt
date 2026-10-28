@@ -128,6 +128,12 @@
   WebKit and Firefox but **not** read across it in Chromium or WebKit, so the frame height is fixed
   (820 px, 740 px on a phone), measured against the tallest of the 26 rather than fitted at runtime.
 - 7 of the 26 ship without an `idea` line; the page shows none for those. Do not invent one.
+- **The table is a copy, and `probes/shelf.py` keeps it honest.** Each figure declares its own
+  `title`, `hint` and `idea` in its `mountFigure({...})` call; the wrapper repeats all three by hand.
+  The probe strips `//` and `/* */` from each figure before reading that call — so a field after a
+  trailing comment counts as *missing*, which is what caught `washer.html`'s hint sitting inside one
+  — and compares all 26 in both directions. Change a figure's wording and change the table, or the
+  probe fails.
 - Record: `arcade.howthingswork.v1` = `{ v, explored:{slug:ts}, perGroup:{group:pct}, day }`.
   One machine met is the day's sitting. `perGroup` exists only so the hub's star rating can read
   this record like any other game's bucket.

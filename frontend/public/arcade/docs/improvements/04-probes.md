@@ -73,3 +73,18 @@ The two claims cannot be tested on one question, because a rejected answer sets 
 - Assuming a bond's answer is the part on screen. For `10 = 4 + ?` the answer is `10 − 4`.
 
 **Canaries.** Three, each restored byte-identical: addition grading the sum (8 failures), number-bonds grading the whole (7), division grading the dividend (10). Each produces failures in both directions — the right answer refused and the displayed number accepted — which is the signature of a drill grading a different cell from the one it asked about.
+
+---
+
+## `probes/shelf.py` — the copy nobody checked
+
+`how-things-work.html:203` said its 26-row table was "read off the figure's own `mountFigure` call". It was a hand copy, and no probe compared the two, so `llms.txt:117`'s rule against a second source of truth had nothing enforcing it. `shelf.py` is the gate, and it found two live violations on its first run:
+
+- `figures/washer.html` declared its `hint` after a trailing `//` on the `fig:` line. The figure never received a hint; the wrapper's copy was the only one that existed, which is the second source of truth inverted — the copy outlived the original.
+- `figures/fridge.html` wrote `doesn't`; the wrapper wrote `doesn’t`.
+
+**The strip is the claim.** Reading the figure's text with a plain regex finds `washer.html`'s hint in the comment and reports agreement between two strings only one of which reaches the figure. `strip_comments` walks the source tracking string state, so a field inside a `//` or `/* */` counts as *missing* — which is what makes claim 2 (every figure declares a live hint) a different assertion from claim 1 (the two copies agree).
+
+**Four canaries**, each restored byte-identical: the hint put back inside the comment (1 failure), the wrapper's title changed (1), the wrapper's hint changed (1), the figure's title changed (1). None of the four is visible to a scan that does not strip comments or does not read the figure's own call.
+
+**A checker for "every row" that enumerated one quote style.** Fixing the fridge's copy to the figure's straight apostrophe turned that row from single- to double-quoted. Both are the same row in JS; the first version of `wrapper_rows` matched `h:'…'` only, parsed 25 of 26, and reported the fridge as "on disk but not listed" — a false failure that would have been read as a bad fix. The parser now takes either quoting. This is the `href="/…"`-only link checker again, on the register meant to check coverage.

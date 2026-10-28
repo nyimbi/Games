@@ -349,7 +349,7 @@ Three things F-17 changed that the plan did not anticipate:
 | F-31 child's own word list | F-44, F-42, F-49 |
 | F-32 maths inside science questions | F-17 |
 | F-33 fact-family view | F-17 |
-| F-34 machine shelf second sitting | — |
+| F-34 machine shelf second sitting ✅ | — |
 | F-35 one "today" surface | F-5 |
 | F-38 plan suggests a lesson | F-7, F-37 |
 | F-43 browser self-test | F-42 |
@@ -361,6 +361,12 @@ Three things F-17 changed that the plan did not anticipate:
 **F-31 is last on purpose.** It is the only feature that puts user-authored text into markup, and it is the one that turns D-4 from latent to live. It ships only after F-49 and F-44.
 
 **F-34 carries a constraint, not a dependency.** `README.md:789-791` and `llms.txt:116-121` both state it: the shelf must stay derived from the figures, never described by the wrapper. And `llms.txt:118-120` documents that a `file://` frame cannot be read across in Chromium or WebKit, so "derived" has a hard technical ceiling. Any proposal that crosses it is a proposal to inline the figures, which `llms.txt:117` forbids because each figure sets `document.body.innerHTML` at mount.
+
+**F-34 resolved to the constraint, and the constraint was already broken.** The item asked for questions derived from the figures. That reading is blocked at the frame boundary: on `file://` the wrapper cannot read a figure's DOM in Chromium or WebKit, so a question generated from what the child did inside the frame is not reachable without inlining, which the design forbids. The half that *is* reachable is the constraint itself, and checking it found two live violations. `how-things-work.html:203` claimed its table was "read off the figure's own mountFigure call"; it was a hand copy, and nothing compared the two. `figures/washer.html` declared its `hint` after a trailing `//` on the `fig:` line, so the figure never received it and the wrapper's copy was the only one that existed — the second source of truth in its purest form, with the copy outliving the original. `figures/fridge.html` wrote `doesn't` where the wrapper wrote `doesn’t`.
+
+The second sitting already worked (`featured` walks forward to the first unmet machine and falls back to the date's own pick once all 26 are met), so nothing was added for it. `probes/shelf.py` is the gate: it strips `//` and `/* */` from each figure before reading the declaration, so a field swallowed by a comment counts as missing rather than as present, and it compares all 26 rows in both directions. Four canaries fire — the hint put back inside the comment, the wrapper's title changed, the wrapper's hint changed, and the figure's title changed — each restoring byte-identical.
+
+**A checker for "every row" that enumerated one quote style.** Correcting the fridge's copy to the figure's straight apostrophe turned that row from a single-quoted into a double-quoted string. Both are valid JS and both are the same row, but the probe's regex matched `h:'…'` only, so it silently parsed 25 of 26 and reported the fridge as "on disk but not listed". The same bug as the `href="/…"`-only link checker, on the register meant to check coverage: the parser now takes either quoting and a row is a row.
 
 **Gate 5.**
 
