@@ -36,6 +36,7 @@ session.js             session state — plan, streak, completion, the alternati
 lang-engine.js         French, Kiswahili, Mandarin — one quiz engine, three vocabularies
 science-engine.js      physics, chemistry — one quiz engine plus the lesson system
 piano-engine.js        the piano course — staff renderer, keyboard, synth, play stage
+ear.js                 hearing the answer you chose against the one that was
 maths-engine.js        the five maths drills — freshness deck, audio, confetti, lesson overlay
 
 ── content banks ──
@@ -75,7 +76,7 @@ Which page loads what:
 |---|---|
 | `french.html`, `swahili.html`, `chinese.html` | own bank, `lang-engine.js`, `session.js` |
 | `physics.html`, `chemistry.html` | own bank, `science-engine.js`, own lessons, `session.js` |
-| `piano.html` | `piano-bank.js`, `piano-lessons.js`, `piano-engine.js`, `session.js` |
+| `piano.html` | `piano-bank.js`, `piano-lessons.js`, `ear.js`, `piano-engine.js`, `session.js` |
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | an iframe into `figures/`, `session.js` |

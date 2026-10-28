@@ -525,6 +525,10 @@
       $('qNext').hidden = true;
       $('qExplain').hidden = true;
       $('qExplain').innerHTML = '';
+      // The comparison label names the last question's two intervals. Left in
+      // place it sits under the next question as if it belonged to it.
+      const cmpBox = $('qCompare');
+      if (cmpBox) { cmpBox.hidden = true; cmpBox.textContent = ''; }
       $('qHintBox').hidden = true;
       $('qHintBox').textContent = '';
 
@@ -647,6 +651,13 @@
       // A wrong answer waits for Next; a right one moves on by itself, unless
       // the question was heard -- then the learner gets to hear it once more
       // in the light of the answer.
+      //
+      // In hear mode a wrong answer plays the comparison rather than leaving
+      // the child with a name and no sound. It is played on a delay so the
+      // "not quite" tone is over before the first interval starts.
+      if (!ok && state.mode === 'hear') {
+        setTimeout(() => { if (!playCompare(q, given)) playQuestion(q); }, 420);
+      }
       if (ok && state.mode !== 'hear') setTimeout(() => { state.index++; render(); }, 1100);
       save();
     }
@@ -860,6 +871,37 @@
       const q = state.queue[state.index];
       if (q) playQuestion(q);
     });
+
+    /* The comparison, after a wrong answer in hear mode.
+     *
+     * `hear` mode already plays the question and hides the staff, so the
+     * answer's name arrives without the sound that goes with it. This plays
+     * the interval the child named, then the one that was played, on the same
+     * root and in the same direction, so the two are adjacent -- which is the
+     * only way the difference is learnable.
+     *
+     * A note-naming question has no such comparison: the child chose a letter,
+     * not a sound. `ArcadeEar.compare` returns null there and the button falls
+     * back to replaying the question. */
+    function playCompare(q, given) {
+      const E = window.ArcadeEar;
+      if (!E) return false;
+      const cmp = E.compare(q, given);
+      if (!cmp) return false;
+      const segs = E.segments(cmp);
+      const gap = .95;                       // seconds between the two
+      segs.forEach((seg, k) => {
+        const at = k * gap;
+        if (seg.simul) seg.notes.forEach((m, i) => playNote(m, at + i * .035, .85));
+        else seg.notes.forEach((m, i) => playNote(m, at + i * .42, .6));
+      });
+      const box = $('qCompare');
+      if (box) {
+        box.hidden = false;
+        box.innerHTML = `<b>${esc(cmp.labelA)}</b> — then — <b>${esc(cmp.labelB)}</b>`;
+      }
+      return true;
+    }
     $('qLesson').addEventListener('click', lessonFromQuiz);
     $('rAgain').addEventListener('click', () => start(state.mode));
     $('rHome').addEventListener('click', () => { paintHome(); show('home'); });

@@ -24,7 +24,8 @@ escape.js                39   `esc()` for the one place text reaches innerHTML
 
 lang-engine.js          473   quiz engine: french, swahili, chinese
 science-engine.js       507   quiz engine + lesson scheduler: physics, chemistry
-piano-engine.js         895   staff renderer, keyboard, synth, play stage
+piano-engine.js         937   staff renderer, keyboard, synth, play stage
+ear.js                  180   the comparison after a wrong ear answer (no audio)
 maths-engine.js         348   deck, audio, confetti + lesson overlay: the five maths drills
 piano.html              307   home, quiz, play and lesson stages
 calligraphy.html        769   own stroke-matching logic (no engine); writes the order out
@@ -68,7 +69,7 @@ Which page loads what:
 |---|---|
 | `french/swahili/chinese.html` | own bank, `lang-engine.js`, `session.js` |
 | `physics/chemistry.html` | own bank, `science-engine.js`, own lessons, `session.js` |
-| `piano.html` | `piano-bank.js`, `piano-lessons.js`, `piano-engine.js`, `session.js` |
+| `piano.html` | `piano-bank.js`, `piano-lessons.js`, `ear.js`, `piano-engine.js`, `session.js` |
 | `calligraphy.html` | `calligraphy-bank.js`, `calligraphy-sketch.js`, `stroke-anim.js`, `stroke-grade.js`, `session.js` |
 | `spelling-bee.html` | `spelling-bank.js`, `session.js` |
 | `how-things-work.html` | `<iframe src="figures/…">`, `session.js` |
