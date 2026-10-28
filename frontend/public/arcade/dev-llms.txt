@@ -10,7 +10,7 @@ Line numbers are approximate — they drift with every edit. Names and constants
 
 ```
 21,807 lines across 52 source files (19 pages, 33 scripts). No build, no bundler, no test runner.
-Verification is `node --check` per inline block plus thirty-five Playwright probes in `probes/`.
+Verification is `node --check` per inline block plus thirty-seven Playwright probes in `probes/`.
 
 index.html              711   hub: 17 cards, stars from each game's bucket, suggestion lane
 session.html            528   the day: plan list, meter, 21-day strip, backup buttons
@@ -63,7 +63,7 @@ maths-lessons.js        MATHS_LESSONS       20 (4 per drill), keyed by drill the
 piano-bank.js           PIANO_BANK          181 over 10 topics, + PIANO_PIECES (8)
 piano-lessons.js        PIANO_LESSONS       10, keyed by topic id
 
-probes/                 35 Playwright probes: lessons, grading, shell, freshness, ...
+probes/                 37 Playwright probes: lessons, grading, shell, freshness, ...
 figures/                26 Colorfigures pages + LICENSE-colorfigures.txt
 docs/design.md          463   the design narrative
 ```

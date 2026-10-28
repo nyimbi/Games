@@ -760,7 +760,7 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     markSeen(state.seen, q.level, `${q.a}|${q.b}`); save();
     const S = stacked(q.a, q.b);
     state.S = S;
-    $('ask').textContent = q.level === 'bond' ? 'Make the whole' : 'Add';
+    $('ask').textContent = q.level === 'bond' ? 'Complete the sum' : 'Add';
     if (q.level === 'bond') {
       // A bond is a missing addend, not a column sum: show the whole and the
       // part we have, and let the answer box stand in for the other part.
@@ -778,7 +778,12 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
       $('qTop').innerHTML = cells(S.top.split(''));
       $('qBot').innerHTML = cells(S.bot.split(''), '+');
     }
-    $('qsay').textContent = `${q.a} plus ${q.b}.`;
+    $('qsay').textContent = q.level === 'bond'
+      // The bond's answer is the part that is missing. Speaking `a plus b`
+      // spoke the answer to a screen reader while the sighted child saw a
+      // blank -- the same leak `number-bonds.html` fixed in its own wording.
+      ? `${q.a} plus what makes ${q.sum}?`
+      : `${q.a} plus ${q.b}.`;
     const ans = $('qAns');
     ans.className = 'ans empty';
     ans.textContent = '';
@@ -820,6 +825,13 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
   }
 
   function workedFor(q) {
+    // A bond is not a column sum, and the column walk below answers the wrong
+    // question for it: it prints the whole, which is already on the screen, as
+    // the answer. The bond gets the count-on that the drill's own hint names.
+    if (q.level === 'bond') {
+      return `Start at <b>${q.a}</b> and count on to <b>${q.sum}</b>:<br>` +
+        `${q.sum} − ${q.a} = <b>${q.b}</b>`;
+    }
     const width = Math.max(String(q.a).length, String(q.b).length);
     const P = plan(q.a, q.b, width);
     const lines = [];
@@ -857,11 +869,23 @@ px;border-radius:16px;border:2px solid var(--ink);background:#fffdf8;
     }
   }
 
+  /* What the child is being asked for, which is not always the sum.
+   *
+   * The bond level renders `a + ? = sum`: the whole is on the screen and the
+   * blank is the other part, so the answer is `b`. Grading against `sum` -- as
+   * this drill did until the missing-addend render landed -- rejected the
+   * correct answer and accepted the number already printed. `number-bonds.html`
+   * has carried the same helper since it was written; this drill never needed
+   * one until its bond level stopped being a column sum. */
+  function answerFor(q) {
+    return q.level === 'bond' ? q.b : q.sum;
+  }
+
   function submit() {
     if (state.answered || !state.queue[state.index]) return;
     if (state.input === '') { toast('Type a number first', 'bad'); return; }
     const q = state.queue[state.index];
-    const right = Number(state.input) === q.sum;
+    const right = Number(state.input) === answerFor(q);
     const ans = $('qAns');
     state.answered = true;
 

@@ -102,6 +102,10 @@ The Explore frame is clickable. Tapping the fifth cell sets the split to 5; the 
 
 **The carry leak.** The first build computed the carries and wrote them above the columns before the child answered: `$('qCarry').textContent = S.P.carries.map(...)`. The drill was asking the child to copy a digit. The line is deleted; carries now appear only inside the worked panel, after an answer.
 
+**One question, four places.** The bond level is a missing addend — `6 + ? = 10` — not a column sum, and changing that changed four things that all had to change together: what the prompt asks, what the grader compares against, what the worked panel prints, and what the screen reader says. Only the first moved. For a while the level rendered a blank, graded the whole, printed the whole as the answer, and spoke it aloud: `10` was accepted on every question and `4` was rejected on every question, and the level is what a first-time visitor opens on. `answerFor(q)` is the single place that decides, and `probes/answerable.py` is the gate that reads the question off the screen and requires the drill to grade that one.
+
+**A story cannot ask a different question from the one the page grades.** The word-problem layer answers `a + b`, which is the bond's whole rather than its missing part. A caller on this page passes it `null` for a bond instead of the fact, so the story box clears without a story that would be wrong.
+
 **Mental strategy before the algorithm.** The worked panel's second line is not the column method. For a multi-digit sum it says: *Another way: 47 + 28 — make a friendly ten first: 47 + 3 = 50, then + 25 = 75.* The column algorithm is a reliable procedure; the make-ten strategy is what makes it unnecessary for small numbers and comprehensible for large ones. Showing the strategy beside the algorithm teaches both, and the strategy is what a child can actually hold in working memory.
 
 **The worked panel.** Large, rounded, bold — `1.02rem` at weight 700 in the rounded face, not the small monospace block the first build used. It opens with **Watch me.** on questions 1 and 2 and is available by button on every other question.

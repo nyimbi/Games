@@ -53,3 +53,23 @@ Three rules from this repo's own history (`llms.txt:156-163`, `CLAUDE.md`), and 
 1. **Canary every gate.** D-1's probe was written against the unfixed tree and returns `True`; the fix flips it to `False`. A probe that has only ever passed has tested nothing.
 2. **A predicate that is a strict subset of what it tests fails open.** `audit_probe.py`'s claim 2 was exactly this — it counted keys in the served set, which is empty whether the queue is correct or never walked. It was demoted to a regression check and replaced by `div_review.py`'s A/B.
 3. **A negative test must vary one dimension.** `div_review.py` seeds the same in-level fact in both arms and adds only the two out-of-level ones. Seed A is the control: if it failed, the fixture would be broken and seed B would prove nothing. The probe asserts A before it reports B.
+
+---
+
+## `probes/answerable.py` — the claim `grading.py` could not make
+
+`grading.py` asserts that a keystroke reaches a grader: it types `4` and requires that the drill either advanced or revealed Next. That is satisfied by a drill that marks every answer wrong, and for an unknown length of time one did — D-17. Addition's bond level rendered `6 + ? = 10` and graded against the sum, so `10` passed and `4` failed on every question.
+
+`answerable.py` asserts the other half, over all five maths drills:
+
+1. **Read the question off the DOM**, compute the answer in Python, type it, require `ok`. The page's own queue is never consulted — a probe that recomputes with the same expression the page grades with proves the expression runs, not that it is right.
+2. **Type a number the screen displays and does not ask for**, require rejection. This is the half that catches a drill grading the wrong cell: on a bond the whole is printed and is not the answer.
+
+The two claims cannot be tested on one question, because a rejected answer sets `answered` and the drill will not grade the same question twice. They alternate over ten questions instead.
+
+**Two versions of this probe read correct code as broken**, both now documented in its docstring:
+
+- Testing the decoy on the question just answered. A correct answer auto-advances on a 700 ms timer; reading the screen 200 ms later returns the *old* question, `submit` returns early because `answered` is set, and the answer box still reads `ok` — so the decoy looked accepted. The advance is now waited for explicitly, on `#qsay` changing, which is the only signal common to the five drills.
+- Assuming a bond's answer is the part on screen. For `10 = 4 + ?` the answer is `10 − 4`.
+
+**Canaries.** Three, each restored byte-identical: addition grading the sum (8 failures), number-bonds grading the whole (7), division grading the dividend (10). Each produces failures in both directions — the right answer refused and the displayed number accepted — which is the signature of a drill grading a different cell from the one it asked about.

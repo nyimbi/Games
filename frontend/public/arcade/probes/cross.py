@@ -240,8 +240,12 @@ def run(pw):
 
     asked = []
     for _ in range(4):
-        say = q.evaluate("() => (document.getElementById('qsay') || {}).textContent || ''")
-        asked.append(say.strip())
+        # Read the rendered bond, not `#qsay`. The spoken sentence used to name
+        # the missing part outright ("5 plus 7"), which spoke the answer to a
+        # screen reader; it now asks the question ("5 plus what makes 12?").
+        # Asserting on the wording would pin whichever leak the drill has.
+        bot = q.evaluate("() => (document.getElementById('qBot') || {}).textContent || ''")
+        asked.append(' '.join(bot.split()))
         q.keyboard.type('0')
         q.keyboard.press('Enter')
         q.wait_for_timeout(120)
@@ -249,11 +253,12 @@ def run(pw):
         q.wait_for_timeout(120)
 
     print(f'== live addition asked: {asked}')
-    # The bond level asks a missing addend, so `5 plus 7` is served as 5 + ? = 12.
-    want = ('5 plus 7', '5 plus 6')
+    # The bond level asks a missing addend, so the sibling `5 + 7` is served as
+    # `5 + ? = 12`, and `5 + 6` as `5 + ? = 11`.
+    want = ('5 + ? = 12', '5 + ? = 11')
     if not any(w in asked[0] for w in want):
         fails.append(f'the merged sibling was not the first question: {asked[:2]}')
-    if asked and asked[0] not in (f'{want[0]}.', f'{want[1]}.'):
+    if asked and asked[0] not in want:
         fails.append(f'the first question was {asked[0]!r}, not a merged sibling')
 
     if errs:

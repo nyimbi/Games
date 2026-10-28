@@ -377,6 +377,28 @@ The five maths drills and the arena each have `#qsay aria-live="polite"` (`addit
 
 ---
 
+## D-17 — FIXED. Addition's bond level rejected every correct answer
+
+**Severity: high. The level was unplayable, and its worked panel taught the wrong answer.**
+
+`d3ff120` ("Align the sum columns and stop the carry giving the method away") changed the bond level from a column sum to a missing addend — `6 + ? = 10`, with the answer box standing in for the missing part — and left everything downstream on the whole:
+
+| site | asked for | until this fix |
+|---|---|---|
+| `renderQuestion` | the missing part | renders `a + ? = sum` |
+| `submit` | the missing part | `Number(state.input) === q.sum` |
+| `workedFor` | the missing part | `Answer: 10` — the number already on screen |
+| `#qsay` | the missing part | `"6 plus 4"` — speaks the answer |
+| `#ask` | the missing part | `"Make the whole"` |
+
+The consequence is total: `6 + ? = 10` accepted `10` and rejected `4`. The only bond question that worked was `a = 0`, where the missing part and the whole are the same number — and even there the drill was marking a copied digit correct. The level is the default on a first visit (`LEVELS[0] = 'bond'`), so a child opening the drill for the first time met fifty questions none of which could be answered.
+
+**Why no probe caught it.** `grading.py` types `4` and requires that *something* happen — a correct answer advances, a wrong one reveals Next. Both happened. The claim "the drill grades what it asks" is a different claim, and nothing asserted it. `probes/answerable.py` now does, for all five drills: it reads the question off the DOM, computes the answer in Python, types it, and requires `ok`; then types a number the screen displays and does not ask for, and requires rejection. Three canaries fire (addition grading the sum, number-bonds grading the whole, division grading the dividend), each restoring byte-identical.
+
+**The story layer would inherit the bug.** `wordproblems.js` builds a story from `factOf('addition-quest', q)`, which reads `q.a`/`q.b` and answers `a + b` — the whole. On the bond level that is a story whose answer is the number on screen. Any caller of `ArcadeStory.apply` on this page must pass `null` for a bond rather than the fact, which clears the box without asking a question the page does not grade.
+
+---
+
 ## REFUTED-1 — "The freshness probe covers the deck"
 
 **False as stated.** `probes/freshness.py:14-17` says so itself: it exercises pass zero (`freshFirst`) and not pass two (`newCycle`). The claim was never that it covered both — but the file's name and its place in the suite invite the stronger reading. The bonds `newCycle` canary could not be made to trip, and the docstring records that rather than overclaiming. This is correct behaviour and is listed only so the next reader does not assume coverage that does not exist.

@@ -72,7 +72,7 @@ docs/design.md        the design narrative: what each game teaches and why each
                       interaction is shaped the way it is
 llms.txt              the one-screen orientation for an agent that has just arrived
 dev-llms.txt          the implementation reference: state shapes, function index, defects
-probes/               thirty-five Playwright probes run against the pages from file://
+probes/               thirty-seven Playwright probes run against the pages from file://
 ```
 
 Which page loads what:
@@ -915,6 +915,13 @@ actually produced:
    that failed wholesale; read the failure reason, not the count.
 3. *Colliding names* — a `.note` class meaning one thing in a step row and another thing on the
    page as a whole; an id the game and the tracker both use.
+
+A fourth, added after `addition-quest`'s bond level spent an unknown length of time rejecting every
+correct answer (D-17): *a gate that asks whether something happened*. `grading.py` types `4` and
+requires the drill to either advance or reveal Next. A drill that marks every answer wrong passes
+that, and one did. The question a grader owes is not "did you run?" but "did you grade the thing
+you asked?" — read the question off the screen, compute the answer somewhere else, and require the
+drill to agree. `probes/answerable.py` is that gate for the five maths drills.
 
 ## Contributing
 
