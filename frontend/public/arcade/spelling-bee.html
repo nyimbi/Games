@@ -266,6 +266,7 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
 </style>
   <script src="./errors.js"></script>
   <script src="./escape.js"></script>
+  <script src="./focus.js"></script>
   <script src="./deck.js"></script>
   <script src="./record.js"></script>
 </head>
@@ -1049,11 +1050,19 @@ h1 em{font-style:normal;background:linear-gradient(180deg,transparent 62%,color-
     $('rulesList').innerHTML = RULES.map(([h, body, ex]) =>
       `<div class="ruleitem"><h3>${h}</h3><p>${body}</p><span class="ex">${ex}</span></div>`).join('');
     $('sheet').classList.add('on');
+    // `role="dialog" aria-modal="true"` is a claim that the page behind is
+    // inert. One Tab from the close button used to land on the brand link.
+    if (window.ArcadeFocus) window.ArcadeFocus.trap($('sheet'), $('rulesBtn'));
     $('sheetClose').focus();
   }
   function closeSheet() {
+    // Only when it is open. The Escape handler below runs on every Escape
+    // press, so without this guard a child pressing Escape mid-quiz had focus
+    // pulled to the rules button for no visible reason.
+    if (!$('sheet').classList.contains('on')) return;
     $('sheet').classList.remove('on');
-    $('rulesBtn').focus();
+    if (window.ArcadeFocus) window.ArcadeFocus.release();
+    else $('rulesBtn').focus();
   }
 
   /* ---------------- wiring ---------------- */

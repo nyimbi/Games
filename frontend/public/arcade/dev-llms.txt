@@ -21,6 +21,7 @@ skills.js               262   prerequisite graphs: 15 maths skills, 12 subjects;
 backup.js               152   the record as one JSON file: dump, parse, restore, download
 errors.js               116   the ring of the last fifty errors, and the toast that shows them
 escape.js                39   `esc()` for the one place text reaches innerHTML
+focus.js                104   the Tab trap and focus restore both aria-modal dialogs owe
 
 lang-engine.js          478   quiz engine: french, swahili, chinese
 tone-sandhi.js          219   written tones against spoken: the 3+3 rule

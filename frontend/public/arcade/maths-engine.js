@@ -457,6 +457,11 @@
     render(topicId);
     wrap.classList.add('on');
     document.body.style.overflow = 'hidden';
+    // The overlay says `aria-modal="true"`, so Tab has to stay inside it and
+    // focus has to come back to the button that opened it. Six Tabs from the
+    // close button used to leave the overlay and land on the page behind it.
+    const opener = document.activeElement;
+    if (window.ArcadeFocus) window.ArcadeFocus.trap(wrap, opener);
     const first = wrap.querySelector('.close');
     if (first) first.focus();
   }
@@ -465,6 +470,7 @@
     if (!wrap) return;
     wrap.classList.remove('on');
     document.body.style.overflow = '';
+    if (window.ArcadeFocus) window.ArcadeFocus.release();
     if (lessonCfg && lessonCfg.onClose) lessonCfg.onClose();
   }
 

@@ -31,6 +31,7 @@ time. See "How Things Work" below.
 index.html             the hub: every game, grouped by subject
 session.html           the daily pass: twelve subjects in one sitting
 session.js             session state — plan, streak, completion, the alternation guard
+focus.js               keep the keyboard inside an aria-modal dialog, and give it back
 
 ── shared engines (hold the interaction; banks hold the content) ──
 lang-engine.js         French, Kiswahili, Mandarin — one quiz engine, three vocabularies
