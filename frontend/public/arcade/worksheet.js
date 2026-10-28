@@ -22,9 +22,10 @@
 (function () {
   'use strict';
 
-  const esc = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  /* The shared module, not a local copy. Every page that loads this file loads
+     `escape.js` first, and a local `esc` here would shadow it silently -- which
+     is the exact defect `escape.py` exists to catch, and it caught this one. */
+  const esc = window.ArcadeEscape.esc;
 
   const CSS = `
   #wsSheet { display: none; }
